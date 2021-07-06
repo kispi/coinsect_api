@@ -1,0 +1,30 @@
+{
+  "name": "coinsect_api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node-dev server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kispi/coinsect_api.git"
+  },
+  "author": "kispi@naver.com",
+  "bugs": {
+    "url": "https://github.com/kispi/coinsect_api/issues"
+  },
+  "homepage": "https://github.com/kispi/coinsect_api#readme",
+  "dependencies": {
+    "@types/node": "^16.0.0",
+    "fastify": "^3.18.1",
+    "mysql": "^2.18.1",
+    "reflect-metadata": "^0.1.10",
+    "ts-node": "^10.0.0",
+    "ts-node-dev": "^1.1.8",
+    "typeorm": "^0.2.34",
+    "typescript": "^4.3.5"
+  },
+  "type": "module"
+}
