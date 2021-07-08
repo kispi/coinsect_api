@@ -1,10 +1,8 @@
-import {PrimaryGeneratedColumn, Entity, Column, Timestamp} from 'typeorm'
+import { Entity, Column } from 'typeorm'
+import BaseModel from './base_model'
 
 @Entity()
-export class User {
-  @PrimaryGeneratedColumn()
-  id: number
-
+export class User extends BaseModel {
   @Column()
   birthday: string
 
@@ -13,13 +11,4 @@ export class User {
 
   @Column({ length: 255 })
   email: string
-
-  @Column({ name: 'created_at' })
-  createdAt: Timestamp
-
-  @Column({ name: 'updated_at' })
-  updatedAt: Timestamp
-
-  @Column({ name: 'deleted_at' })
-  deletedAt: Timestamp
 }
