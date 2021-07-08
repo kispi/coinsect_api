@@ -1,16 +1,20 @@
-import { PrimaryGeneratedColumn, Entity, Column } from 'typeorm'
+import {
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+} from 'typeorm'
 
-@Entity()
-export default class User {
+export default abstract class BaseModel {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date
 
-  @Column({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date
 
-  @Column({ name: 'deleted_at' })
+  @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date
 }

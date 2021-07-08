@@ -1,15 +1,30 @@
-import { FastifyRequest, FastifyReply } from 'fastify'
-import useResponses from '../responses'
+import IContext from '../core/context'
+import { User } from '../entities/user'
 
-const detail = (request: FastifyRequest, reply: FastifyReply) => {
-  useResponses(reply).asJSON({ name: 'Chanho', birthday: '1989-06-23' })
+const detail = (c: IContext) => {
+  c.orm.getRepository(User).findOne(c.req.params['id'])
+    .then(c.res.asJSON)
 }
 
-const all = (request: FastifyRequest, reply: FastifyReply) => {
-  useResponses(reply).asHTML('<div style="color: red;">Not all too many users yet</div>')
+const all = (c: IContext) => {
+  c.orm.getRepository(User).find()
+    .then(c.res.asJSON)
+}
+
+const create = (c: IContext) => {
+  c.orm.createQueryBuilder().insert().into(User).values([{
+    name: c.req.query['name'],
+    birthday: c.req.query['birthday'],
+    email: c.req.query['email'],
+  }]).execute()
+    .then(() => c.res.asHTML('success'))
+    .catch(e => {
+      c.res.failed(e.code)
+    })
 }
 
 export default {
   detail,
   all,
+  create,
 }

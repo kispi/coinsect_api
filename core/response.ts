@@ -1,6 +1,6 @@
 import { FastifyReply } from 'fastify'
 
-const useResponses = (reply: FastifyReply) => {
+const useResponse = (reply: FastifyReply) => {
   return {
     asJSON: o => {
       reply
@@ -12,7 +12,13 @@ const useResponses = (reply: FastifyReply) => {
         .type('text/html')
         .send(html)
     },
+    failed: (message: string) => {
+      reply
+        .type('text/html')
+        .code(400)
+        .send(message)
+    },
   }
 }
 
-export default useResponses
+export default useResponse

@@ -1,9 +1,14 @@
 import {FastifyInstance} from 'fastify'
 import useControllers from './controllers'
+import useRouter from './core/router'
 
 const useRoutes = (app: FastifyInstance) => {
-  app.get('/users', useControllers().user.all)
-  app.get('/users/:id', useControllers().user.detail)
+  const router = useRouter(app)
+  const ctrls = useControllers()
+
+  router.get('/users', ctrls.user.all)
+  router.get('/users/:id', ctrls.user.detail)
+  router.post('/users', ctrls.user.create)
 }
 
 export default useRoutes
