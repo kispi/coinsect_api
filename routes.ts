@@ -9,6 +9,8 @@ const useRoutes = (app: FastifyInstance) => {
   router.get('/users', ctrls.user.all)
   router.get('/users/:id', ctrls.user.detail)
   router.post('/users', ctrls.user.create)
+
+  router.get('/articles', ctrls.article.all)
 }
 
 export default useRoutes
