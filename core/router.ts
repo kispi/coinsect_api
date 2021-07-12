@@ -18,6 +18,12 @@ const useRouter = (app: FastifyInstance) => {
     post: (path: string, handler: Function) => {
       app.post(path, (req, res) => handler(createContext(req, res)))
     },
+    put: (path: string, handler: Function) => {
+      app.put(path, (req, res) => handler(createContext(req, res)))
+    },
+    delete: (path: string, handler: Function) => {
+      app.delete(path, (req, res) => handler(createContext(req, res)))
+    },
   }
 }
 

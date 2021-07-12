@@ -1,4 +1,4 @@
-import {FastifyInstance} from 'fastify'
+import { FastifyInstance } from 'fastify'
 import useControllers from './controllers'
 import useRouter from './core/router'
 
@@ -10,7 +10,14 @@ const useRoutes = (app: FastifyInstance) => {
   router.get('/users/:id', ctrls.user.detail)
   router.post('/users', ctrls.user.create)
 
-  router.get('/articles', ctrls.article.all)
+  router.get('/posts', ctrls.post.all)
+  router.get('/posts/:id', ctrls.post.detail)
+  router.post('/posts', ctrls.post.create)
+  router.put('/posts/:id', ctrls.post.update)
+  router.delete('/posts/:id', ctrls.post.delete)
+
+  router.post('/reactions', ctrls.reaction.create)
+  router.delete('/reactions', ctrls.reaction.delete)
 }
 
 export default useRoutes
