@@ -6,6 +6,8 @@ const useRoutes = (app: FastifyInstance) => {
   const router = useRouter(app)
   const ctrls = useControllers()
 
+  router.get('/config', ctrls.config.get)
+
   router.get('/users', ctrls.user.all)
   router.get('/users/:id', ctrls.user.detail)
   router.post('/users', ctrls.user.create)
