@@ -20,6 +20,8 @@ const useRoutes = (app: FastifyInstance) => {
 
   router.post('/reactions', ctrls.reaction.create)
   router.delete('/reactions', ctrls.reaction.delete)
+
+  router.get('/market_info/indices', ctrls.marketInfo.indices)
 }
 
 export default useRoutes
