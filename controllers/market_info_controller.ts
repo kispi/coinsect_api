@@ -1,16 +1,19 @@
 import IContext from '../core/context'
+import useService from '../services'
+
+const service = useService()
 
 const marketInfoController = {
   indices: (c: IContext) => {
-    c.res.asJSON({
-      usdKrw: 1150.5,
-      dominance: {
-        btc: 45.88,
-        eth: 18.22,
-      },
-      totalMarketCap: 1321134065546,
-      vol24: 60732991279,
-    })
+    c.res.asJSON(service.marketInfo.indices())
+  },
+  caps: async (c: IContext) => {
+    const source = c.req.query['source']
+    if (!['upbit', 'coinmarketcap'].includes(source)) {
+      return c.res.failed(`invalid query param: 'source' ['upbit' || 'coinmarketcap']`)
+    }
+
+    c.res.asJSON(await service.marketInfo.marketcaps(source))
   },
 }
 
