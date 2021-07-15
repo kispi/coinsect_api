@@ -4,8 +4,8 @@ import useService from '../services'
 const service = useService()
 
 const marketInfoController = {
-  indices: (c: IContext) => {
-    c.res.asJSON(service.marketInfo.indices())
+  indices: async (c: IContext) => {
+    c.res.asJSON(await service.marketInfo.indices())
   },
   caps: async (c: IContext) => {
     const source = c.req.query['source']

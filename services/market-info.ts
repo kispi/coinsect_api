@@ -1,15 +1,18 @@
 import axios from 'axios'
 
 const marketInfo = {
-  indices: () => {
-    return {
-      usdKrw: 1150.5,
-      dominance: {
-        btc: 45.88,
-        eth: 18.22,
-      },
-      totalMarketCap: 1321134065546,
-      vol24: 60732991279,
+  indices: async () => {
+    try {
+      const resp = await Promise.all([
+        axios.get('https://coincodex.com/api/coincodex/get_metadata'),
+        axios.get('https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD'),
+      ])
+      return {
+        coincodex: resp[0],
+        upbitForex: resp[1][0],
+      }
+    } catch (e) {
+      return Promise.reject(e)
     }
   },
   marketcaps: async source => {
