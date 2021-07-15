@@ -11,4 +11,4 @@ app.register(fastifyCors)
 useRoutes(app)
 useDB()
 
-app.listen(config.API_PORT)
+app.listen(config.API_PORT, '0.0.0.0')
