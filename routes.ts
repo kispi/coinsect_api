@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import useControllers from './controllers'
-import useRouter from './core/router'
+import { useRouter } from './core/router'
 
 const useRoutes = (app: FastifyInstance) => {
   const router = useRouter(app)

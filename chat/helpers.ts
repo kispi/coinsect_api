@@ -14,6 +14,24 @@ const mustToken = existingTokens => {
   return nonExistNewToken
 }
 
+const mustJSON = {
+  stringify: o => {
+    let result = null
+    try {
+      result = JSON.stringify(o)
+    } catch (e) {}
+    return result
+  },
+  parse: o => {
+    let result = null
+    try {
+      result = JSON.parse(o)
+    } catch (e) {}
+    return result
+  }
+}
+
 export default {
+  mustJSON,
   mustToken,
 }

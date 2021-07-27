@@ -1,9 +1,10 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class CreateTables1626067109256 implements MigrationInterface {
-    name = 'CreateTables1626067109256'
+export class CreateTables1627375741506 implements MigrationInterface {
+    name = 'CreateTables1627375741506'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query("CREATE TABLE `messages` (`id` int NOT NULL AUTO_INCREMENT, `created_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), `updated_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), `deleted_at` datetime(6) NULL, `json` text NOT NULL, `ip` varchar(255) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB");
         await queryRunner.query("CREATE TABLE `users` (`id` int NOT NULL AUTO_INCREMENT, `created_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), `updated_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), `deleted_at` datetime(6) NULL, `birthday` varchar(255) NOT NULL, `name` varchar(255) NOT NULL, `email` varchar(255) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB");
         await queryRunner.query("CREATE TABLE `reactions` (`id` int NOT NULL AUTO_INCREMENT, `created_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), `updated_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), `deleted_at` datetime(6) NULL, `type` varchar(255) NOT NULL, `nickname` varchar(255) NOT NULL, `ip` varchar(255) NOT NULL, `post_id` int NULL, `user_id` int NULL, UNIQUE INDEX `REL_dde6062145a93649adc5af3946` (`user_id`), PRIMARY KEY (`id`)) ENGINE=InnoDB");
         await queryRunner.query("CREATE TABLE `posts` (`id` int NOT NULL AUTO_INCREMENT, `created_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), `updated_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), `deleted_at` datetime(6) NULL, `title` varchar(255) NOT NULL, `content` text NOT NULL, `post_type` varchar(255) NOT NULL, `views` int NOT NULL, `nickname` varchar(255) NOT NULL, `ip` varchar(255) NOT NULL, `parent_id` int NULL, `user_id` int NULL, UNIQUE INDEX `REL_c4f9a7bd77b489e711277ee598` (`user_id`), PRIMARY KEY (`id`)) ENGINE=InnoDB");
@@ -23,6 +24,7 @@ export class CreateTables1626067109256 implements MigrationInterface {
         await queryRunner.query("DROP INDEX `REL_dde6062145a93649adc5af3946` ON `reactions`");
         await queryRunner.query("DROP TABLE `reactions`");
         await queryRunner.query("DROP TABLE `users`");
+        await queryRunner.query("DROP TABLE `messages`");
     }
 
 }

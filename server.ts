@@ -7,12 +7,12 @@ import useDB from './database'
 import axios from 'axios'
 import fastifyWebsocket from 'fastify-websocket'
 
-const initApp = app => {
+const initApp = async app => {
   app.register(fastifyCors)
   app.register(fastifyWebsocket)
+  await useDB()
   useRoutes(app)
   useChat(app)
-  useDB()
   axios.interceptors.response.use(
     res => res.data,
     err => {
@@ -28,5 +28,6 @@ const initApp = app => {
 const config = useDotenv()
 
 const app = fastify({ logger: true })
-initApp(app)
-app.listen(config.API_PORT, '0.0.0.0')
+initApp(app).then(() => {
+  app.listen(config.API_PORT, '0.0.0.0')
+})
