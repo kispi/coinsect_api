@@ -42,11 +42,14 @@ const broadcast = (message, ip?) => {
   if (message.type === 'text') {
     sentMessages.push(asIMessage(message))
     sentMessages = sentMessages.slice(-latestMessagesLimit)
-    const orm = getConnection()
-    orm.createQueryBuilder().insert().into(Message).values([{
-      ip,
-      json: helpers.mustJSON.stringify(asIMessage(message)),
-    }]).execute()
+
+    if (process.env.NODE_ENV === 'production') {
+      const orm = getConnection()
+      orm.createQueryBuilder().insert().into(Message).values([{
+        ip,
+        json: helpers.mustJSON.stringify(asIMessage(message)),
+      }]).execute()
+    }
   }
 }
 
