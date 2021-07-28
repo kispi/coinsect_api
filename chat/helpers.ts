@@ -31,7 +31,12 @@ const mustJSON = {
   }
 }
 
+const badWords = []
+
+const includesBadWords = (message: String) => badWords.some(badWord => message.includes(badWord))
+
 export default {
   mustJSON,
   mustToken,
+  includesBadWords,
 }
