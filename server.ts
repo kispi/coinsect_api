@@ -27,7 +27,11 @@ const initApp = async app => {
 
 const config = useDotenv()
 
-const app = fastify({ logger: true })
+const app = fastify({
+  logger: true,
+  trustProxy: true,
+})
+
 initApp(app).then(() => {
   app.listen(config.API_PORT, '0.0.0.0')
 })
