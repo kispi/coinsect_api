@@ -37,7 +37,7 @@ const sendMessage = (message, tokenOfTarget: string) => {
   targetConnections.forEach(connectionWrapper => connectionWrapper.connection.socket.send(JSON.stringify(finalMessage)))
 }
 
-const insertMessage = (message, ip) => {
+const saveMessage = (message, ip) => {
   if (message.type !== 'text') return
 
   const iMessage = asIMessage(message)
@@ -86,8 +86,6 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
 
       if (!(o.text || '').trim()) return
 
-      insertMessage(o, req.ip)
-
       if (helpers.includesBadWords(o.text)) {
         sendMessage({
           type: 'alert',
@@ -95,6 +93,9 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
         }, token)
         return
       }
+
+      // IP 차단하려면 비속어도 DB에 저장하긴 해야되는데 나중에 따로 bad_word_history 뭐 이런거 만드는게 나을듯
+      saveMessage(o, req.ip)
 
       broadcast(o)
       return
