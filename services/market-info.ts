@@ -1,5 +1,9 @@
 import axios from 'axios'
 
+const cached = {
+  leaderboard: null,
+}
+
 const marketInfo = {
   indices: async () => {
     try {
@@ -22,6 +26,22 @@ const marketInfo = {
     try {
       const resp = await axios.get(endpoint)
       return resp.data ? resp.data : resp
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  },
+  leaderboard: async () => {
+    if (cached.leaderboard) return cached.leaderboard
+
+    try {
+      const { data } = await axios.get('https://api.btctools.io/api/leaderboard')
+      cached.leaderboard = data
+      data.sort((a, b) => b.profit - a.profit)
+      data.forEach((row, idx) => row.rank = idx + 1)
+      setInterval(() => {
+        delete cached.leaderboard
+      }, 1000 * 60)
+      return cached.leaderboard
     } catch (e) {
       return Promise.reject(e)
     }

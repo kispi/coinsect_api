@@ -4,9 +4,7 @@ import useService from '../services'
 const service = useService()
 
 const marketInfoController = {
-  indices: async (c: IContext) => {
-    c.res.asJSON(await service.marketInfo.indices())
-  },
+  indices: async (c: IContext) => c.res.asJSON(await service.marketInfo.indices()),
   caps: async (c: IContext) => {
     const source = c.req.query['source']
     if (!['upbit', 'coinmarketcap'].includes(source)) {
@@ -15,6 +13,7 @@ const marketInfoController = {
 
     c.res.asJSON(await service.marketInfo.marketcaps(source))
   },
+  leaderboard: async (c: IContext) => c.res.asJSON(await service.marketInfo.leaderboard()),
 }
 
 export default marketInfoController
