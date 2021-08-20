@@ -23,6 +23,7 @@ const useRoutes = (app: FastifyInstance) => {
 
   router.get('/market_info/leaderboard', ctrls.marketInfo.leaderboard)
   router.get('/market_info/indices', ctrls.marketInfo.indices)
+  router.get('/market_info/markets', ctrls.marketInfo.markets)
   router.get('/market_info/marketcaps', ctrls.marketInfo.caps)
 }
 

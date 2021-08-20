@@ -13,6 +13,7 @@ const marketInfoController = {
 
     c.res.asJSON(await service.marketInfo.marketcaps(source))
   },
+  markets: async (c: IContext) => c.res.asJSON(await service.marketInfo.markets()),
   leaderboard: async (c: IContext) => c.res.asJSON(await service.marketInfo.leaderboard()),
 }
 
