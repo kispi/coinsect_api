@@ -44,12 +44,16 @@ const saveMessage = (message, ip) => {
   sentMessages.push(iMessage)
   sentMessages = sentMessages.slice(-latestMessagesLimit)
 
-  if (process.env.NODE_ENV !== 'production') return
-
   const orm = getConnection()
   orm.createQueryBuilder().insert().into(Message).values([{
     ip,
-    json: helpers.mustJSON.stringify(iMessage),
+    ts: iMessage.ts,
+    numConnections: iMessage.numConnections,
+    type: iMessage.type,
+    text: iMessage.text,
+    nickname: iMessage.user.profile.nickname,
+    image: iMessage.user.profile.image,
+    token: iMessage.user.token,
   }]).execute()
 }
 
@@ -112,14 +116,25 @@ const loadRecentMessages = async () => {
   try {
     const data = await orm
       .getRepository(Message)
-      .createQueryBuilder('')
-      .select()
+      .createQueryBuilder('messages')
       .limit(200)
       .orderBy('id', 'DESC')
-      .execute()
+      .getMany()
 
     const json = JSON.parse(JSON.stringify(data))
-    sentMessages = json.map(o => JSON.parse(o.Message_json)).reverse()
+    sentMessages = json.map(o => ({
+      type: o.type,
+      text: o.text,
+      ts: o.ts,
+      numConnections: o.numConnections,
+      user: {
+        token: o.token,
+        profile: {
+          nickname: o.nickname,
+          image: o.image,
+        },
+      },
+    })).reverse()
   } catch (e) {
     return Promise.reject(e)
   }
