@@ -2,20 +2,17 @@ import { FastifyInstance, FastifyRequest } from 'fastify'
 import { IConnection, IMessage } from './types'
 import { SocketStream } from 'fastify-websocket'
 import { useRouter } from '../core/router'
-import helpers from './helpers'
-import IContext from '../core/context'
 import { Message } from '../entities/message'
 import { getConnection } from 'typeorm'
+import helpers from './helpers'
+import IContext from '../core/context'
+import chat from '../services/chat'
+import { BadWord } from '../entities/bad_word'
+import store from '../store'
 
 let connections: Array<IConnection> = []
 
 let sentMessages: Array<IMessage> = []
-
-// 너무 단시간에 많은 채팅을 치는 것을 막기 위해 이 해시에 IP가 있는 동안은 broadcast를 막는다.
-const preventSpam = {
-  timeout: 200,
-  IPAddresses: {}
-}
 
 const latestMessagesLimit = 200
 
@@ -29,7 +26,7 @@ const asIMessage = message => ({
   ts: new Date(),
 })
 
-const sendMessage = (message, tokenOfTarget: string) => {
+export const sendMessage = (message, tokenOfTarget: string) => {
   const targetConnections = connections.filter(conn => conn.user.token === tokenOfTarget)
 
   const finalMessage = asIMessage(message)
@@ -83,11 +80,16 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   connection.socket.on('message', message => {
     const o: IMessage = JSON.parse(message)
     if (o.type === 'text') {
-      if (preventSpam.IPAddresses[req.ip]) return
+      const t = chat.bannedUntil(req.ip)
+      if (t) {
+        sendMessage({
+          type: 'alert',
+          text: `채팅 제한 해제: ${t}`,
+        }, token)
+        return
+      }
 
-      preventSpam.IPAddresses[req.ip] = true
-      setTimeout(() => delete preventSpam.IPAddresses[req.ip], preventSpam.timeout)
-
+      chat.banIP(req.ip, 200)
       if (!(o.text || '').trim()) return
 
       if (helpers.includesBadWords(o.text)) {
@@ -116,7 +118,7 @@ const loadRecentMessages = async () => {
   try {
     const data = await orm
       .getRepository(Message)
-      .createQueryBuilder('messages')
+      .createQueryBuilder()
       .limit(200)
       .orderBy('id', 'DESC')
       .getMany()
@@ -140,9 +142,10 @@ const loadRecentMessages = async () => {
   }
 }
 
-const useChat = (app: FastifyInstance) => {
+export const useChat = (app: FastifyInstance) => {
   const routes = useRouter(app)
 
+  store.actions.loadBadWords()
   loadRecentMessages()
 
   app.get('/chat', { websocket: true }, onConnected)
@@ -150,4 +153,7 @@ const useChat = (app: FastifyInstance) => {
   routes.get('/messages/latest', chatCtrl.latest)
 }
 
-export default useChat
+export default {
+  sendMessage,
+  useChat,
+}

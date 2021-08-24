@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
-import useControllers from './controllers'
 import { useRouter } from './core/router'
+import useControllers from './controllers'
 
 const useRoutes = (app: FastifyInstance) => {
   const router = useRouter(app)
@@ -25,6 +25,8 @@ const useRoutes = (app: FastifyInstance) => {
   router.get('/market_info/indices', ctrls.marketInfo.indices)
   router.get('/market_info/markets', ctrls.marketInfo.markets)
   router.get('/market_info/marketcaps', ctrls.marketInfo.caps)
+
+  router.post('/admin/chat/banUser', ctrls.admin.banIP)
 }
 
 export default useRoutes

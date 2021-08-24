@@ -1,3 +1,5 @@
+import store from "../store"
+
 const mustToken = existingTokens => {
   const o = {}
   if (existingTokens) existingTokens.forEach(t => o[t] = true)
@@ -31,9 +33,7 @@ const mustJSON = {
   }
 }
 
-const badWords = []
-
-const includesBadWords = (message: String) => badWords.some(badWord => message.includes(badWord))
+const includesBadWords = (message: String) => store.state.badWords.map(o => o.word).some(badWord => message.includes(badWord))
 
 export default {
   mustJSON,
