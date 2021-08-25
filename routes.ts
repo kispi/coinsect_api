@@ -11,6 +11,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.post('/admin/chat/sendMessage', ctrls.admin.chat.sendMessage)
 
     router.get('/admin/messages', ctrls.admin.message.all)
+    router.get('/admin/badWords', ctrls.admin.badWord.all)
   },
   service: () => {
     const router = useRouter(app)

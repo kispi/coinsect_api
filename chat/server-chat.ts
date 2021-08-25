@@ -88,7 +88,8 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
           message: {
             type: 'alert',
             text: `채팅 제한 해제: ${t}`,
-          }, token
+          },
+          token,
         })
         return
       }
@@ -101,7 +102,8 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
           message: {
             type: 'alert',
             text: '비속어, 음란글, 광고 채팅이 누적되면 사용이 제한될 수 있습니다.',
-          }, token
+          },
+          token,
         })
         return
       }

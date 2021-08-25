@@ -2,14 +2,15 @@ import IContext from '../core/context'
 import useService from '../services'
 import { sendMessage } from '../chat/server-chat'
 import { Message } from '../entities/message'
+import { BadWord } from '../entities/bad_word'
 import orm from '../core/orm'
 
 const service = useService()
 
-const message = {
+const useCRUD = model => ({
   all: async (c: IContext) => {
     try {
-      const res = await orm.querySetter(c, Message).getManyAndCount()
+      const res = await orm.querySetter(c, model).getManyAndCount()
       c.res.asJSON({
         data: res[0],
         total: res[1],
@@ -18,7 +19,7 @@ const message = {
       c.res.failed()
     }
   },
-}
+})
 
 const chat = {
   banIP: async (c: IContext) => {
@@ -44,7 +45,8 @@ const chat = {
 
 const adminController = {
   chat,
-  message,
+  badWord: useCRUD(BadWord),
+  message: useCRUD(Message),
 }
 
 export default adminController
