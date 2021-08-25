@@ -1,5 +1,6 @@
 import { Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToOne } from 'typeorm'
 import BaseModel from './base_model'
+import { Board } from './board'
 import { Reaction } from './reaction'
 import { User } from './user'
 
@@ -12,6 +13,9 @@ enum PostType {
 export class Post extends BaseModel {
   @OneToMany(() => Reaction, reaction => reaction.post)
   reactions: Array<Reaction>
+
+  @ManyToOne(() => Board, board => board.posts)
+  board: Board
 
   @ManyToOne(() => Post, post => post.children)
   parent: Post
