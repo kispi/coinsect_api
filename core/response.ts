@@ -12,7 +12,7 @@ const useResponse = (reply: FastifyReply) => {
         .type('text/html')
         .send(html)
     },
-    failed: (message: string) => {
+    failed: (message?: string) => {
       reply
         .type('text/html')
         .code(400)

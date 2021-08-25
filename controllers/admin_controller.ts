@@ -1,10 +1,26 @@
 import IContext from '../core/context'
 import useService from '../services'
 import { sendMessage } from '../chat/server-chat'
+import { Message } from '../entities/message'
+import orm from '../core/orm'
 
 const service = useService()
 
-const adminController = {
+const message = {
+  all: async (c: IContext) => {
+    try {
+      const res = await orm.querySetter(c, Message).getManyAndCount()
+      c.res.asJSON({
+        data: res[0],
+        total: res[1],
+      })
+    } catch (e) {
+      c.res.failed()
+    }
+  },
+}
+
+const chat = {
   banIP: async (c: IContext) => {
     if (!c.req.body['ip'] || !c.req.body['timeout']) {
       c.res.failed('missing params: ip, timeout')
@@ -24,6 +40,11 @@ const adminController = {
       ip: c.req.body['ip'],
     })
   },
+}
+
+const adminController = {
+  chat,
+  message,
 }
 
 export default adminController

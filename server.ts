@@ -11,7 +11,11 @@ const initApp = async app => {
   app.register(fastifyCors)
   app.register(fastifyWebsocket)
   await useDB()
-  useRoutes(app)
+
+  const routeMaker = useRoutes(app)
+  routeMaker.service()
+  routeMaker.admin()
+
   useChat(app)
   axios.interceptors.response.use(
     res => res.data,
