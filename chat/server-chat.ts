@@ -17,13 +17,18 @@ const latestMessagesLimit = 200
 
 const currentTokens = () => connections.map(conn => conn.user.token)
 
-const asIMessage = message => ({
-  type: message.type,
-  user: message.user,
-  text: message.text,
-  numConnections: connections.length - (message.type === 'leave' ? 1 : 0),
-  ts: new Date(),
-})
+const asIMessage = message => {
+  const iMessage = {
+    type: message.type,
+    user: message.user,
+    text: message.text,
+    numConnections: connections.length - (message.type === 'leave' ? 1 : 0),
+    ts: new Date(),
+  }
+
+  if (message.meta) iMessage['meta'] = message.meta
+  return iMessage
+}
 
 export const sendMessage = ({ message, token, ip }: { message, token?: string, ip?: string }) => {
   const targetConnections = connections.filter(conn => {
@@ -113,6 +118,16 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
 
       broadcast(o)
       return
+    }
+
+    if (o.type === 'connections') {
+      sendMessage({
+        message: {
+          type: 'connections',
+          meta: connections.map(conn => ({ ip: conn.ip, user: conn.user })),
+        },
+        token,
+      })
     }
   })
 }

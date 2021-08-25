@@ -28,8 +28,8 @@ const chat = {
       return
     }
 
-    service.chat.banIP(c.req.body['ip'], c.req.body['timeout'])
-    c.res.asHTML('success')
+    const until = service.chat.banIP(c.req.body['ip'], c.req.body['timeout'])
+    c.res.asJSON({ data: until })
   },
   sendMessage: async (c: IContext) => {
     sendMessage({
