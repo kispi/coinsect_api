@@ -4,10 +4,12 @@ import { BadWord } from './entities/bad_word'
 const state = {
   // 너무 단시간에 많은 채팅을 치는 것을 막기 위해 이 객체에 IP가 있는 동안은 broadcast를 막는다.
   preventSpam: {
-    timeout: 200,
     IPAddresses: {},
   },
   badWords: [],
+  globalVariables: {
+    chatFrequency: 200,
+  },
 }
 
 const actions = {

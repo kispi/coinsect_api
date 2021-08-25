@@ -1,11 +1,11 @@
 import fastify from 'fastify'
 import fastifyCors from 'fastify-cors'
 import useRoutes from './routes'
-import { useChat } from './chat/server-chat'
 import useDotenv from './dotenv'
 import useDB from './database'
 import axios from 'axios'
 import fastifyWebsocket from 'fastify-websocket'
+import { useChat } from './chat/server-chat'
 
 const initApp = async app => {
   app.register(fastifyCors)
@@ -32,6 +32,4 @@ const app = fastify({
   trustProxy: true,
 })
 
-initApp(app).then(() => {
-  app.listen(config.API_PORT, '0.0.0.0')
-})
+initApp(app).then(() => app.listen(config.API_PORT, '0.0.0.0'))

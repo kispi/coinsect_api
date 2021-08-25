@@ -7,7 +7,6 @@ import { getConnection } from 'typeorm'
 import helpers from './helpers'
 import IContext from '../core/context'
 import chat from '../services/chat'
-import { BadWord } from '../entities/bad_word'
 import store from '../store'
 
 let connections: Array<IConnection> = []
@@ -26,8 +25,11 @@ const asIMessage = message => ({
   ts: new Date(),
 })
 
-export const sendMessage = (message, tokenOfTarget: string) => {
-  const targetConnections = connections.filter(conn => conn.user.token === tokenOfTarget)
+export const sendMessage = ({ message, token, ip }: { message, token?: string, ip?: string }) => {
+  const targetConnections = connections.filter(conn => {
+    if (ip) return conn.ip === ip
+    if (token) return conn.user.token === token
+  })
 
   const finalMessage = asIMessage(message)
 
@@ -60,16 +62,16 @@ const broadcast = message => {
   // (그냥 connections.forEach(conn => sendMessage...) 하게 되면 같은 계정 n개 탭에서 접속한 경우 걔들은 메시지 n번씩 찍힘)
   const o = {}
   connections.forEach(conn => o[conn.user.token] = conn)
-  Object.values(o).forEach((conn: IConnection) => sendMessage(message, conn.user.token))
+  Object.values(o).forEach((conn: IConnection) => sendMessage({ message, token: conn.user.token }))
 }
 
 const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   // 웹소켓 접속시 토큰이 query param으로 넘어온 경우 그대로 사용, 없으면 만들어줌
   const token = req.query['token'] || helpers.mustToken(currentTokens())
 
-  connections.push({ connection, user: { token } })
+  connections.push({ connection, user: { token }, ip: req.ip })
 
-  sendMessage({ type: 'auth', user: { token } }, token)
+  sendMessage({ message: { type: 'auth', user: { token } }, token })
 
   connection.socket.on('close', () => {
     broadcast({ type: 'leave' })
@@ -83,20 +85,24 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
       const t = chat.bannedUntil(req.ip)
       if (t) {
         sendMessage({
-          type: 'alert',
-          text: `채팅 제한 해제: ${t}`,
-        }, token)
+          message: {
+            type: 'alert',
+            text: `채팅 제한 해제: ${t}`,
+          }, token
+        })
         return
       }
 
-      chat.banIP(req.ip, 200)
+      chat.banIP(req.ip, store.state.globalVariables.chatFrequency)
       if (!(o.text || '').trim()) return
 
       if (helpers.includesBadWords(o.text)) {
         sendMessage({
-          type: 'alert',
-          text: '비속어, 음란글, 광고 채팅이 누적되면 사용이 제한될 수 있습니다.',
-        }, token)
+          message: {
+            type: 'alert',
+            text: '비속어, 음란글, 광고 채팅이 누적되면 사용이 제한될 수 있습니다.',
+          }, token
+        })
         return
       }
 

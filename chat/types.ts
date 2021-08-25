@@ -19,4 +19,5 @@ export interface IMessage {
 export interface IConnection {
   connection: SocketStream,
   user: IUser,
+  ip: string,
 }
