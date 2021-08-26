@@ -5,7 +5,7 @@ import { sendMessage } from '../chat/server-chat'
 export default {
   banIP: (ip, timeout) => {
     const d = dayjs().add(timeout, 'milliseconds')
-    const t = d.format('YYYY-MM-DD HH:mm:ss')
+    const t = d.format()
     store.state.preventSpam.IPAddresses[ip] = t
     setTimeout(() => delete store.state.preventSpam.IPAddresses[ip], timeout)
 
