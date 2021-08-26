@@ -90,7 +90,7 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
         sendMessage({
           message: {
             type: 'alert',
-            text: `채팅 제한 해제: ${t}`,
+            text: `채팅 제한 해제: ${t.format('YYYY-MM-DD HH:mm:ss')}`,
           },
           token,
         })
