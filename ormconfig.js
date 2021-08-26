@@ -22,5 +22,6 @@ module.exports = {
      migrationsDir: 'migrations',
      subscribersDir: 'subscribers',
   },
+  timezone: 'Z',
   namingStrategy: new SnakeNamingStrategy(),
 }
