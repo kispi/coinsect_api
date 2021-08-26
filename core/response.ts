@@ -2,21 +2,26 @@ import { FastifyReply } from 'fastify'
 
 const useResponse = (reply: FastifyReply) => {
   return {
-    asJSON: o => {
+    asJSON: (json: Object) => {
       reply
         .header('Content-Type', 'application/json; charset=utf-8')
-        .send(o)
+        .send(json)
     },
     asHTML: (html: string) => {
       reply
         .type('text/html')
         .send(html)
     },
-    failed: (message?: string) => {
+    failed: (json?: Object) => {
       reply
         .type('text/html')
         .code(400)
-        .send(message)
+        .send(json || { message: 'failed' })
+    },
+    success: (json?: Object) => {
+      reply
+        .header('Content-Type', 'application/json; charset=utf-8')
+        .send(json || { message: 'success' })
     },
   }
 }

@@ -33,7 +33,14 @@ const mustJSON = {
   }
 }
 
-const includesBadWords = (message: String) => store.state.badWords.map(o => o.word).some(badWord => message.includes(badWord))
+const includesBadWords = (message: String) => {
+  if (store.state.badWords.length === 0) {
+    store.actions.loadBadWords()
+    return
+  }
+
+  return store.state.badWords.map(o => o.word).some(badWord => message.includes(badWord))
+}
 
 export default {
   mustJSON,

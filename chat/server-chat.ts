@@ -11,8 +11,6 @@ import store from '../store'
 
 let connections: Array<IConnection> = []
 
-let sentMessages: Array<IMessage> = []
-
 const latestMessagesLimit = 200
 
 const currentTokens = () => connections.map(conn => conn.user.token)
@@ -45,8 +43,8 @@ const saveMessage = (message, ip) => {
   if (message.type !== 'text') return
 
   const iMessage = asIMessage(message)
-  sentMessages.push(iMessage)
-  sentMessages = sentMessages.slice(-latestMessagesLimit)
+  store.state.recentMessages.push(iMessage)
+  store.state.recentMessages = store.state.recentMessages.slice(-latestMessagesLimit)
 
   const orm = getConnection()
   orm.createQueryBuilder().insert().into(Message).values([{
@@ -133,43 +131,13 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
 }
 
 const chatCtrl = {
-  latest: (c: IContext) => c.res.asJSON(sentMessages),
-}
-
-const loadRecentMessages = async () => {
-  const orm = getConnection()
-  try {
-    const data = await orm
-      .getRepository(Message)
-      .createQueryBuilder()
-      .limit(200)
-      .orderBy('id', 'DESC')
-      .getMany()
-
-    const json = JSON.parse(JSON.stringify(data))
-    sentMessages = json.map(o => ({
-      type: o.type,
-      text: o.text,
-      ts: o.ts,
-      numConnections: o.numConnections,
-      user: {
-        token: o.token,
-        profile: {
-          nickname: o.nickname,
-          image: o.image,
-        },
-      },
-    })).reverse()
-  } catch (e) {
-    return Promise.reject(e)
-  }
+  latest: (c: IContext) => c.res.asJSON(store.state.recentMessages),
 }
 
 export const useChat = (app: FastifyInstance) => {
   const routes = useRouter(app)
 
-  store.actions.loadBadWords()
-  loadRecentMessages()
+  store.actions.loadRecentMessages()
 
   app.get('/chat', { websocket: true }, onConnected)
 
