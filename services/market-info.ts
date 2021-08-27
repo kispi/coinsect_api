@@ -45,7 +45,7 @@ const marketInfo = {
         bybit: data[1]['result'].map(o => o.name),
         bithumb: Object.keys(data[2]['data']),
       }
-      setInterval(() => delete cached.markets, 1000 * 3600)
+      setTimeout(() => delete cached.markets, 1000 * 3600)
       return cached.markets
     } catch (e) {
       return Promise.reject(e)
@@ -59,7 +59,7 @@ const marketInfo = {
       cached.leaderboard = data
       data.sort((a, b) => b.profit - a.profit)
       data.forEach((row, idx) => row.rank = idx + 1)
-      setInterval(() => delete cached.leaderboard, 1000 * 60)
+      setTimeout(() => delete cached.leaderboard, 1000 * 60)
       return cached.leaderboard
     } catch (e) {
       return Promise.reject(e)

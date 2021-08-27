@@ -25,7 +25,7 @@ const actions = {
   
       const json = JSON.parse(JSON.stringify(data))
       store.state.badWords = json
-      setTimeout(() => store.state.badWords = [], 1000 * 60 * 60)
+      setTimeout(store.actions.loadBadWords, 1000 * 60)
       return store.state.badWords
     } catch (e) {
       return Promise.reject(e)
