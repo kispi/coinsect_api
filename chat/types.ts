@@ -9,7 +9,7 @@ export interface IUser {
 }
 
 export interface IMessage {
-  type: 'auth' | 'text' | 'connections',
+  type: 'auth' | 'text' | 'connections' | 'ping',
   user: IUser,
   text?: string,
   numConnections: number,

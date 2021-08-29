@@ -123,6 +123,14 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
         message: {
           type: 'connections',
           meta: connections.map(conn => ({ ip: conn.ip, user: conn.user })),
+        }, token,
+      })
+    }
+
+    if (o.type === 'ping') {
+      sendMessage({
+        message: {
+          type: 'pong'
         },
         token,
       })
