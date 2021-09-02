@@ -31,8 +31,20 @@ const initApp = async app => {
 
 const config = useDotenv()
 
+const prettyPrint = {
+  colorize: true,
+  translateTime: true,
+  ignore: 'pid,hostname,reqId,req.hostname,req.remotePort',
+  singleLine: true,
+  customPrettifiers: {
+    responseTime: time => `${Math.round(time)}ms`,
+  },
+}
+
 const app = fastify({
-  logger: true,
+  logger: {
+    prettyPrint,
+  },
   trustProxy: true,
 })
 
