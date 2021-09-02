@@ -6,6 +6,8 @@ import { BadWord } from '../entities/bad_word'
 import orm from '../core/orm'
 import { Board } from '../entities/board'
 import store from '../store'
+import { Post } from '../entities/post'
+import { Reaction } from '../entities/reaction'
 
 const service = useService()
 
@@ -78,6 +80,8 @@ const adminController = {
   badWord: useCRUD(BadWord),
   board: useCRUD(Board),
   message: useCRUD(Message),
+  post: useCRUD(Post),
+  reaction: useCRUD(Reaction),
 }
 
 export default adminController

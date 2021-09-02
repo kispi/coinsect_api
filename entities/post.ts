@@ -29,10 +29,10 @@ export class Post extends BaseModel {
   @Column({ type: 'text' })
   content: string
 
-  @Column()
+  @Column({ default: PostType.Normal })
   postType: PostType
 
-  @Column()
+  @Column({ default: 0 })
   views: number
 
   @JoinColumn()
@@ -42,6 +42,6 @@ export class Post extends BaseModel {
   @Column()
   nickname: string
 
-  @Column()
+  @Column({ nullable: true })
   ip: string
 }
