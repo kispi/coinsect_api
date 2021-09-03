@@ -7,12 +7,12 @@ export class Board extends BaseModel {
   @OneToMany(() => Post, post => post.board)
   posts: Array<Post>
 
-  @Column()
+  @Column({ nullable: true })
   type: string
 
-  @Column()
+  @Column({ nullable: true })
   title: string
 
-  @Column()
+  @Column({ nullable: true })
   description: string
 }
