@@ -49,6 +49,31 @@ const useDefaultTemplate = ({ body, meta }: { body: String, meta?: Meta }) => {
 
 const seoController = {
   post: {
+    all: async (c: IContext) => {
+      try {
+        const data = await c.orm.getRepository(Post).createQueryBuilder()
+          .limit(100)
+          .orderBy('id', 'DESC')
+          .getMany()
+
+        c.res.asHTML(useDefaultTemplate({
+          body: `
+            ${data.map(row => `
+            <a href="/community/${row.id}">
+              <div class="post-id">${row.id}</div>
+              <div class="post-title">${row.title}</div>
+            </a>
+            `)}
+          `,
+          meta: {
+            title: '코인충 커뮤니티',
+            description: '코인충 커뮤니티 (자유게시판)',
+          },
+        }))
+      } catch (e) {
+        c.res.failed('잘못된 요청입니다.')
+      }
+    },
     detail: async (c: IContext) => {
       const data = await orm.querySetter(c, Post).where(`id = ${c.req.params['id']}`).getOne()
       if (data) c.res.asHTML(useDefaultTemplate({
