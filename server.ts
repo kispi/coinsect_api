@@ -15,6 +15,7 @@ const initApp = async app => {
   const routeMaker = useRoutes(app)
   routeMaker.service()
   routeMaker.admin()
+  routeMaker.seo()
 
   useChat(app)
   axios.interceptors.response.use(
@@ -46,6 +47,7 @@ const app = fastify({
     prettyPrint,
   },
   trustProxy: true,
+  ignoreTrailingSlash: true,
 })
 
 initApp(app).then(() => app.listen(config.API_PORT, '0.0.0.0'))

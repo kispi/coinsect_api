@@ -12,10 +12,10 @@ const useResponse = (reply: FastifyReply) => {
         .type('text/html')
         .send(html)
     },
-    failed: (json?: Object) => {
+    failed: (json?: Object, code?: number) => {
       reply
         .type('text/html')
-        .code(400)
+        .code(code || 400)
         .send(json || { message: 'failed' })
     },
     success: (json?: Object) => {

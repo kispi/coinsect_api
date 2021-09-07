@@ -4,7 +4,7 @@ import { Connection } from 'typeorm';
 interface IAppResponse {
   asJSON: (json: Object) => void
   asHTML: (html: string) => void
-  failed: (json?: Object) => void
+  failed: (json?: Object, code?: number) => void
   success: (json?: Object) => void
 }
 

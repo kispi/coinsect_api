@@ -2,9 +2,10 @@ import { FastifyInstance } from 'fastify'
 import { useRouter } from './core/router'
 import useControllers from './controllers'
 
+const ctrls = useControllers()
+
 const useRouteCRUD = ({ app, model }) => {
   const router = useRouter(app)
-  const ctrls = useControllers()
 
   router.post(`/admin/${model}s`, ctrls.admin[model].create)
   router.get(`/admin/${model}s`, ctrls.admin[model].all)
@@ -16,7 +17,6 @@ const useRouteCRUD = ({ app, model }) => {
 export const useRoutes = (app: FastifyInstance) => ({
   admin: () => {
     const router = useRouter(app)
-    const ctrls = useControllers()
 
     router.post('/admin/chat/banIP', ctrls.admin.chat.banIP)
     router.post('/admin/chat/sendMessage', ctrls.admin.chat.sendMessage)
@@ -34,7 +34,6 @@ export const useRoutes = (app: FastifyInstance) => ({
   },
   service: () => {
     const router = useRouter(app)
-    const ctrls = useControllers()
 
     router.get('/config', ctrls.config.get)
 
@@ -55,7 +54,12 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/market_info/indices', ctrls.marketInfo.indices)
     router.get('/market_info/markets', ctrls.marketInfo.markets)
     router.get('/market_info/marketcaps', ctrls.marketInfo.caps)
-  }
+  },
+  seo: () => {
+    const router = useRouter(app)
+
+    router.get('/seo/posts/:id', ctrls.seo.post.detail)
+  },
 })
 
 export default useRoutes
