@@ -2,18 +2,19 @@ import IContext from '../core/context'
 import { Reaction } from '../entities/reaction'
 
 const reactionController = {
-  create: (c: IContext) => {
-    c.orm.createQueryBuilder().insert().into(Reaction).values([{
-      nickname: c.req.body['nickname'],
-      ip: c.req.ip,
-    }]).execute()
-      .then(() => c.res.asHTML('success'))
-      .catch(e => {
-        c.res.failed(e.code)
+  toggle: async (c: IContext) => {
+    try {
+      const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(`ip = '${c.req.ip}' AND type = '${c.req.body['type']}'`).getOne()
+      if (result) await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
+      else await c.orm.getRepository(Reaction).insert({
+        ip: c.req.ip,
+        type: c.req.body['type'],
+        post: { id: c.req.body['postId'] },
       })
-  },
-  delete: (c: IContext) => {
-    c.orm.getRepository(Reaction).delete(c.req.params['id'])
+      c.res.success()
+    } catch (e) {
+      c.res.failed(e)
+    }
   },
 }
 

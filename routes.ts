@@ -47,8 +47,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.put('/posts/:id', ctrls.post.update)
     router.delete('/posts/:id', ctrls.post.delete)
 
-    router.post('/reactions', ctrls.reaction.create)
-    router.delete('/reactions', ctrls.reaction.delete)
+    router.post('/reactions', ctrls.reaction.toggle)
 
     router.get('/market_info/leaderboard', ctrls.marketInfo.leaderboard)
     router.get('/market_info/indices', ctrls.marketInfo.indices)

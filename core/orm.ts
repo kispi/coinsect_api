@@ -10,18 +10,13 @@ const columnWithTable = (column, entityName) => {
 const orm = {
   querySetter: (c: IContext, model) => {
     const q = c.req.query
-    const qb = c.orm.getRepository(model).createQueryBuilder()
-
     const entityName = getRepository(model).metadata.name
+    const qb = c.orm.getRepository(model).createQueryBuilder(entityName)
     if (q['limit']) qb.limit(q['limit'])
     if (q['offset']) qb.offset(q['offset'])
     if (q['sort']) qb.orderBy(columnWithTable(q['sort'], entityName), (q['order'] || 'desc').toUpperCase())
     if (q['where']) qb.where(decodeURI(q['where']))
-    if (q['join']) {
-      q['join'].split(',').forEach(foreignEntityName => {
-        qb.leftJoinAndSelect(`${entityName}.${foreignEntityName}`, foreignEntityName)
-      })
-    }
+    if (q['join']) q['join'].split(',').forEach(target => qb.leftJoinAndSelect(target.includes('.') ? target : `${entityName}.${target}`, target))
     return qb
   },
 }

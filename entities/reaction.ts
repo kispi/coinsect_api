@@ -4,8 +4,13 @@ import { Post } from './post'
 import { User } from './user'
 
 enum ReactionType {
-  ReactionTypeHeart = 'reaction_type_heart'
+  ReactionTypeHeart = 'heart',
+  ReactionTypeLike = 'like',
+  ReactionTypeDislike = 'dislike',
+  ReactionTypeUp = 'up',
+  ReactionTypeDown = 'down',
 }
+
 @Entity({ name: 'reactions' })
 export class Reaction extends BaseModel {
   @ManyToOne(() => Post, post => post.reactions)
@@ -18,7 +23,7 @@ export class Reaction extends BaseModel {
   @OneToOne(() => User)
   user: User
 
-  @Column()
+  @Column({ nullable: true })
   nickname: string
 
   @Column()

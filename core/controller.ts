@@ -1,3 +1,4 @@
+import { getRepository } from 'typeorm'
 import IContext from './context'
 import orm from './orm'
 
@@ -11,7 +12,8 @@ export const useCRUD = (model, useSoftDelete?) => ({
         .catch(c.res.failed)
   },
   detail: (c: IContext) => {
-    orm.querySetter(c, model).where(`id = ${c.req.params['id']}`).getOne()
+    const entityName = getRepository(model).metadata.name
+    orm.querySetter(c, model).where(`${entityName}.id = ${c.req.params['id']}`).getOne()
       .then(c.res.asJSON)
       .catch(c.res.failed)
   },

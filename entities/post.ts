@@ -23,7 +23,7 @@ export class Post extends BaseModel {
   @OneToMany(() => Post, post => post.parent)
   children: Array<Post>
 
-  @Column({ length: 255 })
+  @Column({ length: 255, nullable: true })
   title: string
 
   @Column({ type: 'text' })
