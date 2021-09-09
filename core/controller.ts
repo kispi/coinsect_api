@@ -30,7 +30,7 @@ export const useCRUD = (model, useSoftDelete?) => ({
       .catch(c.res.failed)
   },
   update: (c: IContext) => {
-    orm.querySetter(c, model).update(model).set(c.req.body).where(`id = ${c.req.params['id']}`).execute()
+    getRepository(model).save(c.req.body)
       .then(() => c.res.success())
       .catch(c.res.failed)
   },

@@ -8,6 +8,7 @@ import { useCRUD } from '../core/controller'
 import IContext from '../core/context'
 import useService from '../services'
 import store from '../store'
+import orm from '../core/orm'
 
 const service = useService()
 
@@ -43,13 +44,26 @@ const routesStore = {
   },
 }
 
+const routesPost = useCRUD(Post, true)
+
+routesPost.detail = (c: IContext) => {
+  orm.querySetter(c, Post)
+    .leftJoinAndSelect('Post.board', 'board')
+    .leftJoinAndSelect('Post.replies', 'replies')
+    .leftJoinAndSelect('replies.parent', 'parent')
+    .where(`Post.id = ${c.req.params['id']}`).getOneOrFail()
+      // 여기서 뭔가 리플들 재귀적으로 쭉 매핑해주는걸 하면 좋을듯
+      .then(c.res.asJSON)
+      .catch(c.res.failed)
+}
+
 const adminController = {
   chat: routesChat,
   store: routesStore,
   badWord: useCRUD(BadWord),
   board: useCRUD(Board, true),
   message: useCRUD(Message),
-  post: useCRUD(Post, true),
+  post: routesPost,
   reaction: useCRUD(Reaction),
 }
 

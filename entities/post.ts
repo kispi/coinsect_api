@@ -2,11 +2,11 @@ import { Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToOne } from 'type
 import BaseModel from './base_model'
 import { Board } from './board'
 import { Reaction } from './reaction'
+import { Reply } from './reply'
 import { User } from './user'
 
 enum PostType {
   Normal = 'normal',
-  Reply = 'reply',
 }
 
 @Entity({ name: 'posts' })
@@ -14,14 +14,11 @@ export class Post extends BaseModel {
   @OneToMany(() => Reaction, reaction => reaction.post)
   reactions: Array<Reaction>
 
+  @OneToMany(() => Reply, reply => reply.post)
+  replies: Array<Reply>
+
   @ManyToOne(() => Board, board => board.posts)
   board: Board
-
-  @ManyToOne(() => Post, post => post.children)
-  parent: Post
-
-  @OneToMany(() => Post, post => post.parent)
-  children: Array<Post>
 
   @Column({ length: 255, nullable: true })
   title: string
@@ -44,4 +41,10 @@ export class Post extends BaseModel {
 
   @Column({ nullable: true })
   ip: string
+
+  @Column({ nullable: true })
+  sharingKey: string
+
+  @Column({ nullable: true })
+  password: string
 }
