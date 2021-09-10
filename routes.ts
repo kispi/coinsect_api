@@ -45,11 +45,13 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/posts/:id', ctrls.post.detail)
     router.post('/posts', ctrls.post.create)
     router.put('/posts/:id', ctrls.post.update)
+    router.post('/posts/:id/check_password', ctrls.post.checkPassword)
     router.delete('/posts/:id', ctrls.post.delete)
 
+    router.post('/replies', ctrls.reply.create)
+    router.delete('/replies/:id', ctrls.reply.delete)
+    router.post('/replies/:id/check_password', ctrls.reply.checkPassword)
     router.post('/reactions', ctrls.reaction.toggle)
-
-    router.post('/check_password', ctrls.checkPassword)
 
     router.get('/market_info/leaderboard', ctrls.marketInfo.leaderboard)
     router.get('/market_info/indices', ctrls.marketInfo.indices)

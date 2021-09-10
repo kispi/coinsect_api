@@ -52,7 +52,6 @@ routesPost.detail = (c: IContext) => {
     .leftJoinAndSelect('Post.replies', 'replies')
     .leftJoinAndSelect('replies.parent', 'parent')
     .where(`Post.id = ${c.req.params['id']}`).getOneOrFail()
-      // 여기서 뭔가 리플들 재귀적으로 쭉 매핑해주는걸 하면 좋을듯
       .then(c.res.asJSON)
       .catch(c.res.failed)
 }
