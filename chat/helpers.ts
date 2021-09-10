@@ -33,7 +33,7 @@ const mustJSON = {
   }
 }
 
-const includesBadWords = (message: String) => {
+const includesBadWords = (message: string) => {
   if (store.state.badWords.length === 0) {
     store.actions.loadBadWords()
     return

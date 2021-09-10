@@ -9,10 +9,10 @@ export class Reply extends BaseModel {
   @OneToMany(() => Reaction, reaction => reaction.post)
   reactions: Array<Reaction>
 
-  @ManyToOne(() => Post, post => post.replies)
+  @ManyToOne(() => Post, post => post.replies, { onDelete: 'SET NULL' })
   post: Post
 
-  @ManyToOne(() => Reply, reply => reply.replies)
+  @ManyToOne(() => Reply, reply => reply.replies, { onDelete: 'SET NULL' })
   parent: Post
 
   @OneToMany(() => Reply, reply => reply.parent)
@@ -22,7 +22,7 @@ export class Reply extends BaseModel {
   content: string
 
   @JoinColumn()
-  @OneToOne(() => User)
+  @OneToOne(() => User, { onDelete: 'SET NULL' })
   user: User
 
   @Column()

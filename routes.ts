@@ -49,6 +49,8 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.post('/reactions', ctrls.reaction.toggle)
 
+    router.post('/check_password', ctrls.checkPassword)
+
     router.get('/market_info/leaderboard', ctrls.marketInfo.leaderboard)
     router.get('/market_info/indices', ctrls.marketInfo.indices)
     router.get('/market_info/markets', ctrls.marketInfo.markets)

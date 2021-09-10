@@ -4,12 +4,12 @@ import orm from './orm'
 
 export const useCRUD = (model, useSoftDelete?) => ({
   all: (c: IContext) => {
-      orm.querySetter(c, model).getManyAndCount()
-        .then(res => c.res.asJSON({
-          data: res[0],
-          total: res[1],
-        }))
-        .catch(c.res.failed)
+    orm.querySetter(c, model).getManyAndCount()
+      .then(res => c.res.asJSON({
+        data: res[0],
+        total: res[1],
+      }))
+      .catch(c.res.failed)
   },
   detail: (c: IContext) => {
     const entityName = getRepository(model).metadata.name

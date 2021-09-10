@@ -13,14 +13,14 @@ enum ReactionType {
 
 @Entity({ name: 'reactions' })
 export class Reaction extends BaseModel {
-  @ManyToOne(() => Post, post => post.reactions)
+  @ManyToOne(() => Post, post => post.reactions, { onDelete: 'CASCADE' })
   post: Post
 
   @Column()
   type: ReactionType
 
   @JoinColumn()
-  @OneToOne(() => User)
+  @OneToOne(() => User, { onDelete: 'CASCADE' })
   user: User
 
   @Column({ nullable: true })

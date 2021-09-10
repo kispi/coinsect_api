@@ -17,7 +17,7 @@ export class Post extends BaseModel {
   @OneToMany(() => Reply, reply => reply.post)
   replies: Array<Reply>
 
-  @ManyToOne(() => Board, board => board.posts)
+  @ManyToOne(() => Board, board => board.posts, { onDelete: 'SET NULL' })
   board: Board
 
   @Column({ length: 255, nullable: true })
@@ -33,7 +33,7 @@ export class Post extends BaseModel {
   views: number
 
   @JoinColumn()
-  @OneToOne(() => User)
+  @OneToOne(() => User, { onDelete: 'SET NULL' })
   user: User
 
   @Column()

@@ -2,7 +2,7 @@ import { FastifyReply } from 'fastify'
 
 const useResponse = (reply: FastifyReply) => {
   return {
-    asJSON: (json: Object) => {
+    asJSON: (json: object) => {
       reply
         .header('Content-Type', 'application/json; charset=utf-8')
         .send(json)
@@ -12,13 +12,15 @@ const useResponse = (reply: FastifyReply) => {
         .type('text/html')
         .send(html)
     },
-    failed: (json?: Object, code?: number) => {
+    failed: (payload?: string | object, code?: number) => {
+      if (typeof payload === 'string') reply.type('text/html')
+      if (typeof payload === 'object') reply.header('Content-Type', 'application/json; charset=utf-8')
+
       reply
-        .type('text/html')
         .code(code || 400)
-        .send(json || { message: 'failed' })
+        .send(payload || { message: 'failed' })
     },
-    success: (json?: Object) => {
+    success: (json?: object) => {
       reply
         .header('Content-Type', 'application/json; charset=utf-8')
         .send(json || { message: 'success' })

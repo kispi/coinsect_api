@@ -4,11 +4,11 @@ import IContext from '../core/context'
 const sanitizeHtml = require('sanitize-html')
 
 type Meta = {
-  author?: String,
-  image?: String,
-  title?: String,
-  description?: String,
-  url?: String,
+  author?: string,
+  image?: string,
+  title?: string,
+  description?: string,
+  url?: string,
 }
 
 const tryFirstImageSrcIfExists = content => {
@@ -18,7 +18,7 @@ const tryFirstImageSrcIfExists = content => {
   return matches[1]
 }
 
-const useDefaultTemplate = ({ body, meta }: { body: String, meta?: Meta }) => {
+const useDefaultTemplate = ({ body, meta }: { body: string, meta?: Meta }) => {
   const t = (meta || {}).title || '코인충 - 대한민국 No.1 암호자산 커뮤니티'
   const d = (meta || {}).description || '실시간 코인 시세, 김프, 프리미엄, 트레이딩뷰, 호가창, 뉴스, 펀더멘털, 커뮤니티, 트렌드'
   const u = (meta || {}).url || 'https://coinsect.io'
