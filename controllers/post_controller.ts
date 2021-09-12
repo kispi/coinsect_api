@@ -1,57 +1,80 @@
 import { getRepository } from 'typeorm'
-import { useCRUD, trimAndValidateRequiredFields } from '../core/controller'
+import { loadChildren } from '../core/controller'
 import { Post } from '../entities/post'
 import { Reply } from '../entities/reply'
+import { Reaction } from '../entities/reaction'
 import IContext from '../core/context'
 import orm from '../core/orm'
 import helpers from '../core/helpers'
-import store from '../store'
 
 // 자유게시판 id
 const freeBoardId = 1
 
-const defaultHandlers = useCRUD(Post)
-
 const postController = {
-  create: (c: IContext) => {
-    const payload = c.req.body
-    if (!payload['board']['id']) {
-      c.res.failed()
-      return
-    }
-
-    const requiredFields = ['title', 'content', 'nickname', 'password']
-    if (!trimAndValidateRequiredFields(c, requiredFields)) {
-      c.res.failed()
-      return
-    }
-
-    payload['ip'] = c.req.ip
-    payload['password'] = helpers.hashedPassword(payload['password'])
-    payload['content'] = helpers.sanitizeHtml(payload['content'])
+  create: async (c: IContext) => {
     if (!c.req.ip) {
       c.res.failed()
       return
     }
 
-    orm.querySetter(c, Post).insert().into(Post).values(payload).execute()
-      .then(() => c.res.success())
-      .catch(c.res.failed)
+    const payload = c.req.body
+    payload['board'] = { id : freeBoardId }
+
+    try {
+      await Post.validate(payload)
+    } catch (e) {
+      return c.res.failed(e)
+    }
+
+    payload['ip'] = c.req.ip
+    payload['password'] = helpers.hashedPassword(payload['password'])
+    payload['content'] = helpers.sanitizeHtml(payload['content'], { allowedTags: ['img'] })
+
+    try {
+      const insertResult = await orm.querySetter(c, Post).insert().into(Post).values(payload).execute()
+      c.res.success()
+    } catch (e) {
+      c.res.failed(e)
+    }
   },
-  update: defaultHandlers.update,
+  update: async (c: IContext) => {
+    if (!c.req.ip) {
+      c.res.failed()
+      return
+    }
+
+    const payload = c.req.body
+    payload['board'] = { id : freeBoardId }
+
+    try {
+      await Post.validate(payload)
+    } catch (e) {
+      return c.res.failed(e)
+    }
+
+    payload['ip'] = c.req.ip
+    payload['password'] = helpers.hashedPassword(payload['password'])
+    payload['content'] = helpers.sanitizeHtml(payload['content'], { allowedTags: ['img'] })
+
+    try {
+      await getRepository(Post).save(payload)
+      c.res.success()
+    } catch (e) {
+      c.res.failed(e)
+    }
+  },
   all: async (c: IContext) => {
     try {
       const [data, total] = await orm.querySetter(c, Post)
-        .leftJoinAndSelect('Post.reactions', 'reactions')
         .where(`board.id = ${freeBoardId}`)
         .where(`post_type = "normal"`)
         .getManyAndCount()
 
-      const postIds = data.map((post: Post) => post.id)
-      const replies = await orm.querySetter(c, Reply).where(`Reply.post.id IN (:id)`, { id: postIds }).getMany()
-      const repliesMap = {}
-      replies.forEach((reply: Reply) => repliesMap[reply.postId] ? repliesMap[reply.postId].push(reply) : repliesMap[reply.postId] = [reply])
-      data.forEach((post: Post) => post.replies = repliesMap[post.id])
+      await Promise.all([
+        loadChildren({ c, model: Post, childModel: Reply, items: data }),
+        loadChildren({ c, model: Post, childModel: Reaction, items: data }),
+      ])
+
       c.res.asJSON({ data, total })
     } catch (e) {
       c.res.failed(e)
@@ -92,7 +115,7 @@ const postController = {
     }
   },
   checkPassword: async (c: IContext) => {
-    if (!c.req.body['password']) return c.res.failed({ message: 'invalid payload' })
+    if (!c.req.body['password']) return c.res.failed({ message: 'MISSING_REQUIRED_FIELD_PASSWORD' })
   
     try {
       const target = await getRepository(Post).findOneOrFail(c.req.params['id'])
@@ -100,10 +123,9 @@ const postController = {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
         return
       }
-  
       c.res.success()
     } catch (e) {
-      c.res.failed({ message: 'Post not found' })
+      c.res.failed({ message: 'NOT_FOUND' })
     }
   },
 }

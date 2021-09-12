@@ -69,6 +69,20 @@ export class Post extends BaseModel {
     return this
   }
 
+  static async validate(post) {
+    const requiredFields = ['title', 'content', 'nickname', 'password']
+    if (!helpers.trimAndValidateRequiredFields(post, requiredFields)) {
+      return Promise.reject()
+    }
+
+    if (post.title.length > store.state.globalVariables.maxlength.title) {
+      return Promise.reject({ message: 'TITLE_TOO_LONG' })
+    }
+    if (post.nickname.length > store.state.globalVariables.maxlength.nickname) {
+      return Promise.reject({ message: 'NICKNAME_TOO_LONG' })
+    }
+  }
+
   toJSON() {
     delete this.password
     return this

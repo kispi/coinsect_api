@@ -13,6 +13,9 @@ enum ReactionType {
 
 @Entity({ name: 'reactions' })
 export class Reaction extends BaseModel {
+  @Column({ nullable: true })
+  postId: number
+
   @ManyToOne(() => Post, post => post.reactions, { onDelete: 'CASCADE' })
   post: Post
 

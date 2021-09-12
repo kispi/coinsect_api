@@ -19,6 +19,10 @@ const state = {
       writePost: 1000 * 10,
       writeReply: 1000 * 10,
     },
+    maxlength: {
+      nickname: 10,
+      title: 40,
+    },
   },
   recentMessages: [],
 }

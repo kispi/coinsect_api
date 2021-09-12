@@ -1,18 +1,7 @@
 import { getRepository } from 'typeorm'
 import IContext from './context'
+import helpers from './helpers'
 import orm from './orm'
-
-/**
- * trim values listed in fields and check if it's empty.
- * NOTE: This mutates the payload body by trimming. (EX: ' Hello world ' => 'Hello world')
- * However, mostly you don't want to store empty values if those are required anyway.
- * @param c
- * @param fields
- */
-export const trimAndValidateRequiredFields = (c: IContext, fields: Array<string>) => fields.every(field => {
-  c.req.body[field] = (c.req.body[field] || '').trim()
-  return c.req.body[field]
-})
 
 export const useCRUD = (model, useSoftDelete?) => ({
   all: (c: IContext) => {
@@ -47,3 +36,27 @@ export const useCRUD = (model, useSoftDelete?) => ({
       .catch(c.res.failed)
   },
 })
+
+/**
+ * load child models into parent models using WHERE IN query and map them into parent without join, like `includes` in rails.
+ * NOTE: In order to use this, you should define foreign key with number as plain number column also.
+ * EX:) Say, you have reply.post, you should also define reply.postId.
+ * @param model
+ * @param childModel
+ */
+export const loadChildren = async ({ c, model, childModel, items }: { c: IContext, model, childModel, items: Array<any> }) => {
+  const modelIds = items.map(item => item['id'])
+  try {
+    const modelName = c.orm.getRepository(model).metadata.name
+    const childModelName = c.orm.getRepository(childModel).metadata.name
+    const children = await c.orm.getRepository(childModel).createQueryBuilder().where(`${childModelName}.${modelName.toLowerCase()}.id IN (:id)`, { id: modelIds }).getMany()
+    const childrenMap = {}
+    children.forEach(child => {
+      const arr = child[`${modelName.toLowerCase()}Id`]
+      childrenMap[arr] ? childrenMap[arr].push(child) : childrenMap[arr] = [child]
+    })
+    items.forEach((item, idx) => items[idx][helpers.case.pluralize(childModelName.toLowerCase())] = childrenMap[item['id']])
+  } catch (e) {
+    return Promise.reject(e)
+  }
+}
