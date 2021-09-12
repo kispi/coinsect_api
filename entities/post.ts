@@ -56,12 +56,14 @@ export class Post extends BaseModel {
     if (views[this.id]) return
 
     views[this.id] = helpers.dayjs().add(store.state.globalVariables.lastUserActionTimeouts.viewPost, 'milliseconds')
-    this.views += 1
-    getRepository(Post).save(this)
+    store.state.lastUserActions.viewPost[c.req.ip] = views
     setTimeout(
-      () => views[this.id],
+      () => delete store.state.lastUserActions.viewPost[c.req.ip][this.id],
       store.state.globalVariables.lastUserActionTimeouts.viewPost,
     )
+
+    this.views += 1
+    getRepository(Post).save(this)
   }
 
   toJSON() {
