@@ -51,7 +51,7 @@ export class Post extends BaseModel {
   @Column({ nullable: true })
   password: string
 
-  increaseViews(c: IContext) {
+  async increaseViews(c: IContext) {
     const views = store.state.lastUserActions.viewPost[c.req.ip] || {}
     if (views[this.id]) return
 
@@ -63,7 +63,10 @@ export class Post extends BaseModel {
     )
 
     this.views += 1
-    getRepository(Post).save(this)
+    try {
+      await getRepository(Post).save(this)
+    } catch (e) {}
+    return this
   }
 
   toJSON() {
