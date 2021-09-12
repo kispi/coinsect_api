@@ -52,13 +52,14 @@ export class Post extends BaseModel {
   password: string
 
   increaseViews(c: IContext) {
-    if (store.state.lastUserActions.viewPost[c.req.ip]) return
+    const views = store.state.lastUserActions.viewPost[c.req.ip] || {}
+    if (views[this.id]) return
 
-    store.state.lastUserActions.viewPost[c.req.ip] = helpers.dayjs().add(store.state.globalVariables.lastUserActionTimeouts.viewPost, 'milliseconds')
+    views[this.id] = helpers.dayjs().add(store.state.globalVariables.lastUserActionTimeouts.viewPost, 'milliseconds')
     this.views += 1
     getRepository(Post).save(this)
     setTimeout(
-      () => delete store.state.lastUserActions.viewPost[c.req.ip],
+      () => views[this.id],
       store.state.globalVariables.lastUserActionTimeouts.viewPost,
     )
   }
