@@ -1,15 +1,15 @@
 import store from '../store'
-import dayjs = require('dayjs')
 import { sendMessage } from '../chat/server-chat'
+import helpers from '../core/helpers'
 
 export default {
   banIP: (ip, timeout) => {
-    const d = dayjs().add(timeout, 'milliseconds')
-    store.state.preventSpam.IPAddresses[ip] = d
-    setTimeout(() => delete store.state.preventSpam.IPAddresses[ip], timeout)
+    const d = helpers.dayjs().add(timeout, 'milliseconds')
+    store.state.lastUserActions.message[ip] = d
+    setTimeout(() => delete store.state.lastUserActions.message[ip], timeout)
 
     // 도배방지로 자연스럽게 적용된 경우가 아닌 관리자가 채팅을 금지시킨 경우
-    if (timeout > store.state.globalVariables.chatFrequency) {
+    if (timeout > store.state.globalVariables.lastUserActionTimeouts.message) {
       sendMessage({
         message: {
           type: 'alert',
@@ -20,5 +20,5 @@ export default {
 
     return d
   },
-  bannedUntil: ip => store.state.preventSpam.IPAddresses[ip],
+  bannedUntil: ip => store.state.lastUserActions.message[ip],
 }

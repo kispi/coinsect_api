@@ -1,5 +1,5 @@
 import IContext from '../core/context'
-import { useCRUD } from '../core/controller'
+import { useCRUD, trimAndValidateRequiredFields } from '../core/controller'
 import { Reply } from '../entities/reply'
 import { getRepository } from 'typeorm'
 import orm from '../core/orm'
@@ -10,8 +10,20 @@ const defaultHandlers = useCRUD(Reply)
 const ReplyController = {
   create: (c: IContext) => {
     const payload = c.req.body
+    if (!payload['post']['id']) {
+      c.res.failed()
+      return
+    }
+
+    const requiredFields = ['content', 'nickname', 'password']
+    if (!trimAndValidateRequiredFields(c, requiredFields)) {
+      c.res.failed()
+      return
+    }
+
     payload['ip'] = c.req.ip
     payload['password'] = helpers.hashedPassword(payload['password'])
+    payload['content'] = helpers.sanitizeHtml(payload['content'])
     if (!c.req.ip) {
       c.res.failed()
       return

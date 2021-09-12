@@ -97,7 +97,7 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
         return
       }
 
-      chat.banIP(req.ip, store.state.globalVariables.chatFrequency)
+      chat.banIP(req.ip, store.state.globalVariables.lastUserActionTimeouts.message)
       if (!(o.text || '').trim()) return
 
       if (helpers.includesBadWords(o.text)) {

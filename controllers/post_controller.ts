@@ -1,9 +1,11 @@
 import { getRepository } from 'typeorm'
-import { useCRUD } from '../core/controller'
+import { useCRUD, trimAndValidateRequiredFields } from '../core/controller'
 import { Post } from '../entities/post'
 import { Reply } from '../entities/reply'
 import IContext from '../core/context'
 import orm from '../core/orm'
+import helpers from '../core/helpers'
+import store from '../store'
 
 // 자유게시판 id
 const freeBoardId = 1
@@ -11,13 +13,38 @@ const freeBoardId = 1
 const defaultHandlers = useCRUD(Post)
 
 const postController = {
-  create: defaultHandlers.create,
+  create: (c: IContext) => {
+    const payload = c.req.body
+    if (!payload['board']['id']) {
+      c.res.failed()
+      return
+    }
+
+    const requiredFields = ['title', 'content', 'nickname', 'password']
+    if (!trimAndValidateRequiredFields(c, requiredFields)) {
+      c.res.failed()
+      return
+    }
+
+    payload['ip'] = c.req.ip
+    payload['password'] = helpers.hashedPassword(payload['password'])
+    payload['content'] = helpers.sanitizeHtml(payload['content'])
+    if (!c.req.ip) {
+      c.res.failed()
+      return
+    }
+
+    orm.querySetter(c, Post).insert().into(Post).values(payload).execute()
+      .then(() => c.res.success())
+      .catch(c.res.failed)
+  },
   update: defaultHandlers.update,
   all: async (c: IContext) => {
     try {
       const [data, total] = await orm.querySetter(c, Post)
         .leftJoinAndSelect('Post.reactions', 'reactions')
-        .where(`Post.board.id = ${freeBoardId}`)
+        .where(`board.id = ${freeBoardId}`)
+        .where(`post_type = "normal"`)
         .getManyAndCount()
 
       const postIds = data.map((post: Post) => post.id)
@@ -37,7 +64,10 @@ const postController = {
       .leftJoinAndSelect('Post.replies', 'replies')
       .leftJoinAndSelect('replies.parent', 'parent')
       .where(`Post.id = ${c.req.params['id']}`).getOneOrFail()
-        .then(c.res.asJSON)
+        .then((post: Post) => {
+          post.increaseViews(c)
+          c.res.asJSON(post)
+        })
         .catch(c.res.failed)
   },
   delete: async (c: IContext) => {

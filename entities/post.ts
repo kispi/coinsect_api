@@ -1,9 +1,12 @@
-import { Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToOne } from 'typeorm'
-import BaseModel from './base_model'
+import { Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToOne, getRepository } from 'typeorm'
 import { Board } from './board'
 import { Reaction } from './reaction'
 import { Reply } from './reply'
 import { User } from './user'
+import IContext from '../core/context'
+import helpers from '../core/helpers'
+import store from '../store'
+import BaseModel from './base_model'
 
 enum PostType {
   Normal = 'normal',
@@ -47,4 +50,21 @@ export class Post extends BaseModel {
 
   @Column({ nullable: true })
   password: string
+
+  increaseViews(c: IContext) {
+    if (store.state.lastUserActions.viewPost[c.req.ip]) return
+
+    store.state.lastUserActions.viewPost[c.req.ip] = helpers.dayjs().add(store.state.globalVariables.lastUserActionTimeouts.viewPost, 'milliseconds')
+    this.views += 1
+    getRepository(Post).save(this)
+    setTimeout(
+      () => delete store.state.lastUserActions.viewPost[c.req.ip],
+      store.state.globalVariables.lastUserActionTimeouts.viewPost,
+    )
+  }
+
+  toJSON() {
+    delete this.password
+    return this
+  }
 }

@@ -3,13 +3,22 @@ import { BadWord } from './entities/bad_word'
 import { Message } from './entities/message'
 
 const state = {
-  // 너무 단시간에 많은 채팅을 치는 것을 막기 위해 이 객체에 IP가 있는 동안은 broadcast를 막는다.
-  preventSpam: {
-    IPAddresses: {},
+  // save users last action timestamp to prevent too frequent DB insert.
+  lastUserActions: {
+    message: {},
+    viewPost: {},
+    writePost: {},
+    writeReply: {},
   },
   badWords: [],
   globalVariables: {
-    chatFrequency: 200,
+    // unit: ms
+    lastUserActionTimeouts: {
+      message: 200,
+      viewPost: 1000 * 60,
+      writePost: 1000 * 10,
+      writeReply: 1000 * 10,
+    },
   },
   recentMessages: [],
 }

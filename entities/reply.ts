@@ -37,4 +37,9 @@ export class Reply extends BaseModel {
 
   @Column({ nullable: true })
   password: string
+
+  toJSON() {
+    delete this.password
+    return this
+  }
 }

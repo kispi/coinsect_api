@@ -2,6 +2,18 @@ import { getRepository } from 'typeorm'
 import IContext from './context'
 import orm from './orm'
 
+/**
+ * trim values listed in fields and check if it's empty.
+ * NOTE: This mutates the payload body by trimming. (EX: ' Hello world ' => 'Hello world')
+ * However, mostly you don't want to store empty values if those are required anyway.
+ * @param c
+ * @param fields
+ */
+export const trimAndValidateRequiredFields = (c: IContext, fields: Array<string>) => fields.every(field => {
+  c.req.body[field] = (c.req.body[field] || '').trim()
+  return c.req.body[field]
+})
+
 export const useCRUD = (model, useSoftDelete?) => ({
   all: (c: IContext) => {
     orm.querySetter(c, model).getManyAndCount()

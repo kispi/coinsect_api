@@ -1,7 +1,7 @@
 import { Post } from '../entities/post'
 import orm from '../core/orm'
 import IContext from '../core/context'
-const sanitizeHtml = require('sanitize-html')
+import helpers from '../core/helpers'
 
 type Meta = {
   author?: string,
@@ -87,11 +87,11 @@ const seoController = {
         body: `
         <div>${data['nickname']}</div>
         <div class="title">${data['title']}</div>
-        <article class="content">${sanitizeHtml(data['content'])}</article>
+        <article class="content">${helpers.sanitizeHtml(data['content'])}</article>
         `,
         meta: {
           title: data['title'],
-          description: sanitizeHtml(data['content'], { allowedTags: [] }),
+          description: helpers.sanitizeHtml(data['content'], { allowedTags: [] }),
           author: data['nickname'],
           url: `${c.req.hostname}${c.req.raw.url}`,
           image: tryFirstImageSrcIfExists(data['content']),
