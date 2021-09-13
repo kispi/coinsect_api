@@ -21,7 +21,8 @@ const state = {
     },
     maxlength: {
       nickname: 10,
-      title: 40,
+      postTitle: 40,
+      replyContent: 1000,
     },
   },
   recentMessages: [],

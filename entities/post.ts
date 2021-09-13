@@ -75,7 +75,7 @@ export class Post extends BaseModel {
       return Promise.reject()
     }
 
-    if (post.title.length > store.state.globalVariables.maxlength.title) {
+    if (post.title.length > store.state.globalVariables.maxlength.postTitle) {
       return Promise.reject({ message: 'TITLE_TOO_LONG' })
     }
     if (post.nickname.length > store.state.globalVariables.maxlength.nickname) {

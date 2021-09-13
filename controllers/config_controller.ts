@@ -5,7 +5,7 @@ const configController = {
   get: (c: IContext) => {
     c.res.asJSON({
       maxlength: {
-        title: store.state.globalVariables.maxlength.title,
+        title: store.state.globalVariables.maxlength.postTitle,
         nickname: store.state.globalVariables.maxlength.nickname,
       }
     })

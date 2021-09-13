@@ -28,10 +28,11 @@ const postController = {
 
     payload['ip'] = c.req.ip
     payload['password'] = helpers.hashedPassword(payload['password'])
+    payload['title'] = helpers.sanitizeHtml(payload['title'])
     payload['content'] = helpers.sanitizeHtml(payload['content'], { allowedTags: ['img'] })
 
     try {
-      const insertResult = await orm.querySetter(c, Post).insert().into(Post).values(payload).execute()
+      await orm.querySetter(c, Post).insert().into(Post).values(payload).execute()
       c.res.success()
     } catch (e) {
       c.res.failed(e)

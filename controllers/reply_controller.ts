@@ -8,38 +8,41 @@ import { getRepository } from 'typeorm'
 const defaultHandlers = useCRUD(Reply)
 
 const ReplyController = {
-  create: (c: IContext) => {
+  create: async (c: IContext) => {
+    if (!c.req.ip) {
+      c.res.failed()
+      return
+    }
+
     const payload = c.req.body
     if (!payload['post']['id']) {
       c.res.failed()
       return
     }
 
-    const requiredFields = ['content', 'nickname', 'password']
-    if (!helpers.trimAndValidateRequiredFields(c, requiredFields)) {
-      c.res.failed()
-      return
+    try {
+      await Reply.validate(payload)
+    } catch (e) {
+      return c.res.failed(e)
     }
 
     payload['ip'] = c.req.ip
     payload['password'] = helpers.hashedPassword(payload['password'])
     payload['content'] = helpers.sanitizeHtml(payload['content'], { allowedTags: ['img'] })
-    if (!c.req.ip) {
-      c.res.failed()
-      return
-    }
 
-    orm.querySetter(c, Reply).insert().into(Reply).values(payload).execute()
-      .then(() => c.res.success())
-      .catch(c.res.failed)
+    try {
+      await orm.querySetter(c, Reply).insert().into(Reply).values(payload).execute()
+      c.res.success()
+    } catch (e) {
+      c.res.failed(e)
+    }
   },
   update: defaultHandlers.update,
   delete: async (c: IContext) => {
     if (!c.req.body['password']) {
       c.res.failed()
-      return
     }
-  
+
     try {
       const replyRepository = getRepository(Reply)
       const target = await replyRepository.findOneOrFail(c.req.params['id'])
@@ -47,7 +50,7 @@ const ReplyController = {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
         return
       }
-  
+
       await replyRepository.softRemove(target)
       c.res.success()
     } catch (e) {
@@ -64,7 +67,7 @@ const ReplyController = {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
         return
       }
-  
+
       c.res.success()
     } catch (e) {
       c.res.failed({ message: 'Reply not found' })

@@ -1,4 +1,6 @@
 import { Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToOne } from 'typeorm'
+import helpers from '../core/helpers'
+import store from '../store'
 import BaseModel from './base_model'
 import { Post } from './post'
 import { Reaction } from './reaction'
@@ -37,6 +39,20 @@ export class Reply extends BaseModel {
 
   @Column({ nullable: true })
   password: string
+
+  static async validate(reply) {
+    const requiredFields = ['content', 'nickname', 'password']
+    if (!helpers.trimAndValidateRequiredFields(reply, requiredFields)) {
+      return Promise.reject()
+    }
+
+    if (reply.content.length > store.state.globalVariables.maxlength.replyContent) {
+      return Promise.reject({ message: 'TITLE_TOO_LONG' })
+    }
+    if (reply.nickname.length > store.state.globalVariables.maxlength.nickname) {
+      return Promise.reject({ message: 'NICKNAME_TOO_LONG' })
+    }
+  }
 
   toJSON() {
     delete this.password
