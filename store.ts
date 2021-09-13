@@ -1,6 +1,7 @@
 import { getConnection } from 'typeorm'
 import { BadWord } from './entities/bad_word'
 import { Message } from './entities/message'
+import * as dotenv from 'dotenv'
 
 const state = {
   // save users last action timestamp to prevent too frequent DB insert.
@@ -26,6 +27,7 @@ const state = {
     },
   },
   recentMessages: [],
+  serverConfig: dotenv.config().parsed,
 }
 
 const actions = {

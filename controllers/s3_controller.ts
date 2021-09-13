@@ -1,5 +1,12 @@
 const AWS = require('aws-sdk')
 import IContext from '../core/context'
+import store from '../store'
+
+AWS.config.update({
+  region: 'ap-northeast-2',
+  accessKeyId: store.state.serverConfig.AWS_ACCESS_KEY_ID,
+  secretAccessKey: store.state.serverConfig.AWS_SECRET_ACCESS_KEY,
+})
 
 const s3Controller = {
   uploadUrl: async (c: IContext) => {

@@ -1,11 +1,11 @@
 import fastify from 'fastify'
 import fastifyCors from 'fastify-cors'
 import useRoutes from './routes'
-import useDotenv from './dotenv'
 import useDB from './database'
 import axios from 'axios'
 import fastifyWebsocket from 'fastify-websocket'
 import { useChat } from './chat/server-chat'
+import store from './store'
 
 const initApp = async app => {
   app.register(fastifyCors)
@@ -30,8 +30,6 @@ const initApp = async app => {
   )
 }
 
-const config = useDotenv()
-
 const prettyPrint = {
   colorize: true,
   translateTime: true,
@@ -50,4 +48,4 @@ const app = fastify({
   ignoreTrailingSlash: true,
 })
 
-initApp(app).then(() => app.listen(config.API_PORT, '0.0.0.0'))
+initApp(app).then(() => app.listen(store.state.serverConfig.API_PORT, '0.0.0.0'))
