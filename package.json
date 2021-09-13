@@ -20,6 +20,7 @@
   "homepage": "https://github.com/kispi/coinsect_api#readme",
   "dependencies": {
     "@types/node": "^16.0.0",
+    "aws-sdk": "^2.987.0",
     "axios": "^0.21.1",
     "cross-env": "^7.0.3",
     "dayjs": "^1.10.6",

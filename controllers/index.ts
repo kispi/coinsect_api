@@ -6,6 +6,7 @@ import reaction from './reaction_controller'
 import reply from './reply_controller'
 import user from './user_controller'
 import seo from './seo_controller'
+import s3 from './s3_controller'
 
 const useControllers = () => ({
   admin,
@@ -16,6 +17,7 @@ const useControllers = () => ({
   reply,
   user,
   seo,
+  s3,
 })
 
 export default useControllers
