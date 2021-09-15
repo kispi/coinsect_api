@@ -5,6 +5,7 @@ import { useRouter } from '../core/router'
 import { Message } from '../entities/message'
 import { getConnection } from 'typeorm'
 import helpers from './helpers'
+import coreHelpers from '../core/helpers'
 import IContext from '../core/context'
 import chat from '../services/chat'
 import store from '../store'
@@ -110,6 +111,9 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
         })
         return
       }
+
+      o.user.profile.nickname = coreHelpers.sanitizeHtml(o.user.profile.nickname)
+      o.text = coreHelpers.sanitizeHtml(o.text)
 
       // IP 차단하려면 비속어도 DB에 저장하긴 해야되는데 나중에 따로 bad_word_history 뭐 이런거 만드는게 나을듯
       saveMessage(o, req.ip)
