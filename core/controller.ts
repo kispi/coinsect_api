@@ -50,12 +50,15 @@ export const useCRUD = ({ model, useSoftDelete, withDeleted }: { model, useSoftD
  * @param model
  * @param childModel
  */
-export const loadChildren = async ({ c, model, childModel, items }: { c: IContext, model, childModel, items: unknown[] }) => {
+export const loadChildren = async ({ c, model, childModel, items, withDeleted }: { c: IContext, model, childModel, items: unknown[], withDeleted?: Boolean }) => {
   const modelIds = items.map(item => item['id'])
   try {
     const modelName = c.orm.getRepository(model).metadata.name
     const childModelName = c.orm.getRepository(childModel).metadata.name
-    const children = await c.orm.getRepository(childModel).createQueryBuilder().where(`${childModelName}.${modelName.toLowerCase()}.id IN (:id)`, { id: modelIds }).getMany()
+    const qs = c.orm.getRepository(childModel).createQueryBuilder()
+    if (withDeleted) qs.withDeleted()
+
+    const children = await qs.where(`${childModelName}.${modelName.toLowerCase()}.id IN (:id)`, { id: modelIds }).getMany()
     const childrenMap = {}
     children.forEach(child => {
       const arr = child[`${modelName.toLowerCase()}Id`]

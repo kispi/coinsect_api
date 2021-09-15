@@ -4,6 +4,7 @@ import { BadWord } from '../entities/bad_word'
 import { Board } from '../entities/board'
 import { Post } from '../entities/post'
 import { Reaction } from '../entities/reaction'
+import { Reply } from '../entities/reply'
 import { useCRUD } from '../core/controller'
 import IContext from '../core/context'
 import useService from '../services'
@@ -48,6 +49,7 @@ const routesPost = useCRUD({ model: Post, useSoftDelete: true, withDeleted: true
 
 routesPost.detail = (c: IContext) => {
   orm.querySetter(c, Post)
+    .withDeleted()
     .leftJoinAndSelect('Post.board', 'board')
     .leftJoinAndSelect('Post.replies', 'replies')
     .leftJoinAndSelect('replies.parent', 'parent')
@@ -64,6 +66,7 @@ const adminController = {
   message: useCRUD({ model: Message, useSoftDelete: true }),
   post: routesPost,
   reaction: useCRUD({ model: Reaction }),
+  reply: useCRUD({ model: Reply, useSoftDelete: true })
 }
 
 export default adminController
