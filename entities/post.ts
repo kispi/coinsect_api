@@ -15,10 +15,10 @@ enum PostType {
 @Entity({ name: 'posts' })
 export class Post extends BaseModel {
   @OneToMany(() => Reaction, reaction => reaction.post)
-  reactions: Array<Reaction>
+  reactions: Reaction[]
 
   @OneToMany(() => Reply, reply => reply.post)
-  replies: Array<Reply>
+  replies: Reply[]
 
   @ManyToOne(() => Board, board => board.posts, { onDelete: 'SET NULL' })
   board: Board

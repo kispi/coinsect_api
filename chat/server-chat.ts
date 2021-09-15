@@ -9,7 +9,7 @@ import IContext from '../core/context'
 import chat from '../services/chat'
 import store from '../store'
 
-let connections: Array<IConnection> = []
+let connections: IConnection[] = []
 
 const latestMessagesLimit = 200
 

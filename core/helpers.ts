@@ -22,7 +22,7 @@ const helpers = {
  * @param c
  * @param fields
  */
-  trimAndValidateRequiredFields: (payload, fields: Array<string>) => fields.every(field => {
+  trimAndValidateRequiredFields: (payload, fields: string[]) => fields.every(field => {
     payload[field] = (payload[field] || '').trim()
     return payload[field]
   }),

@@ -5,7 +5,7 @@ import BaseModel from './base_model'
 @Entity({ name: 'boards' })
 export class Board extends BaseModel {
   @OneToMany(() => Post, post => post.board)
-  posts: Array<Post>
+  posts: Post[]
 
   @Column({ nullable: true })
   type: string

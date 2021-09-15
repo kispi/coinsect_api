@@ -44,7 +44,7 @@ const routesStore = {
   },
 }
 
-const routesPost = useCRUD(Post, true)
+const routesPost = useCRUD({ model: Post, useSoftDelete: true, withDeleted: true })
 
 routesPost.detail = (c: IContext) => {
   orm.querySetter(c, Post)
@@ -59,11 +59,11 @@ routesPost.detail = (c: IContext) => {
 const adminController = {
   chat: routesChat,
   store: routesStore,
-  badWord: useCRUD(BadWord),
-  board: useCRUD(Board, true),
-  message: useCRUD(Message),
+  badWord: useCRUD({ model: BadWord }),
+  board: useCRUD({ model: Board, useSoftDelete: true }),
+  message: useCRUD({ model: Message, useSoftDelete: true }),
   post: routesPost,
-  reaction: useCRUD(Reaction),
+  reaction: useCRUD({ model: Reaction }),
 }
 
 export default adminController

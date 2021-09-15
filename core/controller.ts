@@ -3,9 +3,12 @@ import IContext from './context'
 import helpers from './helpers'
 import orm from './orm'
 
-export const useCRUD = (model, useSoftDelete?) => ({
+export const useCRUD = ({ model, useSoftDelete, withDeleted }: { model, useSoftDelete?: Boolean, withDeleted?: Boolean } ) => ({
   all: (c: IContext) => {
-    orm.querySetter(c, model).getManyAndCount()
+    const qs = orm.querySetter(c, model)
+    if (withDeleted) qs.withDeleted()
+
+    qs.getManyAndCount()
       .then(res => c.res.asJSON({
         data: res[0],
         total: res[1],
@@ -14,7 +17,10 @@ export const useCRUD = (model, useSoftDelete?) => ({
   },
   detail: (c: IContext) => {
     const entityName = getRepository(model).metadata.name
-    orm.querySetter(c, model).where(`${entityName}.id = ${c.req.params['id']}`).getOne()
+    const qs = orm.querySetter(c, model)
+    if (withDeleted) qs.withDeleted()
+
+    qs.where(`${entityName}.id = ${c.req.params['id']}`).getOne()
       .then(c.res.asJSON)
       .catch(c.res.failed)
   },
@@ -44,7 +50,7 @@ export const useCRUD = (model, useSoftDelete?) => ({
  * @param model
  * @param childModel
  */
-export const loadChildren = async ({ c, model, childModel, items }: { c: IContext, model, childModel, items: Array<any> }) => {
+export const loadChildren = async ({ c, model, childModel, items }: { c: IContext, model, childModel, items: unknown[] }) => {
   const modelIds = items.map(item => item['id'])
   try {
     const modelName = c.orm.getRepository(model).metadata.name

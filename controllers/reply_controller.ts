@@ -1,11 +1,8 @@
 import IContext from '../core/context'
 import orm from '../core/orm'
 import helpers from '../core/helpers'
-import { useCRUD } from '../core/controller'
 import { Reply } from '../entities/reply'
 import { getRepository } from 'typeorm'
-
-const defaultHandlers = useCRUD(Reply)
 
 const ReplyController = {
   create: async (c: IContext) => {
@@ -37,7 +34,6 @@ const ReplyController = {
       c.res.failed(e)
     }
   },
-  update: defaultHandlers.update,
   delete: async (c: IContext) => {
     if (!c.req.body['password']) {
       c.res.failed()

@@ -9,7 +9,7 @@ import { User } from './user'
 @Entity({ name: 'replies' })
 export class Reply extends BaseModel {
   @OneToMany(() => Reaction, reaction => reaction.post)
-  reactions: Array<Reaction>
+  reactions: Reaction[]
 
   // 조인없이 id만 사용할 수 있게 하려면 따로 이렇게 필드를 넣어줘야 함.
   @Column({ nullable: true })
@@ -22,7 +22,7 @@ export class Reply extends BaseModel {
   parent: Post
 
   @OneToMany(() => Reply, reply => reply.parent)
-  replies: Array<Reply>
+  replies: Reply[]
 
   @Column({ type: 'text' })
   content: string
