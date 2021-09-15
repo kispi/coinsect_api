@@ -115,6 +115,11 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
       o.user.profile.nickname = coreHelpers.sanitizeHtml(o.user.profile.nickname)
       o.text = coreHelpers.sanitizeHtml(o.text)
 
+      if (
+        !(o.text || '').trim() ||
+        !(o.user.profile.nickname || '').trim()
+      ) return
+
       // IP 차단하려면 비속어도 DB에 저장하긴 해야되는데 나중에 따로 bad_word_history 뭐 이런거 만드는게 나을듯
       saveMessage(o, req.ip)
 
