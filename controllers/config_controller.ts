@@ -10,7 +10,7 @@ const configController = {
   },
   post: (c: IContext) => {
     if (c.req.body['frontendVersion']) {
-      store.state.globalVariables.version.frontend = c.req.params['frontendVersion']
+      store.state.globalVariables.version.frontend = c.req.body['frontendVersion']
     }
     c.res.success()
   },
