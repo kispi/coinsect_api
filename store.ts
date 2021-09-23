@@ -25,6 +25,10 @@ const state = {
       postTitle: 40,
       replyContent: 1000,
     },
+    version: {
+      frontend: null,
+      backend: null,
+    },
   },
   recentMessages: [],
   serverConfig: dotenv.config().parsed,

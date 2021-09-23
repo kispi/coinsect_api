@@ -38,6 +38,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     const router = useRouter(app)
 
     router.get('/config', ctrls.config.get)
+    router.post('/config', ctrls.config.post)
 
     router.get('/users', ctrls.user.all)
     router.get('/users/:id', ctrls.user.detail)

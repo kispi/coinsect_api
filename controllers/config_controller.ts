@@ -4,11 +4,15 @@ import store from '../store'
 const configController = {
   get: (c: IContext) => {
     c.res.asJSON({
-      maxlength: {
-        title: store.state.globalVariables.maxlength.postTitle,
-        nickname: store.state.globalVariables.maxlength.nickname,
-      }
+      maxlength: store.state.globalVariables.maxlength,
+      version: store.state.globalVariables.version,
     })
+  },
+  post: (c: IContext) => {
+    if (c.req.params['frontendVersion']) {
+      store.state.globalVariables.version.frontend = c.req.params['frontendVersion']
+    }
+    c.res.success()
   },
 }
 
