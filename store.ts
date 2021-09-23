@@ -27,7 +27,7 @@ const state = {
     },
     version: {
       frontend: null,
-      backend: null,
+      backend: process.env.BACKEND_VERSION,
     },
   },
   recentMessages: [],
