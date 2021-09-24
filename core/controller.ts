@@ -3,7 +3,15 @@ import IContext from './context'
 import helpers from './helpers'
 import orm from './orm'
 
-export const useCRUD = ({ model, useSoftDelete, withDeleted }: { model, useSoftDelete?: Boolean, withDeleted?: Boolean } ) => ({
+export const useCRUD = ({
+  model,
+  useSoftDelete,
+  withDeleted
+}: {
+  model,
+  useSoftDelete?: Boolean,
+  withDeleted?: Boolean
+} ) => ({
   all: (c: IContext) => {
     const qs = orm.querySetter(c, model)
     if (withDeleted) qs.withDeleted()

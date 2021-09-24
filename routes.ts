@@ -30,6 +30,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     useRouteCRUD({ app, model: 'message' })
     useRouteCRUD({ app, model: 'badWord' })
     useRouteCRUD({ app, model: 'board' })
+    useRouteCRUD({ app, model: 'person' })
     useRouteCRUD({ app, model: 'post' })
     useRouteCRUD({ app, model: 'reaction' })
     useRouteCRUD({ app, model: 'reply' })
@@ -43,6 +44,9 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/users', ctrls.user.all)
     router.get('/users/:id', ctrls.user.detail)
     router.post('/users', ctrls.user.create)
+
+    router.get('/persons', ctrls.person.all)
+    router.get('/persons/:id', ctrls.person.detail)
 
     router.get('/posts', ctrls.post.all)
     router.get('/posts/:id', ctrls.post.detail)
