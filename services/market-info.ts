@@ -39,11 +39,13 @@ const marketInfo = {
         axios.get('https://api.upbit.com/v1/market/all'),
         axios.get('https://api.bybit.com/v2/public/symbols'),
         axios.get('https://api.bithumb.com/public/ticker/all_krw'),
+        axios.get('https://api.binance.com/api/v1/exchangeInfo'),
       ])
       cached.markets = {
         upbit: data[0],
         bybit: data[1]['result'].map(o => o.name),
         bithumb: Object.keys(data[2]['data']),
+        binance: (data[3]['symbols'] || []).filter(o => o.symbol.endsWith('USDT')).map(o => o.symbol),
       }
       setTimeout(() => delete cached.markets, 1000 * 3600)
       return cached.markets
