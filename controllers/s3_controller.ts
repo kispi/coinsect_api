@@ -8,13 +8,13 @@ AWS.config.update({
   secretAccessKey: store.state.serverConfig.AWS_SECRET_ACCESS_KEY,
 })
 
+const s3 = new AWS.S3({
+  signatureVersion: 'v4',
+  region: 'ap-northeast-2'
+})
+
 const s3Controller = {
   uploadUrl: async (c: IContext) => {
-    const s3 = new AWS.S3({
-      signatureVersion: 'v4',
-      region: 'ap-northeast-2'
-    })
-
     try {
       const url = await s3.getSignedUrl('putObject', {
         Bucket: 'coinsect-production',
@@ -27,6 +27,12 @@ const s3Controller = {
     } catch (e) {
       return Promise.reject(e)
     }
+  },
+  deleteObject: (c: IContext) => {
+    s3.deleteObject({
+      Bucket: 'coinsect-production',
+      Key: c.req.body['s3Key'],
+    }).promise()
   },
 }
 

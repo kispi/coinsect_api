@@ -67,6 +67,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/market_info/marketcaps', ctrls.marketInfo.caps)
 
     router.get('/s3/upload_url', ctrls.s3.uploadUrl)
+    router.delete('/s3/object', ctrls.s3.deleteObject)
   },
   seo: () => {
     const router = useRouter(app)
