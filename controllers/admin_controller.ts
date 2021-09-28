@@ -2,6 +2,7 @@ import { sendMessage } from '../chat/server-chat'
 import { Message } from '../entities/message'
 import { BadWord } from '../entities/bad_word'
 import { Board } from '../entities/board'
+import { Image } from '../entities/image'
 import { Person } from '../entities/person'
 import { Post } from '../entities/post'
 import { Reaction } from '../entities/reaction'
@@ -64,6 +65,7 @@ const adminController = {
   store: routesStore,
   badWord: useCRUD({ model: BadWord }),
   board: useCRUD({ model: Board, useSoftDelete: true }),
+  image: useCRUD({ model: Image }),
   message: useCRUD({ model: Message, useSoftDelete: true }),
   person: useCRUD({ model: Person, useSoftDelete: true }),
   post: routesPost,

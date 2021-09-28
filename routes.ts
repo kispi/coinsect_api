@@ -30,6 +30,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     useRouteCRUD({ app, model: 'message' })
     useRouteCRUD({ app, model: 'badWord' })
     useRouteCRUD({ app, model: 'board' })
+    useRouteCRUD({ app, model: 'image' })
     useRouteCRUD({ app, model: 'person' })
     useRouteCRUD({ app, model: 'post' })
     useRouteCRUD({ app, model: 'reaction' })
