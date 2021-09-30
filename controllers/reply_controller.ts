@@ -25,7 +25,7 @@ const ReplyController = {
 
     payload['ip'] = c.req.ip
     payload['password'] = helpers.hashedPassword(payload['password'])
-    payload['content'] = helpers.sanitizeHtml(payload['content'], { allowedTags: ['img'] })
+    payload['content'] = helpers.sanitize.html(payload['content'])
 
     try {
       await orm.querySetter(c, Reply).insert().into(Reply).values(payload).execute()

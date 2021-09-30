@@ -1,9 +1,36 @@
 import dayjs = require('dayjs')
 const sanitizeHtml = require('sanitize-html')
 
+const sanitize = {
+  // html 컨텐츠의 경우는 특정 태그들은 허용할 필요가 있음.
+  html: text => {
+    const d = sanitizeHtml.defaults
+
+    return sanitizeHtml(text, {
+      allowedTags: d.allowedTags.concat(['img']),
+      allowedAttributes: {
+        'a': ['style'],
+        'span': ['style'],
+        'div': ['style'],
+        'img': ['src'],
+      },
+      allowedStyles: {
+        '*': {
+          'color': [/^#(0x)?[0-9a-f]+$/i, /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/],
+          'text-align': [/^left$/, /^right$/, /^center$/],
+          'font-size': [/^\d+(?:px)$/],
+          'font-weight': [/^\d+/],
+        },
+      }
+    })
+  },
+  // 어떤 html도 허용하지 않는다.
+  strict: text => sanitizeHtml(text, { allowedTags: [] }),
+}
+
 const helpers = {
   // 나중에 구현
-  sanitizeHtml,
+  sanitize,
   dayjs,
   case: {
     pluralize: (str: string) => {

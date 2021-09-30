@@ -28,8 +28,8 @@ const postController = {
 
     payload['ip'] = c.req.ip
     payload['password'] = helpers.hashedPassword(payload['password'])
-    payload['title'] = helpers.sanitizeHtml(payload['title'])
-    payload['content'] = helpers.sanitizeHtml(payload['content'], { allowedTags: ['img'] })
+    payload['title'] = helpers.sanitize.strict(payload['title'])
+    payload['content'] = helpers.sanitize.html(payload['content'])
 
     try {
       await orm.querySetter(c, Post).insert().into(Post).values(payload).execute()
@@ -55,7 +55,7 @@ const postController = {
 
     payload['ip'] = c.req.ip
     payload['password'] = helpers.hashedPassword(payload['password'])
-    payload['content'] = helpers.sanitizeHtml(payload['content'], { allowedTags: ['img'] })
+    payload['content'] = helpers.sanitize.html(payload['content'])
 
     try {
       await getRepository(Post).save(payload)

@@ -87,11 +87,11 @@ const seoController = {
         body: `
         <div>${data['nickname']}</div>
         <div class="title">${data['title']}</div>
-        <article class="content">${helpers.sanitizeHtml(data['content'])}</article>
+        <article class="content">${helpers.sanitize.html(data['content'])}</article>
         `,
         meta: {
           title: data['title'],
-          description: helpers.sanitizeHtml(data['content'], { allowedTags: [] }),
+          description: helpers.sanitize.strict(data['content']),
           author: data['nickname'],
           url: `${c.req.hostname}${c.req.raw.url}`,
           image: tryFirstImageSrcIfExists(data['content']),
