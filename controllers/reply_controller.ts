@@ -24,7 +24,7 @@ const ReplyController = {
     }
 
     payload['ip'] = c.req.ip
-    payload['password'] = helpers.hashedPassword(payload['password'])
+    payload['password'] = helpers.hashed(payload['password'])
     payload['content'] = helpers.sanitize.html(payload['content'])
 
     try {
@@ -42,7 +42,7 @@ const ReplyController = {
     try {
       const replyRepository = getRepository(Reply)
       const target = await replyRepository.findOneOrFail(c.req.params['id'])
-      if (target.password !== c.req.body['password']) {
+      if (!helpers.compare(target.password, c.req.body['password'])) {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
         return
       }
@@ -59,11 +59,10 @@ const ReplyController = {
 
     try {
       const target = await getRepository(Reply).findOneOrFail(c.req.params['id'])
-      if (target.password !== c.req.body['password']) {
+      if (!helpers.compare(target.password, c.req.body['password'])) {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
         return
       }
-
       c.res.success()
     } catch (e) {
       c.res.failed({ message: 'Reply not found' })

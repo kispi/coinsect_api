@@ -1,4 +1,5 @@
 import dayjs = require('dayjs')
+const crypto = require('crypto')
 const sanitizeHtml = require('sanitize-html')
 
 const sanitize = {
@@ -9,10 +10,9 @@ const sanitize = {
     return sanitizeHtml(text, {
       allowedTags: d.allowedTags.concat(['img']),
       allowedAttributes: {
-        'a': ['style'],
-        'span': ['style'],
-        'div': ['style'],
+        'a': ['href', 'target', 'rel'],
         'img': ['src'],
+        '*': ['style', 'class'],
       },
       allowedStyles: {
         '*': {
@@ -53,7 +53,12 @@ const helpers = {
     payload[field] = (payload[field] || '').trim()
     return payload[field]
   }),
-  hashedPassword: rawPassword => rawPassword,
+  hashed: (raw: string) => crypto.createHash('sha256').update(raw).digest('base64'),
+  compare: (hashed: string, raw: string) =>
+    hashed &&
+    raw &&
+    crypto.createHash('sha256').update(raw).digest('base64') === hashed
+  ,
 }
 
 export default helpers

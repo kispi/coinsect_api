@@ -4,7 +4,11 @@ import { Reaction } from '../entities/reaction'
 const reactionController = {
   toggle: async (c: IContext) => {
     try {
-      const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(`ip = '${c.req.ip}' AND type = '${c.req.body['type']}'`).getOne()
+      const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(`
+        ip = '${c.req.ip}' AND
+        type = '${c.req.body['type']}' AND
+        post_id = '${c.req.body['postId']}'
+      `).getOne()
       if (result) await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
       else await c.orm.getRepository(Reaction).insert({
         ip: c.req.ip,

@@ -27,7 +27,7 @@ const postController = {
     }
 
     payload['ip'] = c.req.ip
-    payload['password'] = helpers.hashedPassword(payload['password'])
+    payload['password'] = helpers.hashed(payload['password'])
     payload['title'] = helpers.sanitize.strict(payload['title'])
     payload['content'] = helpers.sanitize.html(payload['content'])
 
@@ -54,7 +54,7 @@ const postController = {
     }
 
     payload['ip'] = c.req.ip
-    payload['password'] = helpers.hashedPassword(payload['password'])
+    payload['password'] = helpers.hashed(payload['password'])
     payload['content'] = helpers.sanitize.html(payload['content'])
 
     try {
@@ -103,7 +103,7 @@ const postController = {
     try {
       const postRepository = getRepository(Post)
       const target = await postRepository.findOneOrFail(c.req.params['id'])
-      if (target.password !== c.req.body['password']) {
+      if (!helpers.compare(target.password, c.req.body['password'])) {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
         return
       }
@@ -120,7 +120,7 @@ const postController = {
   
     try {
       const target = await getRepository(Post).findOneOrFail(c.req.params['id'])
-      if (target.password !== c.req.body['password']) {
+      if (!helpers.compare(target.password, c.req.body['password'])) {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
         return
       }
