@@ -17,6 +17,7 @@ const sanitize = {
       allowedStyles: {
         '*': {
           'color': [/^#(0x)?[0-9a-f]+$/i, /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/],
+          'background-color': [/^#(0x)?[0-9a-f]+$/i, /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/],
           'text-align': [/^left$/, /^right$/, /^center$/],
           'font-size': [/^\d+(?:px)$/],
           'font-weight': [/^\d+/],
