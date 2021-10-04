@@ -1,6 +1,7 @@
 import admin from './admin_controller'
 import config from './config_controller'
 import marketInfo from './market_info_controller'
+import notification from './notification_controller'
 import person from './person_controller'
 import post from './post_controller'
 import reaction from './reaction_controller'
@@ -13,6 +14,7 @@ const useControllers = () => ({
   admin,
   config,
   marketInfo,
+  notification,
   person,
   post,
   reaction,
