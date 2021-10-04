@@ -67,15 +67,13 @@ const postController = {
   all: async (c: IContext) => {
     try {
       const [data, total] = await orm.querySetter(c, Post)
-        .where(`board.id = ${freeBoardId}`)
-        .where(`post_type = "normal"`)
+        .andWhere(`board_id = ${freeBoardId}`)
         .getManyAndCount()
 
       await Promise.all([
         loadChildren({ c, model: Post, childModel: Reply, items: data }),
         loadChildren({ c, model: Post, childModel: Reaction, items: data }),
       ])
-
       c.res.asJSON({ data, total })
     } catch (e) {
       c.res.failed(e)

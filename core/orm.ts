@@ -15,7 +15,7 @@ const orm = {
     if (q['limit']) qb.limit(q['limit'])
     if (q['offset']) qb.offset(q['offset'])
     if (q['sort']) qb.orderBy(columnWithTable(q['sort'], entityName), (q['order'] || 'desc').toUpperCase())
-    if (q['where']) qb.where(decodeURI(q['where']))
+    if (q['where']) qb.andWhere(decodeURI(q['where']))
     if (q['join']) q['join'].split(',').forEach((target, idx) => qb.leftJoinAndSelect(target, `tb_${idx}`))
     return qb
   },

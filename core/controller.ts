@@ -59,7 +59,9 @@ export const useCRUD = ({
  * @param childModel
  */
 export const loadChildren = async ({ c, model, childModel, items, withDeleted }: { c: IContext, model, childModel, items: unknown[], withDeleted?: Boolean }) => {
-  const modelIds = items.map(item => item['id'])
+  const modelIds = items.map(item => item['id']) || []
+  if (modelIds.length === 0) return
+
   try {
     const modelName = c.orm.getRepository(model).metadata.name
     const childModelName = c.orm.getRepository(childModel).metadata.name
