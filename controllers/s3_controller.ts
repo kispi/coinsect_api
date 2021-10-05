@@ -1,5 +1,6 @@
 const AWS = require('aws-sdk')
 import IContext from '../core/context'
+import helpers from '../core/helpers'
 import store from '../store'
 
 AWS.config.update({
@@ -15,10 +16,18 @@ const s3 = new AWS.S3({
 
 const s3Controller = {
   uploadUrl: async (c: IContext) => {
+    const reqKey = c.req.query['key'] || ''
+    if (!reqKey) return Promise.reject({ message: 'INVALID_PAYLOAD' })
+
+    // ADMIN의 경우는 uuid를 생성하지 않고 그냥 어드민에서 입력한 키를 그대로 사용한다.
+    const Key = c.req.query['no-uuid'] ?
+      c.req.query['key'] :
+      reqKey.split('/').filter(frag => frag).slice(0, -1).join('/') + '/' + helpers.generateUUID()
+
     try {
       const url = await s3.getSignedUrl('putObject', {
         Bucket: 'coinsect-production',
-        Key: c.req.query['key'],
+        Key,
         Expires: 60 * 1,
         ContentType: 'image/png;image/jpeg;image/jpg;image/gif;image/svg+xml',
         ACL: 'public-read',
