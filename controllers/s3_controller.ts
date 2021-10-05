@@ -20,7 +20,7 @@ const s3Controller = {
     if (!reqKey) return Promise.reject({ message: 'INVALID_PAYLOAD' })
 
     // ADMIN의 경우는 uuid를 생성하지 않고 그냥 어드민에서 입력한 키를 그대로 사용한다.
-    const Key = c.req.query['no-uuid'] ?
+    const Key = c.req.query['noUuid'] ?
       c.req.query['key'] :
       reqKey.split('/').filter(frag => frag).slice(0, -1).join('/') + '/' + helpers.generateUUID()
 
