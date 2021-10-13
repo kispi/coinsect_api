@@ -1,5 +1,6 @@
 import { getConnection } from 'typeorm'
 import { BadWord } from './entities/bad_word'
+import { BannedUser } from './entities/banned_user'
 import { Message } from './entities/message'
 import * as dotenv from 'dotenv'
 
@@ -12,6 +13,7 @@ const state = {
     writeReply: {},
   },
   badWords: [],
+  bannedUsers: [],
   globalVariables: {
     // unit: ms
     lastUserActionTimeouts: {
@@ -45,8 +47,22 @@ const actions = {
   
       const json = JSON.parse(JSON.stringify(data))
       store.state.badWords = json
-      setTimeout(store.actions.loadBadWords, 1000 * 60)
       return store.state.badWords
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  },
+  loadBannedUsers: async () => {
+    const orm = getConnection()
+    try {
+      const data = await orm
+        .getRepository(BannedUser)
+        .createQueryBuilder()
+        .getMany()
+  
+      const json = JSON.parse(JSON.stringify(data))
+      store.state.bannedUsers = json
+      return store.state.bannedUsers
     } catch (e) {
       return Promise.reject(e)
     }
@@ -81,9 +97,18 @@ const actions = {
   }
 }
 
+const initCaches = async () => {
+  await Promise.all([
+    actions.loadBadWords(),
+    actions.loadBannedUsers(),
+    actions.loadRecentMessages(),
+  ])
+}
+
 const store = {
   state,
   actions,
+  initCaches,
 }
 
 export default store

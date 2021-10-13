@@ -86,6 +86,18 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   connection.socket.on('message', message => {
     const o: IMessage = JSON.parse(message)
     if (o.type === 'text') {
+      const bannedUser = coreHelpers.useBannedUser(req.ip)
+      if (bannedUser) {
+        sendMessage({
+          message: {
+            type: 'alert',
+            text: `채팅 제한 해제: ${coreHelpers.dayjs(bannedUser.until).format('YYYY-MM-DD HH:mm:ss')}`,
+          },
+          token,
+        })
+        return
+      }
+
       const t = chat.bannedUntil(req.ip)
       if (t) {
         sendMessage({
@@ -101,7 +113,7 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
       chat.banIP(req.ip, store.state.globalVariables.lastUserActionTimeouts.message)
       if (!(o.text || '').trim()) return
 
-      if (helpers.includesBadWords(o.text)) {
+      if (coreHelpers.includesBadWords(o.text)) {
         sendMessage({
           message: {
             type: 'alert',
@@ -153,8 +165,6 @@ const chatCtrl = {
 
 export const useChat = (app: FastifyInstance) => {
   const routes = useRouter(app)
-
-  store.actions.loadRecentMessages()
 
   app.get('/chat', { websocket: true }, onConnected)
 

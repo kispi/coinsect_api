@@ -1,4 +1,6 @@
 import { getRepository } from 'typeorm'
+import { BannedUser } from '../entities/banned_user'
+import store from '../store'
 import IContext from './context'
 import helpers from './helpers'
 import orm from './orm'
@@ -10,8 +12,8 @@ export const useCRUD = ({
 }: {
   model,
   useSoftDelete?: Boolean,
-  withDeleted?: Boolean
-} ) => ({
+  withDeleted?: Boolean,
+}) => ({
   all: (c: IContext) => {
     const qs = orm.querySetter(c, model)
     if (withDeleted) qs.withDeleted()

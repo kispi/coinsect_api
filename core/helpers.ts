@@ -1,4 +1,6 @@
 import dayjs = require('dayjs')
+import store from '../store'
+import { BannedUser } from '../entities/banned_user'
 const crypto = require('crypto')
 const sanitizeHtml = require('sanitize-html')
 
@@ -69,6 +71,8 @@ const helpers = {
     })
     return uuid
   },
+  includesBadWords: (message: string) => store.state.badWords.map(o => o.word).some(badWord => message.includes(badWord)),
+  useBannedUser: (ip: string): BannedUser => store.state.bannedUsers.find(u => u.ip === ip)
 }
 
 export default helpers

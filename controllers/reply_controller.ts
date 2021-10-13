@@ -4,12 +4,15 @@ import helpers from '../core/helpers'
 import { Reply } from '../entities/reply'
 import { getRepository } from 'typeorm'
 
-const ReplyController = {
+const replyController = {
   create: async (c: IContext) => {
     if (!c.req.ip) {
       c.res.failed()
       return
     }
+
+    const bannedUser = await helpers.useBannedUser(c.req.ip)
+    if (bannedUser) return c.res.failed({ message: 'BANNED_USER', extra: { bannedUser } })
 
     const payload = c.req.body
     if (!payload['post']['id']) {
@@ -70,4 +73,4 @@ const ReplyController = {
   },
 }
 
-export default ReplyController
+export default replyController

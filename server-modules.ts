@@ -4,6 +4,7 @@ import useRoutes from './routes'
 import useDB from './database'
 import axios from 'axios'
 import fastifyWebsocket from 'fastify-websocket'
+import store from './store'
 import { useChat } from './chat/server-chat'
 
 export const initApp = async app => {
@@ -16,6 +17,7 @@ export const initApp = async app => {
   routeMaker.admin()
   routeMaker.seo()
 
+  await store.initCaches()
   useChat(app)
   axios.interceptors.response.use(
     res => res.data,

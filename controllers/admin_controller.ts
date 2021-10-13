@@ -1,5 +1,6 @@
 import { sendMessage } from '../chat/server-chat'
 import { BadWord } from '../entities/bad_word'
+import { BannedUser } from '../entities/banned_user'
 import { Board } from '../entities/board'
 import { Image } from '../entities/image'
 import { Message } from '../entities/message'
@@ -43,6 +44,10 @@ const routesStore = {
     all: (c: IContext) => c.res.asJSON(store.state.badWords),
     invalidate: (c: IContext) => store.actions.loadBadWords().then(c.res.asJSON)
   },
+  bannedUser: {
+    all: (c: IContext) => c.res.asJSON(store.state.bannedUsers),
+    invalidate: (c: IContext) => store.actions.loadBannedUsers().then(c.res.asJSON)
+  },
   message: {
     invalidate: (c: IContext) => store.actions.loadRecentMessages().then(c.res.asJSON)
   },
@@ -65,6 +70,7 @@ const adminController = {
   chat: routesChat,
   store: routesStore,
   badWord: useCRUD({ model: BadWord }),
+  bannedUser: useCRUD({ model: BannedUser }),
   board: useCRUD({ model: Board, useSoftDelete: true }),
   image: useCRUD({ model: Image }),
   message: useCRUD({ model: Message, useSoftDelete: true }),

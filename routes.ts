@@ -23,11 +23,13 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.post('/admin/chat/sendMessage', ctrls.admin.chat.sendMessage)
 
     router.get('/admin/store/badWords', ctrls.admin.store.badWord.all)
+    router.get('/admin/store/bannedUsers', ctrls.admin.store.bannedUser.all)
     router.post('/admin/store/badWords/invalidate', ctrls.admin.store.badWord.invalidate)
-
+    router.post('/admin/store/bannedUsers/invalidate', ctrls.admin.store.bannedUser.invalidate)
     router.post('/admin/store/messages/invalidate', ctrls.admin.store.message.invalidate)
 
     useRouteCRUD({ app, model: 'badWord' })
+    useRouteCRUD({ app, model: 'bannedUser' })
     useRouteCRUD({ app, model: 'board' })
     useRouteCRUD({ app, model: 'image' })
     useRouteCRUD({ app, model: 'message' })
