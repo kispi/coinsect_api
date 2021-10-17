@@ -44,7 +44,10 @@ const marketInfo = {
       cached.markets = {
         upbit: data[0],
         bybit: data[1]['result'].map(o => o.name),
-        bithumb: Object.keys(data[2]['data']),
+        bithumb: Object.keys(data[2]['data']).filter(symbol => symbol !== 'date').map(symbol => ({
+          symbol,
+          ...data[2]['data'][symbol]
+        })),
         binance: (data[3]['symbols'] || []).filter(o => o.symbol.endsWith('USDT')).map(o => o.symbol),
       }
       setTimeout(() => delete cached.markets, 1000 * 3600)
