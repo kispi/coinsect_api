@@ -11,13 +11,6 @@ type Meta = {
   url?: string,
 }
 
-const tryFirstImageSrcIfExists = content => {
-  if (!content) return ''
-
-  const matches = content.toLowerCase().match(/\<img.+src\=(?:\"|\')(.+?)(?:\"|\')(?:.+?)\>/) || []
-  return matches[1]
-}
-
 const useDefaultTemplate = ({ body, meta }: { body: string, meta?: Meta }) => {
   const t = (meta || {}).title || '코인충 - 대한민국 No.1 암호자산 커뮤니티'
   const d = (meta || {}).description || '실시간 코인 시세, 김프, 프리미엄, 트레이딩뷰, 호가창, 뉴스, 펀더멘털, 커뮤니티, 트렌드'
@@ -94,7 +87,7 @@ const seoController = {
           description: helpers.sanitize.strict(data['content']),
           author: data['nickname'],
           url: `${c.req.hostname}${c.req.raw.url}`,
-          image: tryFirstImageSrcIfExists(data['content']),
+          image: helpers.parseImageSources(data['content'])[0],
         },
       }))
       else c.res.failed(useDefaultTemplate({

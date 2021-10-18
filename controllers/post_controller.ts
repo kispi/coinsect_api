@@ -6,9 +6,12 @@ import { Reaction } from '../entities/reaction'
 import IContext from '../core/context'
 import orm from '../core/orm'
 import helpers from '../core/helpers'
+import useService from '../services'
 
 // 자유게시판 id
 const freeBoardId = 1
+
+const services = useService()
 
 const postController = {
   create: async (c: IContext) => {
@@ -33,6 +36,9 @@ const postController = {
     payload['password'] = helpers.hashed(payload['password'])
     payload['title'] = helpers.sanitize.strict(payload['title'])
     payload['content'] = helpers.sanitize.html(payload['content'])
+
+    const imageKeys = helpers.parseImageSources(payload['content'])
+    imageKeys.forEach(imageUrl => services.s3.deleteObjectTagging(services.s3.getKeyPart(imageUrl)))
 
     try {
       await orm.querySetter(c, Post).insert().into(Post).values(payload).execute()

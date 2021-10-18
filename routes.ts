@@ -71,7 +71,7 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/notifications', ctrls.notification.all)
 
-    router.get('/s3/upload_url', ctrls.s3.uploadUrl)
+    router.get('/s3/upload_url', ctrls.s3.getSignedUrl)
     router.delete('/s3/object', ctrls.s3.deleteObject)
   },
   seo: () => {

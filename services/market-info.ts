@@ -5,7 +5,7 @@ const cached = {
   markets: null,
 }
 
-const marketInfo = {
+const marketInfoService = {
   indices: async () => {
     try {
       const resp = await Promise.all([
@@ -72,4 +72,4 @@ const marketInfo = {
   },
 }
 
-export default marketInfo
+export default marketInfoService
