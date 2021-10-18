@@ -5,6 +5,7 @@ const service = useService()
 
 const marketInfoController = {
   indices: async (c: IContext) => c.res.asJSON(await service.marketInfo.indices()),
+  symbols: async (c: IContext) => c.res.asJSON(await service.marketInfo.symbols()),
   caps: async (c: IContext) => {
     const source = c.req.query['source']
     if (!['upbit', 'coinmarketcap'].includes(source)) {

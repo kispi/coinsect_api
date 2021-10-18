@@ -2,6 +2,7 @@ import axios from 'axios'
 
 const cached = {
   leaderboard: null,
+  symbols: null,
   markets: null,
 }
 
@@ -16,6 +17,42 @@ const marketInfoService = {
         coincodex: resp[0],
         upbitForex: resp[1][0],
       }
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  },
+  symbols: async () => {
+    if (cached.symbols) return cached.symbols
+
+    try {
+      const result: any = await Promise.all([
+        axios.get('https://api.upbit.com/v1/market/all'),
+        axios.get('https://api.coingecko.com/api/v3/search?locale=en'),
+      ])
+      const symbols = {}
+      result[0].forEach(o => {
+        const symbol = o.market.split('KRW-')[1] || o.market.split('BTC-')[1] || o.market.split('USDT-')[1]
+        if (!symbol) return
+
+        symbols[symbol] = {
+          symbol: symbol,
+          thumb: `https://static.upbit.com/logos/${symbol}.png`,
+          kr: o.korean_name,
+          en: o.english_name,
+        }
+      })
+      result[1]['coins'].forEach(coin => {
+        if (symbols[coin.symbol] && symbols[coin.symbol].en) return
+
+        symbols[coin.symbol] = {
+          symbol: coin.symbol,
+          thumb: coin.thumb,
+          en: coin.name,
+        }
+      })
+      cached.symbols = symbols
+      setTimeout(() => delete cached.symbols, 1000 * 3600 * 24)
+      return cached.symbols
     } catch (e) {
       return Promise.reject(e)
     }
