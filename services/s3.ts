@@ -59,16 +59,10 @@ const s3Service = {
     Bucket,
     Key,
   }).promise(),
-  deleteObjectTagging: (Key: string) => {
-    s3.deleteObjectTagging({
-      Bucket,
-      Key,
-    }, (err, data) => {
-      console.log(err, '에러')
-      console.log(Key, '키 시발아')
-      console.log(data, '데이터')
-    }).promise()
-},
+  deleteObjectTagging: (Key: string) => s3.deleteObjectTagging({
+    Bucket,
+    Key,
+  }).promise(),
 }
 
 export default s3Service
