@@ -15,7 +15,7 @@ export class Message extends BaseModel {
   @Column()
   nickname: string
 
-  @Column()
+  @Column({ nullable: true })
   image: string
   
   @Column()
@@ -26,4 +26,21 @@ export class Message extends BaseModel {
 
   @Column()
   numConnections: number
+
+  static asIMessage(o: Message) {
+    return {
+      id: o.id,
+      type: o.type,
+      text: o.text,
+      ts: o.ts,
+      numConnections: o.numConnections,
+      user: {
+        token: o.token,
+        profile: {
+          nickname: o.nickname,
+          image: o.image,
+        },
+      },
+    }
+  }
 }

@@ -18,9 +18,7 @@ const create = (c: IContext) => {
     email: c.req.query['email'],
   }]).execute()
     .then(() => c.res.asHTML('success'))
-    .catch(e => {
-      c.res.failed(e.code)
-    })
+    .catch(c.res.failed)
 }
 
 export default {

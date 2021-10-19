@@ -12,8 +12,6 @@ import store from '../store'
 
 let connections: IConnection[] = []
 
-const latestMessagesLimit = 200
-
 const currentTokens = () => connections.map(conn => conn.user.token)
 
 const asIMessage = message => {
@@ -44,8 +42,8 @@ const saveMessage = (message, ip) => {
   if (message.type !== 'text') return
 
   const iMessage = asIMessage(message)
-  store.state.recentMessages.push(iMessage)
-  store.state.recentMessages = store.state.recentMessages.slice(-latestMessagesLimit)
+  store.state.recentMessages.unshift(iMessage)
+  store.state.recentMessages = store.state.recentMessages.slice(0, store.state.globalVariables.numLatestMessages)
 
   const orm = getConnection()
   orm.createQueryBuilder().insert().into(Message).values([{
@@ -57,7 +55,7 @@ const saveMessage = (message, ip) => {
     nickname: iMessage.user.profile.nickname,
     image: iMessage.user.profile.image,
     token: iMessage.user.token,
-  }]).execute()
+  }]).execute().then(store.actions.loadRecentMessages) // INSERT 이후 loadRecentMessages를 해줘야, 캐시에 있는 가장 최근에 삽입된 message의 id가 채워진다.
 }
 
 // 메시지를 접속된 클라이언트들에게 뿌리고 서버 메모리에 저장한다. (나중에 redis pubsub으로 변경)
@@ -160,7 +158,23 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
 }
 
 const chatCtrl = {
-  latest: (c: IContext) => c.res.asJSON(store.state.recentMessages),
+  messages: {
+    all: (c: IContext) => {
+      const qb = c.orm.getRepository(Message).createQueryBuilder().limit(store.state.globalVariables.numLatestMessages).orderBy('id', 'DESC')
+      const cursor = c.req.query['firstMessageId']
+      if (cursor) qb.where(`id < ${cursor}`)
+      else {
+        return c.res.asJSON(store.state.recentMessages)
+      }
+
+      qb.getMany()
+        .then(data => {
+          const json = JSON.parse(JSON.stringify(data))
+          c.res.asJSON(json.map(Message.asIMessage))
+        })
+        .catch(c.res.failed)
+    },
+  },
 }
 
 export const useChat = (app: FastifyInstance) => {
@@ -168,7 +182,7 @@ export const useChat = (app: FastifyInstance) => {
 
   app.get('/chat', { websocket: true }, onConnected)
 
-  routes.get('/messages/latest', chatCtrl.latest)
+  routes.get('/messages', chatCtrl.messages.all)
 }
 
 export default {

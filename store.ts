@@ -31,6 +31,7 @@ const state = {
       frontend: null,
       backend: null,
     },
+    numLatestMessages: 200,
   },
   recentMessages: [],
   serverConfig: dotenv.config().parsed,
@@ -73,24 +74,12 @@ const actions = {
       const data = await orm
         .getRepository(Message)
         .createQueryBuilder()
-        .limit(200)
+        .limit(state.globalVariables.numLatestMessages)
         .orderBy('id', 'DESC')
         .getMany()
   
       const json = JSON.parse(JSON.stringify(data))
-      store.state.recentMessages = json.map(o => ({
-        type: o.type,
-        text: o.text,
-        ts: o.ts,
-        numConnections: o.numConnections,
-        user: {
-          token: o.token,
-          profile: {
-            nickname: o.nickname,
-            image: o.image,
-          },
-        },
-      })).reverse()
+      store.state.recentMessages = json.map(Message.asIMessage)
     } catch (e) {
       return Promise.reject(e)
     }
