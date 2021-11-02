@@ -50,7 +50,6 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.post('/users', ctrls.user.create)
 
     router.get('/persons', ctrls.person.all)
-    router.get('/persons/:id', ctrls.person.detail)
 
     router.get('/posts', ctrls.post.all)
     router.get('/posts/:id', ctrls.post.detail)

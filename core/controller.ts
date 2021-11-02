@@ -1,6 +1,4 @@
 import { getRepository } from 'typeorm'
-import { BannedUser } from '../entities/banned_user'
-import store from '../store'
 import IContext from './context'
 import helpers from './helpers'
 import orm from './orm'
