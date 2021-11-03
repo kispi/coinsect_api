@@ -14,6 +14,6 @@ export class Person extends BaseModel {
   @JoinTable({ name: 'persons_images' })
   images: Image[]
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   description: string
 }
