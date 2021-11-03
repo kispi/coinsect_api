@@ -17,6 +17,7 @@ const useDefaultTemplate = ({ body, meta }: { body: string, meta?: Meta }) => {
     <html>
       <head>
         <title>${t}</title>
+        <link rel="icon" type="image/png" sizes="32x32" href="https://coinsect.io/favicon/favicon-32x32.png">
         <meta charset="utf-8">
         <meta name="title" content="${t}">
         <meta name="description" content="${d}">
