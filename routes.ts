@@ -1,32 +1,37 @@
 import { FastifyInstance } from 'fastify'
 import { useRouter } from './core/router'
 import helpers from './core/helpers'
+import middlewares from './core/middlewares'
 import useControllers from './controllers'
 
 const ctrls = useControllers()
 
+const auth = {
+  admin: middlewares.adminAuth,
+}
+
 const useRouteCRUD = ({ app, model }) => {
   const router = useRouter(app)
 
-  router.post(`/admin/${helpers.case.pluralize(model)}`, ctrls.admin[model].create)
-  router.get(`/admin/${helpers.case.pluralize(model)}`, ctrls.admin[model].all)
-  router.get(`/admin/${helpers.case.pluralize(model)}/:id`, ctrls.admin[model].detail)
-  router.put(`/admin/${helpers.case.pluralize(model)}/:id`, ctrls.admin[model].update)
-  router.delete(`/admin/${helpers.case.pluralize(model)}/:id`, ctrls.admin[model].delete)
+  router.post(`/admin/${helpers.case.pluralize(model)}`, ctrls.admin[model].create, auth.admin)
+  router.get(`/admin/${helpers.case.pluralize(model)}`, ctrls.admin[model].all, auth.admin)
+  router.get(`/admin/${helpers.case.pluralize(model)}/:id`, ctrls.admin[model].detail, auth.admin)
+  router.put(`/admin/${helpers.case.pluralize(model)}/:id`, ctrls.admin[model].update, auth.admin)
+  router.delete(`/admin/${helpers.case.pluralize(model)}/:id`, ctrls.admin[model].delete, auth.admin)
 }
 
 export const useRoutes = (app: FastifyInstance) => ({
   admin: () => {
     const router = useRouter(app)
 
-    router.post('/admin/chat/banIP', ctrls.admin.chat.banIP)
-    router.post('/admin/chat/sendMessage', ctrls.admin.chat.sendMessage)
+    router.post('/admin/chat/banIP', ctrls.admin.chat.banIP, auth.admin)
+    router.post('/admin/chat/sendMessage', ctrls.admin.chat.sendMessage, auth.admin)
 
-    router.get('/admin/store/badWords', ctrls.admin.store.badWord.all)
-    router.get('/admin/store/bannedUsers', ctrls.admin.store.bannedUser.all)
-    router.post('/admin/store/badWords/invalidate', ctrls.admin.store.badWord.invalidate)
-    router.post('/admin/store/bannedUsers/invalidate', ctrls.admin.store.bannedUser.invalidate)
-    router.post('/admin/store/messages/invalidate', ctrls.admin.store.message.invalidate)
+    router.get('/admin/store/badWords', ctrls.admin.store.badWord.all, auth.admin)
+    router.get('/admin/store/bannedUsers', ctrls.admin.store.bannedUser.all, auth.admin)
+    router.post('/admin/store/badWords/invalidate', ctrls.admin.store.badWord.invalidate, auth.admin)
+    router.post('/admin/store/bannedUsers/invalidate', ctrls.admin.store.bannedUser.invalidate, auth.admin)
+    router.post('/admin/store/messages/invalidate', ctrls.admin.store.message.invalidate, auth.admin)
 
     useRouteCRUD({ app, model: 'badWord' })
     useRouteCRUD({ app, model: 'bannedUser' })

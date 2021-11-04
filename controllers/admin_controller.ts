@@ -78,7 +78,7 @@ const adminController = {
   person: useCRUD({ model: Person, useSoftDelete: true }),
   post: routesPost,
   reaction: useCRUD({ model: Reaction }),
-  reply: useCRUD({ model: Reply, useSoftDelete: true })
+  reply: useCRUD({ model: Reply, useSoftDelete: true }),
 }
 
 export default adminController
