@@ -7,7 +7,7 @@ import post from './post_controller'
 import reaction from './reaction_controller'
 import reply from './reply_controller'
 import user from './user_controller'
-import seo from './seo_controller'
+import seo from './seo'
 import s3 from './s3_controller'
 
 const useControllers = () => ({

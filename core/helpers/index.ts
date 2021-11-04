@@ -1,41 +1,16 @@
-import dayjs = require('dayjs')
-import store from '../store'
-import { BannedUser } from '../entities/banned_user'
-import { parse } from 'node-html-parser'
 const crypto = require('crypto')
-const sanitizeHtml = require('sanitize-html')
-
-const sanitize = {
-  // html 컨텐츠의 경우는 특정 태그들은 허용할 필요가 있음.
-  html: text => {
-    const d = sanitizeHtml.defaults
-
-    return sanitizeHtml(text, {
-      allowedTags: d.allowedTags.concat(['img']),
-      allowedAttributes: {
-        'a': ['href', 'target', 'rel'],
-        'img': ['src'],
-        '*': ['style', 'class'],
-      },
-      allowedStyles: {
-        '*': {
-          'color': [/^#(0x)?[0-9a-f]+$/i, /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/],
-          'background-color': [/^#(0x)?[0-9a-f]+$/i, /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/],
-          'text-align': [/^left$/, /^right$/, /^center$/],
-          'font-size': [/^\d+(?:px)$/],
-          'font-weight': [/^\d+/],
-        },
-      }
-    })
-  },
-  // 어떤 html도 허용하지 않는다.
-  strict: text => sanitizeHtml(text, { allowedTags: [] }),
-}
+import dayjs = require('dayjs')
+import store from '../../store'
+import { BannedUser } from '../../entities/banned_user'
+import { parse } from 'node-html-parser'
+import seo from './seo'
+import sanitize from './sanitize'
 
 const helpers = {
   // 나중에 구현
   sanitize,
   dayjs,
+  seo,
   case: {
     pluralize: (str: string) => {
       if (str.endsWith('day')) return `${str}s`
@@ -45,7 +20,9 @@ const helpers = {
   
       return `${str}s`
     },
+    toCapital: str => str.charAt(0).toUpperCase() + str.slice(1),
   },
+  useS3: key => `https://coinsect-production.s3.ap-northeast-2.amazonaws.com/${key}`,
   /**
  * trim values listed in fields and check if it's empty.
  * NOTE: This mutates the payload body by trimming. (EX: ' Hello world ' => 'Hello world')

@@ -84,6 +84,9 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/seo/posts', ctrls.seo.post.all)
     router.get('/seo/posts/:id', ctrls.seo.post.detail)
+
+    router.get('/seo/persons', ctrls.seo.person.all)
+    router.get('/seo/persons/:id', ctrls.seo.person.detail)
   },
 })
 

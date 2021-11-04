@@ -1,5 +1,3 @@
-import store from "../store"
-
 const mustToken = existingTokens => {
   const o = {}
   if (existingTokens) existingTokens.forEach(t => o[t] = true)
