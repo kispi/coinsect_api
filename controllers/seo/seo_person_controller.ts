@@ -34,7 +34,7 @@ const seoPersonController = {
   },
   detail: async (c: IContext) => {
     const data = await orm.querySetter(c, Person)
-      .where(`sharing_key = "${c.req.params['id']}"`)
+      .where(`sharing_key = '${c.req.params['id']}'`)
       .leftJoinAndSelect('Person.images', 'images')
       .getOne()
 

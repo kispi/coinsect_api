@@ -57,11 +57,11 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/persons', ctrls.person.all)
 
     router.get('/posts', ctrls.post.all)
-    router.get('/posts/:id', ctrls.post.detail)
+    router.get('/posts/:sharingKey', ctrls.post.detail)
     router.post('/posts', ctrls.post.create)
-    router.put('/posts/:id', ctrls.post.update)
-    router.post('/posts/:id/check_password', ctrls.post.checkPassword)
-    router.delete('/posts/:id', ctrls.post.delete)
+    router.put('/posts/:sharingKey', ctrls.post.update)
+    router.post('/posts/:sharingKey/check_password', ctrls.post.checkPassword)
+    router.delete('/posts/:sharingKey', ctrls.post.delete)
 
     router.post('/replies', ctrls.reply.create)
     router.delete('/replies/:id', ctrls.reply.delete)

@@ -1,4 +1,4 @@
-import { getRepository } from 'typeorm'
+import { getRepository, SimpleConsoleLogger } from 'typeorm'
 import { loadChildren } from '../core/controller'
 import { Post } from '../entities/post'
 import { Reply } from '../entities/reply'
@@ -95,7 +95,7 @@ const postController = {
       .leftJoinAndSelect('Post.reactions', 'reactions')
       .leftJoinAndSelect('Post.replies', 'replies')
       .leftJoinAndSelect('replies.parent', 'parent')
-      .where(`Post.id = ${c.req.params['id']}`).getOneOrFail()
+      .where(`Post.sharing_key = '${c.req.params['sharingKey']}'`).getOneOrFail()
         .then((post: Post) => {
           post.increaseViews(c)
           c.res.asJSON(post)
@@ -110,7 +110,7 @@ const postController = {
   
     try {
       const postRepository = getRepository(Post)
-      const target = await postRepository.findOneOrFail(c.req.params['id'])
+      const target = await postRepository.findOneOrFail({ where: `Post.sharing_key = '${c.req.params['sharingKey']}'`})
       if (!helpers.compare(target.password, c.req.body['password'])) {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
         return
@@ -127,7 +127,7 @@ const postController = {
     if (!c.req.body['password']) return c.res.failed({ message: 'MISSING_REQUIRED_FIELD_PASSWORD' })
   
     try {
-      const target = await getRepository(Post).findOneOrFail(c.req.params['id'])
+      const target = await getRepository(Post).findOneOrFail({ where: `Post.sharing_key = '${c.req.params['sharingKey']}'`})
       if (!helpers.compare(target.password, c.req.body['password'])) {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
         return
