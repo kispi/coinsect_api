@@ -41,6 +41,7 @@ const postController = {
     imageKeys.forEach(imageUrl => services.s3.deleteObjectTagging(services.s3.getKeyPart(imageUrl)))
 
     try {
+      payload['sharingKey'] = helpers.generateUUID(true)
       await orm.querySetter(c, Post).insert().into(Post).values(payload).execute()
       c.res.success()
     } catch (e) {

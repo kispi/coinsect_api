@@ -33,6 +33,7 @@
     "pino-pretty": "^6.0.0",
     "reflect-metadata": "^0.1.10",
     "sanitize-html": "^2.4.0",
+    "slugid": "^3.0.0",
     "ts-node-dev": "^1.1.8",
     "typeorm": "^0.2.34",
     "typeorm-naming-strategies": "^2.0.0",

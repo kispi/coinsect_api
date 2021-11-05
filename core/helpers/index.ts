@@ -1,4 +1,5 @@
 const crypto = require('crypto')
+const slugid = require('slugid')
 import dayjs = require('dayjs')
 import store from '../../store'
 import { BannedUser } from '../../entities/banned_user'
@@ -40,13 +41,13 @@ const helpers = {
     raw &&
     crypto.createHash('sha256').update(raw).digest('base64') === hashed
   ,
-  generateUUID: () => {
-    let d = new Date().getTime()
-    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-      const r = (d + Math.random() * 16) % 16 | 0
-      d = Math.floor(d / 16)
-      return (c === 'x' ? r : (r&0x3|0x8)).toString(16)
-    })
+  slugid,
+  generateUUID: (asBase64?: boolean) => {
+    const slug = slugid.v4()
+
+    if (asBase64) return slug
+
+    const uuid = slugid.decode(slug)
     return uuid
   },
   includesBadWords: (message: string) => store.state.badWords.map(o => o.word).some(badWord => message.includes(badWord)),
