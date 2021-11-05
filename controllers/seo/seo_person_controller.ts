@@ -3,10 +3,6 @@ import orm from '../../core/orm'
 import IContext from '../../core/context'
 import helpers from '../../core/helpers'
 
-const nameToKey = name => (name || '').toLowerCase().replace(/ /g, '-')
-
-const keyToName = key => key.split('-').map(part => helpers.case.toCapital(part)).join(' ')
-
 const seoPostController = {
   all: async (c: IContext) => {
     try {
@@ -17,7 +13,7 @@ const seoPostController = {
 
       const body = `
         ${data.map(row => `
-        <a href="/info/influencers/${nameToKey(row.name)}">
+        <a href="/info/influencers/${row.sharingKey}">
           <img src="${helpers.useS3(row.images[0].key)}" style="width: 120px;">
           <div class="influencer-name">${row.name}</div>
         </a>
@@ -33,13 +29,12 @@ const seoPostController = {
         },
       }))
     } catch (e) {
-      console.error(e, 'sibal')
       c.res.failed('잘못된 요청입니다.')
     }
   },
   detail: async (c: IContext) => {
     const data = await orm.querySetter(c, Person)
-      .where(`name = "${keyToName(c.req.params['id'])}"`)
+      .where(`name = "${c.req.params['id']}"`)
       .leftJoinAndSelect('Person.images', 'images')
       .getOne()
 
