@@ -1,4 +1,4 @@
-import { Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToOne, getRepository } from 'typeorm'
+import { Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToOne, getRepository, Index } from 'typeorm'
 import { Board } from './board'
 import { Reaction } from './reaction'
 import { Reply } from './reply'
@@ -46,6 +46,7 @@ export class Post extends BaseModel {
   ip: string
 
   @Column({ nullable: true })
+  @Index()
   sharingKey: string
 
   @Column({ nullable: true })

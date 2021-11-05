@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToMany, JoinTable } from 'typeorm'
+import { Entity, Column, ManyToMany, JoinTable, Index } from 'typeorm'
 import { Image } from './image'
 import BaseModel from './base_model'
 
@@ -16,4 +16,8 @@ export class Person extends BaseModel {
 
   @Column({ nullable: true, type: 'text' })
   description: string
+
+  @Column()
+  @Index()
+  sharingKey: string
 }

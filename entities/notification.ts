@@ -11,4 +11,7 @@ export class Notification extends BaseModel {
 
   @Column({ nullable: true })
   link: string
+
+  @Column()
+  active: boolean
 }
