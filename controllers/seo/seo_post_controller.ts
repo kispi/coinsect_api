@@ -15,7 +15,7 @@ const seoPostController = {
         body: `
           ${data.map(row => `
           <a href="/community/${row.id}">
-            <div class="post-id">${row.id}</div>
+            <div class="post-sharing-key">${row.sharingKey}</div>
             <div class="post-title">${row.title}</div>
           </a>
           `)}
@@ -30,7 +30,7 @@ const seoPostController = {
     }
   },
   detail: async (c: IContext) => {
-    const data = await orm.querySetter(c, Post).where(`id = ${c.req.params['id']}`).getOne()
+    const data = await orm.querySetter(c, Post).where(`sharing_key = '${c.req.params['sharingKey']}'`).getOne()
     if (data) c.res.asHTML(helpers.seo.useDefaultTemplate({
       body: `
       <div>${data['nickname']}</div>
