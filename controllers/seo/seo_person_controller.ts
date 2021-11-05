@@ -3,7 +3,7 @@ import orm from '../../core/orm'
 import IContext from '../../core/context'
 import helpers from '../../core/helpers'
 
-const seoPostController = {
+const seoPersonController = {
   all: async (c: IContext) => {
     try {
       const data = await c.orm.getRepository(Person).createQueryBuilder()
@@ -34,7 +34,7 @@ const seoPostController = {
   },
   detail: async (c: IContext) => {
     const data = await orm.querySetter(c, Person)
-      .where(`name = "${c.req.params['id']}"`)
+      .where(`sharing_key = "${c.req.params['id']}"`)
       .leftJoinAndSelect('Person.images', 'images')
       .getOne()
 
@@ -89,4 +89,4 @@ const seoPostController = {
   },
 }
 
-export default seoPostController
+export default seoPersonController

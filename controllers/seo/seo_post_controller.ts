@@ -3,7 +3,7 @@ import orm from '../../core/orm'
 import IContext from '../../core/context'
 import helpers from '../../core/helpers'
 
-const seoPersonController = {
+const seoPostController = {
   all: async (c: IContext) => {
     try {
       const data = await c.orm.getRepository(Post).createQueryBuilder()
@@ -51,4 +51,4 @@ const seoPersonController = {
   },
 }
 
-export default seoPersonController
+export default seoPostController
