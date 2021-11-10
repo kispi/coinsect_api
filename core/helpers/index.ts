@@ -3,6 +3,7 @@ const slugid = require('slugid')
 import dayjs = require('dayjs')
 import store from '../../store'
 import { BannedUser } from '../../entities/banned_user'
+import { Reply } from '../../entities/reply'
 import { parse } from 'node-html-parser'
 import seo from './seo'
 import sanitize from './sanitize'
@@ -58,6 +59,22 @@ const helpers = {
     } catch (e) {
       return []
     }
+  },
+  organizeReplies: replies => {
+    if ((replies || []).length === 0) return []
+
+    replies.forEach((item: Reply) => {
+      if (item.deletedAt) item.content = ''
+
+      if (!item.parent) return
+  
+      const parent = replies.find(possibleParent => possibleParent.id === (item.parent || {}).id) as Reply
+      if (!parent) return
+  
+      parent.replies ? parent.replies.push(item) : parent.replies = [item]
+    })
+
+    return replies.filter(f => !f.parent)
   },
 }
 

@@ -65,7 +65,7 @@ export class Post extends BaseModel {
 
     this.views += 1
     try {
-      await getRepository(Post).save(this)
+      await getRepository(Post).update({ sharingKey: this.sharingKey }, { views: this.views })
     } catch (e) {}
     return this
   }

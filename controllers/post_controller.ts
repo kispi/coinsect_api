@@ -1,4 +1,4 @@
-import { getRepository, SimpleConsoleLogger } from 'typeorm'
+import { getRepository } from 'typeorm'
 import { loadChildren } from '../core/controller'
 import { Post } from '../entities/post'
 import { Reply } from '../entities/reply'
@@ -91,12 +91,16 @@ const postController = {
   },
   detail: (c: IContext) => {
     orm.querySetter(c, Post)
+      .withDeleted()
       .leftJoinAndSelect('Post.board', 'board')
       .leftJoinAndSelect('Post.reactions', 'reactions')
       .leftJoinAndSelect('Post.replies', 'replies')
       .leftJoinAndSelect('replies.parent', 'parent')
-      .where(`Post.sharing_key = '${c.req.params['sharingKey']}'`).getOneOrFail()
+      .where(`Post.sharing_key = '${c.req.params['sharingKey']}'`)
+      .getOneOrFail()
         .then((post: Post) => {
+          post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
+          post.replies = helpers.organizeReplies(post.replies)
           post.increaseViews(c)
           c.res.asJSON(post)
         })
