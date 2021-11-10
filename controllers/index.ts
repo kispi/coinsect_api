@@ -1,4 +1,5 @@
 import admin from './admin_controller'
+import bot from './bot_controller'
 import config from './config_controller'
 import marketInfo from './market_info_controller'
 import notification from './notification_controller'
@@ -12,6 +13,7 @@ import s3 from './s3_controller'
 
 const useControllers = () => ({
   admin,
+  bot,
   config,
   marketInfo,
   notification,

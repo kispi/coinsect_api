@@ -7,6 +7,17 @@ import fastifyWebsocket from 'fastify-websocket'
 import store from './store'
 import { useChat } from './chat/server-chat'
 
+axios.interceptors.response.use(
+  res => res.data,
+  err => {
+    if (!err.response) {
+      throw err
+    }
+
+    throw err.response
+  },
+)
+
 export const initApp = async app => {
   app.register(fastifyCors)
   app.register(fastifyWebsocket)
@@ -19,16 +30,6 @@ export const initApp = async app => {
 
   await store.initCaches()
   useChat(app)
-  axios.interceptors.response.use(
-    res => res.data,
-    err => {
-      if (!err.response) {
-        throw err
-      }
-  
-      throw err.response
-    },
-  )
 }
 
 const prettyPrint = {
