@@ -2,7 +2,6 @@ import { getConnection } from 'typeorm'
 import { BadWord } from './entities/bad_word'
 import { BannedUser } from './entities/banned_user'
 import { Message } from './entities/message'
-import crawlCombot from './jobs/crawl-combot'
 import * as dotenv from 'dotenv'
 
 const state = {
@@ -36,7 +35,6 @@ const state = {
   },
   recentMessages: [],
   serverConfig: dotenv.config().parsed,
-  combotResults: [], // 임시로 사용
 }
 
 const actions = {
@@ -86,14 +84,6 @@ const actions = {
       return Promise.reject(e)
     }
   },
-  loadCombotResults: async () => {
-    try {
-      store.state.combotResults = await crawlCombot()
-      setTimeout(store.actions.loadCombotResults, 1000 * 30)
-    } catch (e) {
-      return Promise.reject(e)
-    }
-  },
 }
 
 const initCaches = async () => {
@@ -101,7 +91,6 @@ const initCaches = async () => {
     actions.loadBadWords(),
     actions.loadBannedUsers(),
     actions.loadRecentMessages(),
-    actions.loadCombotResults(),
   ])
 }
 

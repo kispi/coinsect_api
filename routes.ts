@@ -76,8 +76,6 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/notifications', ctrls.notification.all)
 
-    router.get('/combot_results', ctrls.bot.combot)
-
     router.get('/s3/upload_url', ctrls.s3.getSignedUrl)
     router.delete('/s3/object', ctrls.s3.deleteObject)
   },
