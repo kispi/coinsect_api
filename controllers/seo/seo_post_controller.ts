@@ -14,11 +14,10 @@ const seoPostController = {
       c.res.asHTML(helpers.seo.useDefaultTemplate({
         body: `
           ${data.map(row => `
-          <a href="/community/${row.id}">
-            <div class="post-sharing-key">${row.sharingKey}</div>
+          <a href="/community/${row.sharingKey}">
             <div class="post-title">${row.title}</div>
           </a>
-          `)}
+          `).join('<br><br>')}
         `,
         meta: {
           title: '코인충 커뮤니티',
