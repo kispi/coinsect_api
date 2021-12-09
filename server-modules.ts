@@ -7,6 +7,8 @@ import fastifyWebsocket from 'fastify-websocket'
 import store from './store'
 import { useChat } from './chat/server-chat'
 
+axios.defaults.timeout = 5000
+
 axios.interceptors.response.use(
   res => res.data,
   err => {
