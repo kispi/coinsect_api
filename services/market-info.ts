@@ -48,7 +48,7 @@ const marketInfoService = {
       }
 
       if (result[1].status === 'fulfilled') {
-        result[1].value['coins'].forEach(coin => {
+        result[1].value['coins'].slice(0, 3000).forEach(coin => {
           if (symbols[coin.symbol] && symbols[coin.symbol].en) return
   
           symbols[coin.symbol] = {
