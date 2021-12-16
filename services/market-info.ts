@@ -70,30 +70,16 @@ const marketInfoService = {
     if (cached.markets) return cached.markets
 
     try {
-      const data = await Promise.allSettled([
-        axios.get('https://api.upbit.com/v1/market/all'),
+      const data = await Promise.all([
         axios.get('https://api.bybit.com/v2/public/symbols'),
-        axios.get('https://api.bithumb.com/public/ticker/all_krw'),
         axios.get('https://api.binance.com/api/v1/exchangeInfo'),
       ])
 
-      cached.markets = {}
-
-      if (data[0].status === 'fulfilled') cached.markets.upbit = data[0].value
-
-      if (data[1].status === 'fulfilled') cached.markets.bybit = data[1].value['result'].map(o => o.name)
-
-      if (data[2].status === 'fulfilled') {
-        const v = data[2].value
-        cached.markets.bithumb = Object.keys(v['data']).filter(symbol => symbol !== 'date').map(symbol => ({
-          symbol,
-          ...v['data'][symbol]
-        }))
+      cached.markets = {
+        bybit: data[0]['result'].map(o => o.name),
+        binance: (data[1]['symbols'] || []).filter(o => o.symbol.endsWith('USDT')).map(o => o.symbol)
       }
-
-      if (data[3].status === 'fulfilled') cached.markets.binance = (data[3].value['symbols'] || []).filter(o => o.symbol.endsWith('USDT')).map(o => o.symbol)
-
-      setTimeout(() => delete cached.markets, 1000 * 3600)
+      setTimeout(() => delete cached.markets, 1000 * 60 * 5)
       return cached.markets
     } catch (e) {
       return Promise.reject(e)
