@@ -2,21 +2,35 @@ import axios from 'axios'
 
 const cached = {
   leaderboard: null,
+  indices: null,
   symbols: null,
   markets: null,
 }
 
 const marketInfoService = {
   indices: async () => {
+    if (cached.indices) return cached.indices
+
+    let indices = {}
     try {
       const resp = await Promise.all([
         axios.get('https://coincodex.com/api/coincodex/get_metadata'),
         axios.get('https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD'),
       ])
-      return {
-        coincodex: resp[0],
-        upbitForex: resp[1][0],
+
+      indices = {
+        btcDominance: resp[0]['btc_dominance'],
+        btcDominance24hChangePercent: resp[0]['btc_dominance_24h_change_percent'],
+        totalMarketCap: resp[0]['total_market_cap'],
+        totalMarketCap24hChangePercent: resp[0]['total_market_cap_24h_change_percent'],
+        totalVolume: resp[0]['total_volume'],
+        totalVolume24hChangePercent: resp[0]['total_volume_24h_change_percent'],
+        basePrice: resp[1][0]['basePrice'],
+        signedChangeRate: resp[1][0]['signedChangeRate'],
       }
+      cached.indices = indices
+      setTimeout(() => delete cached.indices, 1000 * 60 * 10)
+      return cached.indices
     } catch (e) {
       return Promise.reject(e)
     }
@@ -48,7 +62,7 @@ const marketInfoService = {
       }
 
       if (result[1].status === 'fulfilled') {
-        result[1].value['coins'].slice(0, 3000).forEach(coin => {
+        result[1].value['coins'].forEach(coin => {
           if (symbols[coin.symbol] && symbols[coin.symbol].en) return
   
           symbols[coin.symbol] = {
