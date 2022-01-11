@@ -31,7 +31,7 @@ const state = {
       frontend: null,
       backend: null,
     },
-    numLatestMessages: 200,
+    numLatestMessages: 100,
   },
   recentMessages: [],
   serverConfig: dotenv.config().parsed,
