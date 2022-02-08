@@ -123,7 +123,6 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
       }
 
       o.user.profile.nickname = coreHelpers.sanitize.strict(o.user.profile.nickname)
-      o.text = coreHelpers.sanitize.strict(o.text)
 
       if (
         !(o.text || '').trim() ||
