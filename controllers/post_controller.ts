@@ -63,6 +63,14 @@ const postController = {
       return c.res.failed(e)
     }
 
+    if (!payload['$$originalPassword']) return c.res.failed({ message: 'BAD_REQUEST' })
+
+    try {
+      await Post.checkPassword(c.req.params['sharingKey'], payload['$$originalPassword'])
+    } catch (e) {
+      return c.res.failed(e)
+    }
+
     payload['ip'] = c.req.ip
     payload['password'] = helpers.hashed(payload['password'])
     payload['content'] = helpers.sanitize.html(payload['content'])
@@ -129,16 +137,12 @@ const postController = {
   },
   checkPassword: async (c: IContext) => {
     if (!c.req.body['password']) return c.res.failed({ message: 'MISSING_REQUIRED_FIELD_PASSWORD' })
-  
+
     try {
-      const target = await getRepository(Post).findOneOrFail({ where: `Post.sharing_key = '${c.req.params['sharingKey']}'`})
-      if (!helpers.compare(target.password, c.req.body['password'])) {
-        c.res.failed({ message: 'INCORRECT_PASSWORD' })
-        return
-      }
+      await Post.checkPassword(c.req.params['sharingKey'], c.req.body['password'])
       c.res.success()
     } catch (e) {
-      c.res.failed({ message: 'NOT_FOUND' })
+      c.res.failed(e)
     }
   },
 }

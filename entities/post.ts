@@ -84,6 +84,18 @@ export class Post extends BaseModel {
     }
   }
 
+  static async checkPassword(sharingKey: string, password: string) {
+    try {
+      const target = await getRepository(Post).findOneOrFail({ where: `Post.sharing_key = '${sharingKey}'`})
+      if (!helpers.compare(target.password, password)) {
+        return Promise.reject({ message: 'INCORRECT_PASSWORD' })
+      }
+      return Promise.resolve()
+    } catch (e) {
+      return Promise.reject({ message: 'NOT_FOUND' })
+    }
+  }
+
   toJSON() {
     delete this.password
     return this
