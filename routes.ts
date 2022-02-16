@@ -73,6 +73,8 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/market_info/symbols', ctrls.marketInfo.symbols)
     router.get('/market_info/markets', ctrls.marketInfo.markets)
 
+    router.get('/contents/public_treasuries', ctrls.content.publicTreasuries)
+
     router.get('/notifications', ctrls.notification.all)
 
     router.get('/s3/upload_url', ctrls.s3.getSignedUrl)

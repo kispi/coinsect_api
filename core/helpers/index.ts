@@ -60,6 +60,7 @@ const helpers = {
       return []
     }
   },
+  parseHref: (content: string) => (content.match(/<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1/) || [])[2],
   organizeReplies: replies => {
     if ((replies || []).length === 0) return []
 
@@ -76,6 +77,7 @@ const helpers = {
 
     return replies.filter(f => !f.parent)
   },
+  retrieveNumbersOnly: (str: string) => str.replace(/[^0-9]+/g, ''),
 }
 
 export default helpers

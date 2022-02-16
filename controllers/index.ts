@@ -1,6 +1,7 @@
 import admin from './admin_controller'
 import bot from './bot_controller'
 import config from './config_controller'
+import content from './content_controller'
 import marketInfo from './market_info_controller'
 import notification from './notification_controller'
 import person from './person_controller'
@@ -15,6 +16,7 @@ const useControllers = () => ({
   admin,
   bot,
   config,
+  content,
   marketInfo,
   notification,
   person,
