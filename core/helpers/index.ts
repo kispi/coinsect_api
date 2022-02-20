@@ -77,7 +77,6 @@ const helpers = {
 
     return replies.filter(f => !f.parent)
   },
-  retrieveNumbersOnly: (str: string) => str.replace(/[^0-9]+/g, ''),
 }
 
 export default helpers

@@ -7,7 +7,7 @@ const cached = {
   publicTreasuries: null,
 }
 
-const foo = (val: string) => parseFloat(helpers.retrieveNumbersOnly(val))
+const foo = (val: string) => parseFloat(val.replace(/[^.0-9]+/g, ''))
 
 const contentService = {
   publicTreasuries: async () => {
@@ -36,12 +36,18 @@ const contentService = {
           costBasis: foo(cols[7].innerHTML),
           valuation: foo(cols[8].innerHTML),
           holdings: foo(cols[10].innerHTML),
+          type: 'etc',
         }
         item['dominance'] = Math.round(10000 * item.holdings / 210000) / 10000
+
         if (item.costBasis && item.valuation && item.holdings) {
           item['profit'] = Math.round(10000 * (item.valuation - item.costBasis) / item.costBasis) / 100
           item['avgPrice'] = Math.round(item.costBasis / item.holdings)
+          if (item['profit'] === 0) item['type'] = 'etf'
+          else item['type'] = 'public_company'
         }
+        if ((item['symbol'] === 'gov')) item['type'] = 'gov'
+        if ((item['symbol'] === 'private')) item['type'] = 'private_company'
         result.push(item)
       })
       result.sort((a, b) => b.holdings - a.holdings)
