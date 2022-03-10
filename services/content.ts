@@ -5,6 +5,9 @@ import { parse } from 'node-html-parser'
 
 const cached = {
   publicTreasuries: null,
+  realTimePositions: [
+    // { id: SHARING_KEY, personId: 17, name: '박호두', entry: 42101, contract: 'BTCUSDT', size: -5 },
+  ],
 }
 
 const foo = (val: string) => parseFloat(val.replace(/[^.0-9]+/g, ''))
@@ -57,6 +60,40 @@ const contentService = {
     } catch (e) {
       return Promise.reject(e)
     }
+  },
+  realTimePositions: {
+    all: () => cached.realTimePositions,
+    set: payload => {
+      if (!payload) {
+        cached.realTimePositions.push({
+          id: helpers.generateUUID(true),
+          personId: null,
+          name: null,
+          entry: null,
+          contract: null,
+          size: null,
+        })
+        return
+      }
+
+      try {
+        const found = cached.realTimePositions.find(o => o.id === payload.id)
+        if (!found) cached.realTimePositions.push(payload)
+        else {
+          found.personId = parseInt(payload.personId)
+          found.entry = parseInt(payload.entry)
+          found.size = parseInt(payload.size)
+          found.contract = payload.contract
+          found.name = payload.name
+        }
+      } catch (e) {
+        return Promise.reject(e)
+      }
+    },
+    delete: id => {
+      const idx = cached.realTimePositions.findIndex(o => o.id === id)
+      if (idx >= 0) cached.realTimePositions.splice(idx, 1)
+    },
   },
 }
 

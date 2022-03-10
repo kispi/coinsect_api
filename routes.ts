@@ -33,6 +33,9 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.post('/admin/store/bannedUsers/invalidate', ctrls.admin.store.bannedUser.invalidate, auth.admin)
     router.post('/admin/store/messages/invalidate', ctrls.admin.store.message.invalidate, auth.admin)
 
+    router.post('/admin/contents/real_time_positions', ctrls.content.realTimePositions.set, auth.admin)
+    router.delete('/admin/contents/real_time_positions/:id', ctrls.content.realTimePositions.delete, auth.admin)
+
     useRouteCRUD({ app, model: 'badWord' })
     useRouteCRUD({ app, model: 'bannedUser' })
     useRouteCRUD({ app, model: 'board' })
@@ -74,6 +77,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/market_info/markets', ctrls.marketInfo.markets)
 
     router.get('/contents/public_treasuries', ctrls.content.publicTreasuries)
+    router.get('/contents/real_time_positions', ctrls.content.realTimePositions.all)
 
     router.get('/notifications', ctrls.notification.all)
 
