@@ -1,5 +1,11 @@
 const { SnakeNamingStrategy } = require('typeorm-naming-strategies');
 
+const p = process.env.NODE_ENV === 'production'
+
+const entitiesDir = p ? 'dist/entities' : 'entities'
+const migrationsDir = p ? 'dist/migrations' : 'migrations'
+const subscribersDir = p ? 'dist/subscribers' : 'subscribers'
+
 module.exports = {
   type: 'mysql',
   host: 'localhost',
@@ -8,19 +14,13 @@ module.exports = {
   password: '',
   database: 'coinsect',
   logging: false,
-  entities: [
-     'entities/**/*.ts',
-  ],
-  migrations: [
-     'migrations/**/*.ts',
-  ],
-  subscribers: [
-     'subscribers/**/*.ts',
-  ],
+  entities: [`${entitiesDir}/**/*{.js,.ts}`],
+  migrations: [`${migrationsDir}/**/*{.js,.ts}`],
+  subscribers: [`${subscribersDir}/**/*{.js,.ts}`,],
   cli: {
-     entitiesDir: 'entities',
-     migrationsDir: 'migrations',
-     subscribersDir: 'subscribers',
+    entitiesDir,
+    migrationsDir,
+    subscribersDir,
   },
   timezone: 'Z',
   namingStrategy: new SnakeNamingStrategy(),
