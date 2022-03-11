@@ -6,7 +6,8 @@ import { parse } from 'node-html-parser'
 const cached = {
   publicTreasuries: null,
   realTimePositions: [
-    // { id: SHARING_KEY, personId: 17, name: '박호두', entry: 42101, contract: 'BTCUSDT', size: -5 },
+    { id: 'hoduexplosion', image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg', name: '박호두', entry: null, contract: null, size: null },
+    { id: 'jjabgu', image: 'http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg', name: '짭구', entry: null, contract: null, size: null },
   ],
 }
 
@@ -67,7 +68,7 @@ const contentService = {
       if (!payload) {
         cached.realTimePositions.push({
           id: helpers.generateUUID(true),
-          personId: null,
+          image: null,
           name: null,
           entry: null,
           contract: null,
@@ -80,7 +81,7 @@ const contentService = {
         const found = cached.realTimePositions.find(o => o.id === payload.id)
         if (!found) cached.realTimePositions.push(payload)
         else {
-          found.personId = parseInt(payload.personId)
+          found.image = payload.image
           found.entry = parseFloat(payload.entry)
           found.size = parseFloat(payload.size)
           found.contract = payload.contract
