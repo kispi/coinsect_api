@@ -81,8 +81,8 @@ const contentService = {
         if (!found) cached.realTimePositions.push(payload)
         else {
           found.personId = parseInt(payload.personId)
-          found.entry = parseInt(payload.entry)
-          found.size = parseInt(payload.size)
+          found.entry = parseFloat(payload.entry)
+          found.size = parseFloat(payload.size)
           found.contract = payload.contract
           found.name = payload.name
         }
