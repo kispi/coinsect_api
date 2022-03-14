@@ -20,7 +20,7 @@ const postController = {
       return
     }
 
-    const bannedUser = await helpers.useBannedUser(c.req.ip)
+    const bannedUser = helpers.useBannedUser(c.req.ip)
     if (bannedUser) return c.res.failed({ message: 'BANNED_USER', extra: { bannedUser } })
 
     const payload = c.req.body
