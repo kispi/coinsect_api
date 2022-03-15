@@ -5,6 +5,7 @@ import useDB from './database'
 import axios from 'axios'
 import fastifyWebsocket from 'fastify-websocket'
 import store from './store'
+import helpers from './core/helpers'
 import { useChat } from './chat/server-chat'
 
 axios.defaults.timeout = 5000
@@ -23,6 +24,10 @@ axios.interceptors.response.use(
 export const initApp = async app => {
   app.register(fastifyCors)
   app.register(fastifyWebsocket)
+  app.addHook('onRequest', (req, res, next) => {
+    req.$$startTime = helpers.now()
+    next()
+  })
   await useDB()
 
   const routeMaker = useRoutes(app)
@@ -34,20 +39,7 @@ export const initApp = async app => {
   useChat(app)
 }
 
-const prettyPrint = {
-  colorize: true,
-  translateTime: true,
-  ignore: 'pid,hostname,reqId,req.hostname,req.remotePort',
-  singleLine: true,
-  customPrettifiers: {
-    responseTime: time => `${Math.round(time)}ms`,
-  },
-}
-
 export const app = fastify({
-  logger: {
-    prettyPrint,
-  },
   trustProxy: true,
   ignoreTrailingSlash: true,
 })

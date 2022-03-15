@@ -1,7 +1,7 @@
 import { FastifyReply } from 'fastify'
 
 const useResponse = (reply: FastifyReply) => {
-  return {
+  const responses = {
     asJSON: (json: unknown) => {
       reply
         .header('Content-Type', 'application/json; charset=utf-8')
@@ -20,12 +20,15 @@ const useResponse = (reply: FastifyReply) => {
         .code(code || 400)
         .send(payload || { message: 'failed' })
     },
+    error: () => responses.failed({ message: 'Internal Server Error' }, 500),
     success: (json?: unknown) => {
       reply
         .header('Content-Type', 'application/json; charset=utf-8')
         .send(json || { message: 'success' })
     },
   }
+
+  return responses
 }
 
 export default useResponse

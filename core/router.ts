@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { getConnection } from 'typeorm'
 import useResponse from './response'
+import { log, createHttpLog } from './logger'
 
 const createContext = (req: FastifyRequest, reply: FastifyReply) => ({
   orm: getConnection(),
@@ -8,17 +9,32 @@ const createContext = (req: FastifyRequest, reply: FastifyReply) => ({
   res: useResponse(reply),
 })
 
-const useMiddleware = (req, res, handler: Function, middleware?: Function) => {
+const useMiddleware = async (req, res, handler: Function, middleware?: Function) => {
   const c = createContext(req, res)
+
+  const hl = () => JSON.stringify(createHttpLog(req, res))
+
   if (middleware) {
     try {
       middleware(c)
     } catch (e) {
-      c.res.failed(e)
+      console.error('Error:', e)
+      c.res.error()
+      log.error(hl())
       return
     }
   }
-  handler(c)
+
+  try {
+    await handler(c)
+  } catch (e) {
+    console.error('Error:', e)
+    c.res.error()
+    log.error(hl())
+    return
+  }
+
+  log.info(hl())
 }
 
 export const useRouter = (app: FastifyInstance) => ({

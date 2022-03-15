@@ -77,6 +77,10 @@ const helpers = {
 
     return replies.filter(f => !f.parent)
   },
+  now: () => {
+    const ts = process.hrtime()
+    return (ts[0] * 1e3) + (ts[1] / 1e6)
+  },
 }
 
 export default helpers
