@@ -13,24 +13,26 @@ const auth = {
 const useRouteCRUD = ({ app, model }) => {
   const router = useRouter(app)
 
-  router.post(`/admin/${helpers.case.pluralize(model)}`, ctrls.admin[model].create, auth.admin)
-  router.get(`/admin/${helpers.case.pluralize(model)}`, ctrls.admin[model].all, auth.admin)
-  router.get(`/admin/${helpers.case.pluralize(model)}/:id`, ctrls.admin[model].detail, auth.admin)
-  router.put(`/admin/${helpers.case.pluralize(model)}/:id`, ctrls.admin[model].update, auth.admin)
-  router.delete(`/admin/${helpers.case.pluralize(model)}/:id`, ctrls.admin[model].delete, auth.admin)
+  const sp = helpers.case.pluralize(helpers.case.toSnake(model))
+
+  router.post(`/admin/${sp}`, ctrls.admin[model].create, auth.admin)
+  router.get(`/admin/${sp}`, ctrls.admin[model].all, auth.admin)
+  router.get(`/admin/${sp}/:id`, ctrls.admin[model].detail, auth.admin)
+  router.put(`/admin/${sp}/:id`, ctrls.admin[model].update, auth.admin)
+  router.delete(`/admin/${sp}/:id`, ctrls.admin[model].delete, auth.admin)
 }
 
 export const useRoutes = (app: FastifyInstance) => ({
   admin: () => {
     const router = useRouter(app)
 
-    router.post('/admin/chat/banIP', ctrls.admin.chat.banIP, auth.admin)
-    router.post('/admin/chat/sendMessage', ctrls.admin.chat.sendMessage, auth.admin)
+    router.post('/admin/chat/ban_ip', ctrls.admin.chat.banIP, auth.admin)
+    router.post('/admin/chat/send_message', ctrls.admin.chat.sendMessage, auth.admin)
 
-    router.get('/admin/store/badWords', ctrls.admin.store.badWord.all, auth.admin)
-    router.get('/admin/store/bannedUsers', ctrls.admin.store.bannedUser.all, auth.admin)
-    router.post('/admin/store/badWords/invalidate', ctrls.admin.store.badWord.invalidate, auth.admin)
-    router.post('/admin/store/bannedUsers/invalidate', ctrls.admin.store.bannedUser.invalidate, auth.admin)
+    router.get('/admin/store/bad_words', ctrls.admin.store.badWord.all, auth.admin)
+    router.get('/admin/store/banned_users', ctrls.admin.store.bannedUser.all, auth.admin)
+    router.post('/admin/store/bad_words/invalidate', ctrls.admin.store.badWord.invalidate, auth.admin)
+    router.post('/admin/store/banned_users/invalidate', ctrls.admin.store.bannedUser.invalidate, auth.admin)
     router.post('/admin/store/messages/invalidate', ctrls.admin.store.message.invalidate, auth.admin)
 
     router.post('/admin/contents/real_time_positions', ctrls.content.realTimePositions.set, auth.admin)
