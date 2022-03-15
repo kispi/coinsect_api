@@ -14,17 +14,12 @@ export const createHttpLog = (req: FastifyRequest, res: FastifyReply) => {
   const time = new Date().toISOString()
   const [a, b] = time.split('T')
   return {
-    time: `${a} ${b.substring(0, 8)}`,
-    level: (() => {
-      if (res.statusCode >= 400) return 'error'
-
-      return 'info'
-    })(),
-    url: req.url,
+    ts: `${a} ${b.substring(0, 8)}`,
     method: req.method,
+    url: req.url,
     status: res.statusCode,
-    responseTime: Math.round(100 * (helpers.now() - req['$$startTime'])) / 100,
-    remoteAddress: req.headers['x-forwarded-for'] ||  req.socket.remoteAddress,
+    ms: Math.round(100 * (helpers.now() - req['$$startTime'])) / 100,
+    ip: req.headers['x-forwarded-for'] ||  req.socket.remoteAddress,
   }
 }
 
