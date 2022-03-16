@@ -13,14 +13,19 @@ export const createLogger = () => {
 export const createHttpLog = (req: FastifyRequest, res: FastifyReply) => {
   const time = new Date().toISOString()
   const [a, b] = time.split('T')
-  return {
+
+  const log = {
     ts: `${a} ${b.substring(0, 8)}`,
     method: req.method,
     url: req.url,
     status: res.statusCode,
     ms: Math.round(100 * (helpers.now() - req['$$startTime'])) / 100,
-    ip: req.headers['x-forwarded-for'] ||  req.socket.remoteAddress,
+    ip: req.headers['ssr-proxy-from'] || req.headers['x-forwarded-for'] ||  req.socket.remoteAddress, // ssr-proxy-from은 ssr 서버에서 그리로 들어오는 x-forwarded-for를 넘겨준 것.
   }
+
+  if (req.headers['is-ssr']) log['is-ssr'] = true
+
+  return log
 }
 
 export const log = createLogger()
