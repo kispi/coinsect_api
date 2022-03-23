@@ -9,7 +9,12 @@ const createContext = (req: FastifyRequest, reply: FastifyReply) => ({
   res: useResponse(reply),
 })
 
-const useMiddleware = async (req, res, handler: Function, middleware?: Function) => {
+const useMiddleware = async (
+  req: FastifyRequest,
+  res: FastifyReply,
+  handler: Function,
+  middleware?: Function,
+) => {
   const c = createContext(req, res)
 
   const hl = () => JSON.stringify(createHttpLog(req, res))
@@ -33,6 +38,9 @@ const useMiddleware = async (req, res, handler: Function, middleware?: Function)
     log.error(hl())
     return
   }
+
+  const routesSkipLog = ['/config']
+  if (routesSkipLog.includes(req.routerPath)) return
 
   log.info(hl())
 }
