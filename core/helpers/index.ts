@@ -82,6 +82,16 @@ const helpers = {
     const ts = process.hrtime()
     return (ts[0] * 1e3) + (ts[1] / 1e6)
   },
+  // 디폴트는 한국시각 기준
+  formatWithAdd: ({
+    date,
+    format = 'YYYY-MM-DD HH:mm:ss',
+    unit = 'hours',
+    number = 9,
+  }) => {
+    const p = date
+    return dayjs(p).add(number, unit).format(format)
+  },
 }
 
 export default helpers

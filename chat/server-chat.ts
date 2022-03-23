@@ -89,7 +89,7 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
         sendMessage({
           message: {
             type: 'alert',
-            text: `채팅 제한 해제: ${coreHelpers.dayjs(bannedUser.until).format('YYYY-MM-DD HH:mm:ss')}`,
+            text: `채팅 제한 해제: ${coreHelpers.formatWithAdd({ date: bannedUser.until })}`,
           },
           token,
         })
@@ -101,7 +101,7 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
         sendMessage({
           message: {
             type: 'alert',
-            text: `채팅 제한 해제: ${t.format('YYYY-MM-DD HH:mm:ss')}`,
+            text: `채팅 제한 해제: ${coreHelpers.formatWithAdd({ date: t })}`,
           },
           token,
         })

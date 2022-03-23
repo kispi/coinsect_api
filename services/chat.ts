@@ -1,6 +1,6 @@
 import store from '../store'
-import { sendMessage } from '../chat/server-chat'
 import helpers from '../core/helpers'
+import { sendMessage } from '../chat/server-chat'
 
 export default {
   banIP: (ip, timeout) => {
@@ -13,8 +13,8 @@ export default {
       sendMessage({
         message: {
           type: 'alert',
-          text: `채팅이 금지되었습니다. (해제: ${d.format('YYYY-MM-DD HH:mm:ss')}`,
-        }, ip
+          text: `채팅이 금지되었습니다. (해제: ${helpers.formatWithAdd({ date: d })}`,
+        }, ip,
       })
     }
 
