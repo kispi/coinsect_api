@@ -26,8 +26,11 @@ export const useRoutes = (app: FastifyInstance) => ({
   deploy: () => {
     const router = useRouter(app)
 
-    router.post('/deploy/coinsect/web', ctrls.deploy.coinsect.web, auth.admin)
-    router.post('/deploy/coinsect/api', ctrls.deploy.coinsect.api, auth.admin)
+    router.get('/deploy/coinsect/web', ctrls.deploy.coinsect.web.status, auth.admin)
+    router.post('/deploy/coinsect/web', ctrls.deploy.coinsect.web.request, auth.admin)
+
+    router.get('/deploy/coinsect/api', ctrls.deploy.coinsect.api.status, auth.admin)
+    router.post('/deploy/coinsect/api', ctrls.deploy.coinsect.api.request, auth.admin)
   },
   admin: () => {
     const router = useRouter(app)
