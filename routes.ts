@@ -3,7 +3,6 @@ import { useRouter } from './core/router'
 import helpers from './core/helpers'
 import middlewares from './core/middlewares'
 import useControllers from './controllers'
-import { exec } from 'child_process'
 
 const ctrls = useControllers()
 

@@ -1,4 +1,4 @@
-import fastify from 'fastify'
+import fastify, { FastifyInstance } from 'fastify'
 import fastifyCors from 'fastify-cors'
 import useRoutes from './routes'
 import useDB from './database'
@@ -7,6 +7,7 @@ import fastifyWebsocket from 'fastify-websocket'
 import store from './store'
 import helpers from './core/helpers'
 import { useChat } from './chat/server-chat'
+import { log, createHttpLog } from './core/logger'
 
 axios.defaults.timeout = 5000
 
@@ -21,15 +22,20 @@ axios.interceptors.response.use(
   },
 )
 
-export const initApp = async app => {
+export const initApp = async (app: FastifyInstance) => {
   app.register(fastifyCors)
   app.register(fastifyWebsocket)
   app.addHook('onRequest', (req, res, next) => {
-    req.$$startTime = helpers.now()
+    req['$$startTime'] = helpers.now()
     next()
   })
   await useDB()
 
+  app.setNotFoundHandler((req, res) => {
+    res.status(404)
+    log.error(JSON.stringify(createHttpLog(req, res)))
+    res.send({ message: 'Not Found' })
+  })
   const routeMaker = useRoutes(app)
   routeMaker.admin()
   routeMaker.deploy()
