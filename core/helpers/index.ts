@@ -5,14 +5,12 @@ import store from '../../store'
 import { BannedUser } from '../../entities/banned_user'
 import { Reply } from '../../entities/reply'
 import { parse } from 'node-html-parser'
-import seo from './seo'
 import sanitize from './sanitize'
 
 const helpers = {
   // 나중에 구현
   sanitize,
   dayjs,
-  seo,
   case: {
     pluralize: (str: string) => {
       if (str.endsWith('day')) return `${str}s`

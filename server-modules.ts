@@ -31,9 +31,9 @@ export const initApp = async app => {
   await useDB()
 
   const routeMaker = useRoutes(app)
-  routeMaker.service()
   routeMaker.admin()
-  routeMaker.seo()
+  routeMaker.deploy()
+  routeMaker.service()
 
   await store.initCaches()
   useChat(app)

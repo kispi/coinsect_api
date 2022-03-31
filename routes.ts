@@ -3,6 +3,7 @@ import { useRouter } from './core/router'
 import helpers from './core/helpers'
 import middlewares from './core/middlewares'
 import useControllers from './controllers'
+import { exec } from 'child_process'
 
 const ctrls = useControllers()
 
@@ -23,6 +24,12 @@ const useRouteCRUD = ({ app, model }) => {
 }
 
 export const useRoutes = (app: FastifyInstance) => ({
+  deploy: () => {
+    const router = useRouter(app)
+
+    router.post('/deploy/coinsect/web', ctrls.deploy.coinsect.web, auth.admin)
+    router.post('/deploy/coinsect/api', ctrls.deploy.coinsect.api, auth.admin)
+  },
   admin: () => {
     const router = useRouter(app)
 
@@ -85,15 +92,6 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/s3/upload_url', ctrls.s3.getSignedUrl)
     router.delete('/s3/object', ctrls.s3.deleteObject)
-  },
-  seo: () => {
-    const router = useRouter(app)
-
-    router.get('/seo/posts', ctrls.seo.post.all)
-    router.get('/seo/posts/:sharingKey', ctrls.seo.post.detail)
-
-    router.get('/seo/persons', ctrls.seo.person.all)
-    router.get('/seo/persons/:sharingKey', ctrls.seo.person.detail)
   },
 })
 
