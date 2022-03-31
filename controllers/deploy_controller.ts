@@ -20,8 +20,10 @@ const repos: Array<Repo> = [{
   command: 'cd /home/ec2-user/web/coinsect_api && git pull && npm run build && pm2 restart coinsect_api',
 }]
 
-const deployController = repos.map((repo, i) => ({
-  [repo.key]: {
+const deployController = {}
+
+repos.forEach((repo, i) => {
+  deployController[repo.key] = {
     status: (c: IContext) => {
       c.res.success({
         deploying: repo.deploying,
@@ -42,7 +44,7 @@ const deployController = repos.map((repo, i) => ({
       })
       c.res.success()
     },
-  },
-}))
+  }
+})
 
 export default deployController
