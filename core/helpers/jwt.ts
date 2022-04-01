@@ -13,7 +13,12 @@ const jwtHelper = {
   }),
   getPayload: async (c: IContext) => {
     const token = (c.req.headers.authorization || '').split('Bearer ')[1]
-    if (!token) return Promise.reject({ message: 'token not provided' })
+    if (!token) {
+      return Promise.reject({
+        message: 'unauthorized',
+        status: 401,
+      })
+    }
 
     return jwtHelper.decode(token)
   },

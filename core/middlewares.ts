@@ -6,7 +6,7 @@ const middlewares = {
     try {
       return helpers.jwt.getPayload(c)
     } catch (e) {
-      return Promise.reject({ ...e, code: 401 })
+      return Promise.reject(e)
     }
   },
 }

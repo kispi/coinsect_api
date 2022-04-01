@@ -16,8 +16,10 @@ const useResponse = (reply: FastifyReply) => {
       if (typeof payload === 'string') reply.type('text/html')
       if (typeof payload === 'object') reply.header('Content-Type', 'application/json; charset=utf-8')
 
+      const emittedStatus = typeof payload === 'object' ? (payload || {})['status'] : null
+
       reply
-        .code(code || 400)
+        .code(code || emittedStatus || 400)
         .send(payload || { message: 'failed' })
     },
     error: () => responses.failed({ message: 'Internal Server Error' }, 500),
