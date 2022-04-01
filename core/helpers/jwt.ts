@@ -15,7 +15,7 @@ const jwtHelper = {
     const token = (c.req.headers.authorization || '').split('Bearer ')[1]
     if (!token) {
       return Promise.reject({
-        message: 'unauthorized',
+        message: 'test',
         status: 401,
       })
     }
