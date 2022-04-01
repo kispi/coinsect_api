@@ -12,12 +12,12 @@ const repos: Array<Repo> = [{
   key: 'coinsect_web',
   deploying: false,
   lastDeployLog: null,
-  command: 'cd /home/ec2-user/web/coinsect_web && git pull && npm run build:ssr && pm2 restart coinsect_web',
+  command: 'cd /home/ec2-user/web/coinsect_web && git pull && npm install && npm run build:ssr && pm2 restart coinsect_web',
 }, {
   key: 'coinsect_api',
   deploying: false,
   lastDeployLog: null,
-  command: 'cd /home/ec2-user/web/coinsect_api && git pull && npm run build && pm2 restart coinsect_api',
+  command: 'cd /home/ec2-user/web/coinsect_api && git pull && npm install && npm run build && pm2 restart coinsect_api',
 }]
 
 const deployController = {}
