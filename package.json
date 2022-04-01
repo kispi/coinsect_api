@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && mv dist-temp dist",
+    "build": "tsc && rm -rf dist && mv dist-temp dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cross-env NODE_ENV=development ts-node-dev server.ts",
     "prod": "cross-env NODE_ENV=production node dist/server.js",
