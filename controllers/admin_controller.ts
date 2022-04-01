@@ -20,7 +20,7 @@ const service = useService()
 const routesChat = {
   banIP: (c: IContext) => {
     if (!c.req.body['ip'] || !c.req.body['timeout']) {
-      c.res.failed('missing params: ip, timeout')
+      c.res.failed({ message: 'missing params: ip, timeout' })
       return
     }
 

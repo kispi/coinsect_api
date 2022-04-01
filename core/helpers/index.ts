@@ -6,10 +6,12 @@ import { BannedUser } from '../../entities/banned_user'
 import { Reply } from '../../entities/reply'
 import { parse } from 'node-html-parser'
 import sanitize from './sanitize'
+import jwt from './jwt'
 
 const helpers = {
   // 나중에 구현
   sanitize,
+  jwt,
   dayjs,
   case: {
     pluralize: (str: string) => {
@@ -41,7 +43,6 @@ const helpers = {
     raw &&
     crypto.createHash('sha256').update(raw).digest('base64') === hashed
   ,
-  slugid,
   generateUUID: (asBase64?: boolean) => {
     const slug = slugid.v4()
 

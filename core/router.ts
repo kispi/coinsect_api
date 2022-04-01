@@ -21,10 +21,10 @@ const useMiddleware = async (
 
   if (middleware) {
     try {
-      middleware(c)
+      await middleware(c)
     } catch (e) {
       console.error('Error:', e)
-      c.res.error()
+      c.res.failed(e, (e || {}).code)
       log.error(hl())
       return
     }
@@ -34,7 +34,10 @@ const useMiddleware = async (
     await handler(c)
   } catch (e) {
     console.error('Error:', e)
-    c.res.error()
+
+    // e.code가 있으면 서버개발자의 커스텀 에러이고, 없는 경우는 500으로 처리한다.
+    if ((e || {}).code) c.res.failed(e, e.code)
+    else c.res.error()
     log.error(hl())
     return
   }
