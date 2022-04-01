@@ -22,7 +22,25 @@ axios.interceptors.response.use(
   },
 )
 
+const checkServerConfig = () => {
+  const requiredFields = [
+    'API_PORT',
+    'JWT_SECRET',
+    'AWS_ACCESS_KEY_ID',
+    'AWS_SECRET_ACCESS_KEY',
+  ]
+
+  requiredFields.forEach(field => {
+    if (!store.state.serverConfig[field]) {
+      console.error(`[.env] missing required field: ${field}`)
+      process.exit()
+    }
+  })
+}
+
 export const initApp = async (app: FastifyInstance) => {
+  checkServerConfig()
+
   app.register(fastifyCors)
   app.register(fastifyWebsocket)
   app.addHook('onRequest', (req, res, next) => {
