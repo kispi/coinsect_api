@@ -1,10 +1,12 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { getConnection } from 'typeorm'
 import { log, createHttpLog } from './logger'
+import useCache from './cache'
 import useResponse from './response'
 
 const createContext = (req: FastifyRequest, reply: FastifyReply) => ({
   orm: getConnection(),
+  cache: useCache(),
   req,
   res: useResponse(reply),
 })

@@ -1,3 +1,4 @@
+import { RedisClientType } from '@node-redis/client';
 import { FastifyRequest } from 'fastify'
 import { Connection } from 'typeorm';
 
@@ -10,6 +11,7 @@ interface IAppResponse {
 
 export default interface IContext {
   orm: Connection,
+  cache: RedisClientType,
   req: FastifyRequest,
   res: IAppResponse,
 }

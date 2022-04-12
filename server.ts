@@ -1,5 +1,5 @@
 import store from './store'
-import { app, initApp, backendGitHash } from './server-modules'
+import { app, initApp, backendGitHash } from './server_modules'
 
 const run = async () => {
   await initApp(app)

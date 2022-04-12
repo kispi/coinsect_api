@@ -1,21 +1,21 @@
 import axios from 'axios'
 import helpers from '../core/helpers'
-import sanitize from '../core/helpers/sanitize'
+import useCache from '../core/cache'
 import { parse } from 'node-html-parser'
 
-const cached = {
-  publicTreasuries: null,
-  realTimePositions: [
-    { id: 'hoduexplosion', image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg', name: '박호두', entry: null, contract: null, size: null },
-    { id: 'jjabgu', image: 'http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg', name: '짭구', entry: null, contract: null, size: null },
-  ],
-}
+const cache = useCache()
+
+const realTimePositions = [
+  { id: 'hoduexplosion', image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg', name: '박호두', entry: null, contract: null, size: null },
+  { id: 'jjabgu', image: 'http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg', name: '짭구', entry: null, contract: null, size: null },
+]
 
 const foo = (val: string) => parseFloat(val.replace(/[^.0-9]+/g, ''))
 
 const contentService = {
   publicTreasuries: async () => {
-    if (cached.publicTreasuries) return cached.publicTreasuries
+    const stored = await cache.get('content:publicTreasuries')
+    if (stored) return stored
 
     try {
       const result = []
@@ -33,9 +33,9 @@ const contentService = {
         }
 
         const item = {
-          name: sanitize.strict(cols[1].innerHTML),
-          country: sanitize.strict(cols[2].innerHTML),
-          symbol: sanitize.strict(cols[3].innerHTML),
+          name: helpers.sanitize.strict(cols[1].innerHTML),
+          country: helpers.sanitize.strict(cols[2].innerHTML),
+          symbol: helpers.sanitize.strict(cols[3].innerHTML),
           source,
           costBasis: foo(cols[7].innerHTML),
           valuation: foo(cols[8].innerHTML),
@@ -55,18 +55,17 @@ const contentService = {
         result.push(item)
       })
       result.sort((a, b) => b.holdings - a.holdings)
-      cached.publicTreasuries = result
-      setTimeout(() => delete cached.publicTreasuries, 1000 * 60 * 60)
-      return cached.publicTreasuries
+      cache.set('content:publicTreasuries', result, 3600)
+      return result
     } catch (e) {
       return Promise.reject(e)
     }
   },
   realTimePositions: {
-    all: () => cached.realTimePositions,
+    all: () => realTimePositions,
     set: payload => {
       if (!payload) {
-        cached.realTimePositions.push({
+        realTimePositions.push({
           id: helpers.generateUUID(true),
           image: null,
           name: null,
@@ -78,8 +77,8 @@ const contentService = {
       }
 
       try {
-        const found = cached.realTimePositions.find(o => o.id === payload.id)
-        if (!found) cached.realTimePositions.push(payload)
+        const found = realTimePositions.find(o => o.id === payload.id)
+        if (!found) realTimePositions.push(payload)
         else {
           found.image = payload.image
           found.entry = parseFloat(payload.entry)
@@ -92,8 +91,8 @@ const contentService = {
       }
     },
     delete: id => {
-      const idx = cached.realTimePositions.findIndex(o => o.id === id)
-      if (idx >= 0) cached.realTimePositions.splice(idx, 1)
+      const idx = realTimePositions.findIndex(o => o.id === id)
+      if (idx >= 0) realTimePositions.splice(idx, 1)
     },
   },
 }

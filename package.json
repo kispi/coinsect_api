@@ -33,6 +33,7 @@
     "mysql": "^2.18.1",
     "node-html-parser": "^5.0.0",
     "pino-pretty": "^6.0.0",
+    "redis": "^4.0.6",
     "reflect-metadata": "^0.1.10",
     "sanitize-html": "^2.4.0",
     "slugid": "^3.0.0",

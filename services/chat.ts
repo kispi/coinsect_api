@@ -1,6 +1,6 @@
 import store from '../store'
 import helpers from '../core/helpers'
-import { sendMessage } from '../chat/server-chat'
+import { sendMessage } from '../chat/server_chat'
 
 export default {
   banIP: (ip, timeout) => {

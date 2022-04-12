@@ -1,15 +1,12 @@
 import axios from 'axios'
+import useCache from '../core/cache'
 
-const cached = {
-  leaderboard: null,
-  indices: null,
-  symbols: null,
-  markets: null,
-}
+const cache = useCache()
 
 const marketInfoService = {
   indices: async () => {
-    if (cached.indices) return cached.indices
+    const stored = await cache.get('market_info:indices')
+    if (stored) return stored
 
     let indices = {}
     try {
@@ -28,15 +25,15 @@ const marketInfoService = {
         basePrice: resp[1][0]['basePrice'],
         signedChangeRate: resp[1][0]['signedChangeRate'],
       }
-      cached.indices = indices
-      setTimeout(() => delete cached.indices, 1000 * 60 * 10)
-      return cached.indices
+      cache.set('market_info:indices', indices, 60 * 10)
+      return indices
     } catch (e) {
       return Promise.reject(e)
     }
   },
   symbols: async () => {
-    if (cached.symbols) return cached.symbols
+    const stored = await cache.get('market_info:symbols')
+    if (stored) return stored
 
     try {
       const result = await Promise.allSettled([
@@ -72,16 +69,15 @@ const marketInfoService = {
           }
         })
       }
-
-      cached.symbols = symbols
-      setTimeout(() => delete cached.symbols, 1000 * 3600 * 24)
-      return cached.symbols
+      cache.set('market_info:symbols', symbols, 3600 * 24)
+      return symbols
     } catch (e) {
       return Promise.reject(e)
     }
   },
   markets: async () => {
-    if (cached.markets) return cached.markets
+    const stored = await cache.get('market_info:markets')
+    if (stored) return stored
 
     try {
       const data = await Promise.all([
@@ -89,26 +85,27 @@ const marketInfoService = {
         axios.get('https://api.binance.com/api/v1/exchangeInfo'),
       ])
 
-      cached.markets = {
+      const markets = {
         bybit: data[0]['result'].map(o => o.name),
         binance: (data[1]['symbols'] || []).filter(o => o.symbol.endsWith('USDT')).map(o => o.symbol)
       }
-      setTimeout(() => delete cached.markets, 1000 * 60 * 5)
-      return cached.markets
+
+      cache.set('market_info:markets', markets, 60 * 5)
+      return markets
     } catch (e) {
       return Promise.reject(e)
     }
   },
   leaderboard: async () => {
-    if (cached.leaderboard) return cached.leaderboard
+    const stored = await cache.get('market_info:leaderboard')
+    if (stored) return stored
 
     try {
       const { data } = await axios.get('https://api.btctools.io/api/leaderboard')
-      cached.leaderboard = data
       data.sort((a, b) => b.profit - a.profit)
       data.forEach((row, idx) => row.rank = idx + 1)
-      setTimeout(() => delete cached.leaderboard, 1000 * 60)
-      return cached.leaderboard
+      cache.set('market_info:leaderboard', data, 60)
+      return data
     } catch (e) {
       return Promise.reject(e)
     }

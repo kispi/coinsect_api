@@ -1,4 +1,4 @@
-import { sendMessage } from '../chat/server-chat'
+import { sendMessage } from '../chat/server_chat'
 import { BadWord } from '../entities/bad_word'
 import { BannedUser } from '../entities/banned_user'
 import { Board } from '../entities/board'

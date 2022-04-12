@@ -6,7 +6,7 @@ import axios from 'axios'
 import fastifyWebsocket from 'fastify-websocket'
 import store from './store'
 import helpers from './core/helpers'
-import { useChat } from './chat/server-chat'
+import { useChat } from './chat/server_chat'
 import { log, createHttpLog } from './core/logger'
 
 axios.defaults.timeout = 5000
