@@ -28,9 +28,6 @@ const checkServerConfig = () => {
     'JWT_SECRET',
     'AWS_ACCESS_KEY_ID',
     'AWS_SECRET_ACCESS_KEY',
-    'REDIS_HOST',
-    'REDIS_PORT',
-    'REDIS_PASSWORD',
   ]
 
   requiredFields.forEach(field => {

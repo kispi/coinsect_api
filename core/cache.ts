@@ -1,19 +1,10 @@
 import { createClient } from 'redis'
 import { log } from './logger'
-import store from '../store'
 
 let usedClient
 
-const c = store.state.serverConfig
-
 const useCache = () => {
-  const client = usedClient || createClient({
-    socket: {
-      host: c.REDIS_HOST,
-      port: parseInt(c.REDIS_PORT),
-    },
-    password: c.REDIS_PASSWORD,
-  })
+  const client = usedClient || createClient({ url: `redis://localhost:6379` })
 
   if (!usedClient) {
     client.on('error', err => log.error('Redis Client Error', err))
