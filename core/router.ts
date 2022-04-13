@@ -48,6 +48,7 @@ const useMiddleware = async (
   const routesSkipLog = [
     '/config',
     '/messages',
+    '/notifications',
     '/market_info/indices',
     '/market_info/symbols',
     '/market_info/markets',
