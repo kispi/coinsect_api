@@ -1,4 +1,4 @@
-import IContext from '../core/context'
+import IContext from '../core/interfaces/context'
 import useService from '../services'
 
 const service = useService()

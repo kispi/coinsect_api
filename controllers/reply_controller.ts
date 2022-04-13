@@ -1,4 +1,4 @@
-import IContext from '../core/context'
+import IContext from '../core/interfaces/context'
 import orm from '../core/orm'
 import helpers from '../core/helpers'
 import { Reply } from '../entities/reply'

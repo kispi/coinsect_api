@@ -1,5 +1,5 @@
 import store from '../../store'
-import IContext from '../context'
+import IContext from '../interfaces/context'
 const jwt = require('jsonwebtoken')
 
 const jwtHelper = {

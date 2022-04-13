@@ -1,5 +1,5 @@
 import { getRepository } from 'typeorm'
-import IContext from './context'
+import IContext from './interfaces/context'
 
 const columnWithTable = (column, entityName) => {
   if (column.includes('.')) return column

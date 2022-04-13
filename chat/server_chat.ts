@@ -6,7 +6,7 @@ import { Message } from '../entities/message'
 import { getConnection } from 'typeorm'
 import helpers from './helpers'
 import coreHelpers from '../core/helpers'
-import IContext from '../core/context'
+import IContext from '../core/interfaces/context'
 import chat from '../services/chat'
 import store from '../store'
 

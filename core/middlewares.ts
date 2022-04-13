@@ -1,4 +1,4 @@
-import IContext from './context'
+import IContext from './interfaces/context'
 import helpers from './helpers'
 
 const middlewares = {

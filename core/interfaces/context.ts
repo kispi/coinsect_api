@@ -1,6 +1,6 @@
-import { RedisClientType } from '@node-redis/client';
 import { FastifyRequest } from 'fastify'
-import { Connection } from 'typeorm';
+import { Connection } from 'typeorm'
+import ICacheClient from './cache_client'
 
 interface IAppResponse {
   asJSON: (json: unknown) => void
@@ -11,7 +11,7 @@ interface IAppResponse {
 
 export default interface IContext {
   orm: Connection,
-  cache: RedisClientType,
+  cache: ICacheClient,
   req: FastifyRequest,
   res: IAppResponse,
 }

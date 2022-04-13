@@ -1,5 +1,5 @@
 import { getRepository } from 'typeorm'
-import IContext from './context'
+import IContext from './interfaces/context'
 import helpers from './helpers'
 import orm from './orm'
 

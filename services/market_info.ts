@@ -36,39 +36,34 @@ const marketInfoService = {
     if (stored) return stored
 
     try {
-      const result = await Promise.allSettled([
+      const result: any = await Promise.all([
         axios.get('https://api.upbit.com/v1/market/all'),
         axios.get('https://api.coingecko.com/api/v3/search?locale=en'),
       ])
 
       const symbols = {}
 
-      if (result[0].status === 'fulfilled') {
-        const v: any = result[0].value
-        v.forEach(o => {
-          const symbol = o.market.split('KRW-')[1] || o.market.split('BTC-')[1] || o.market.split('USDT-')[1]
-          if (!symbol) return
-  
-          symbols[symbol] = {
-            symbol: symbol,
-            thumb: `https://static.upbit.com/logos/${symbol}.png`,
-            kr: o.korean_name,
-            en: o.english_name,
-          }
-        })
-      }
+      result[0].forEach(o => {
+        const symbol = o.market.split('KRW-')[1] || o.market.split('BTC-')[1] || o.market.split('USDT-')[1]
+        if (!symbol) return
 
-      if (result[1].status === 'fulfilled') {
-        result[1].value['coins'].forEach(coin => {
-          if (symbols[coin.symbol] && symbols[coin.symbol].en) return
-  
-          symbols[coin.symbol] = {
-            symbol: coin.symbol,
-            thumb: coin.thumb,
-            en: coin.name,
-          }
-        })
-      }
+        symbols[symbol] = {
+          symbol: symbol,
+          thumb: `https://static.upbit.com/logos/${symbol}.png`,
+          kr: o.korean_name,
+          en: o.english_name,
+        }
+      })
+
+      result[1]['coins'].forEach(coin => {
+        if (symbols[coin.symbol] && symbols[coin.symbol].en) return
+
+        symbols[coin.symbol] = {
+          symbol: coin.symbol,
+          thumb: coin.thumb,
+          en: coin.name,
+        }
+      })
       cache.set('market_info:symbols', symbols, 3600 * 24)
       return symbols
     } catch (e) {

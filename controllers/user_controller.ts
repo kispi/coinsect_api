@@ -1,4 +1,4 @@
-import IContext from '../core/context'
+import IContext from '../core/interfaces/context'
 import { User } from '../entities/user'
 
 const detail = (c: IContext) => {

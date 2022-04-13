@@ -1,4 +1,4 @@
-import IContext from '../core/context'
+import IContext from '../core/interfaces/context'
 import { exec } from 'child_process'
 
 type Repo = {
