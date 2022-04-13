@@ -18,7 +18,7 @@ const localCacheClient: ICacheClient = {
 let usedClient
 
 const useCache = (): ICacheClient => {
-  if (store.state.serverConfig.USE_REDIS === 'yes') return localCacheClient
+  if (store.state.serverConfig.USE_REDIS !== 'yes') return localCacheClient
 
   const client: RedisClientType = usedClient || createClient({ url: `redis://localhost:6379` })
 
