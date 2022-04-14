@@ -93,7 +93,8 @@ const contentService = {
         if (!found) realTimePositions.push(payload)
         else {
           found.image = payload.image
-          found.entryPrice = parseFloat(payload.entry)
+          found.entryPrice = parseFloat(payload.entryPrice)
+          found.liqPrice = parseFloat(payload.liqPrice)
           found.size = parseFloat(payload.size)
           found.contract = payload.contract
           found.name = payload.name
