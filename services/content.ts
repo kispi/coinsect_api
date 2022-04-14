@@ -5,9 +5,20 @@ import { parse } from 'node-html-parser'
 
 const cache = useCache()
 
+const createPosition = ({ image, name }) => ({
+  id: helpers.generateUUID(true),
+  image,
+  name,
+  entryPrice: null,
+  liqPrice: null,
+  contract: null,
+  size: null,
+})
+
 const realTimePositions = [
-  { id: 'hoduexplosion', image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg', name: '박호두', entry: null, contract: null, size: null },
-  { id: 'jjabgu', image: 'http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg', name: '짭구', entry: null, contract: null, size: null },
+  createPosition({ image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg', name: '박호두' }),
+  createPosition({ image: 'http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg', name: '짭구' }),
+  createPosition({ image: 'https://yt3.ggpht.com/ytc/AKedOLQJ_N26u5siKQw3PAr3LeY3lfJLGo4_V3G5LlYssg=s900-c-k-c0x00ffffff-no-rj', name: '사또' }),
 ]
 
 const foo = (val: string) => parseFloat(val.replace(/[^.0-9]+/g, ''))
@@ -69,7 +80,8 @@ const contentService = {
           id: helpers.generateUUID(true),
           image: null,
           name: null,
-          entry: null,
+          liqPrice: null,
+          entryPrice: null,
           contract: null,
           size: null,
         })
@@ -81,7 +93,7 @@ const contentService = {
         if (!found) realTimePositions.push(payload)
         else {
           found.image = payload.image
-          found.entry = parseFloat(payload.entry)
+          found.entryPrice = parseFloat(payload.entry)
           found.size = parseFloat(payload.size)
           found.contract = payload.contract
           found.name = payload.name
