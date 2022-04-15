@@ -15,7 +15,7 @@ const createPosition = ({ image, name }) => ({
   size: null,
 })
 
-const realTimePositions = [
+let realTimePositions = [
   createPosition({ image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg', name: '박호두' }),
   createPosition({ image: 'http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg', name: '짭구' }),
   createPosition({ image: 'https://yt3.ggpht.com/ytc/AKedOLQJ_N26u5siKQw3PAr3LeY3lfJLGo4_V3G5LlYssg=s900-c-k-c0x00ffffff-no-rj', name: '사또' }),
@@ -73,7 +73,12 @@ const contentService = {
     }
   },
   realTimePositions: {
-    all: () => realTimePositions,
+    all: async () => {
+      const stored: any = await cache.get('content:realTimePositions')
+      if (stored) realTimePositions = stored
+
+      return realTimePositions
+    },
     set: payload => {
       if (!payload) {
         realTimePositions.push({
@@ -85,6 +90,7 @@ const contentService = {
           contract: null,
           size: null,
         })
+        cache.set('content:realTimePositions', realTimePositions)
         return
       }
 
@@ -99,6 +105,7 @@ const contentService = {
           found.contract = payload.contract
           found.name = payload.name
         }
+        cache.set('content:realTimePositions', realTimePositions)
       } catch (e) {
         return Promise.reject(e)
       }

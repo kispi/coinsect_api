@@ -12,7 +12,7 @@ const contentController = {
     }
   },
   realTimePositions: {
-    all: (c: IContext) => c.res.asJSON(service.content.realTimePositions.all()),
+    all: async (c: IContext) => c.res.asJSON(await service.content.realTimePositions.all()),
     set: (c: IContext) => {
       service.content.realTimePositions.set(c.req.body)
       c.res.success()
