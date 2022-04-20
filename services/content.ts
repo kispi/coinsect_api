@@ -113,6 +113,7 @@ const contentService = {
     delete: id => {
       const idx = realTimePositions.findIndex(o => o.id === id)
       if (idx >= 0) realTimePositions.splice(idx, 1)
+      cache.set('content:realTimePositions', realTimePositions)
     },
   },
 }
