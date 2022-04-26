@@ -25,7 +25,7 @@ let realTimePositions = {
 }
 
 const setRealTimePositions = o => {
-  o.lastUpdate = helpers.dayjs().format('YYYY-MM-DD HH:mm:ss')
+  o.lastUpdate = helpers.dayjs().format()
   cache.set('content:realTimePositions', o)
 }
 
