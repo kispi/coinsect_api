@@ -84,7 +84,6 @@ const contentService = {
     all: async () => {
       const stored: any = await cache.get('content:realTimePositions')
       if (stored) realTimePositions = stored
-      realTimePositions.data = realTimePositions.data.filter(o => o.name)
       return realTimePositions
     },
     set: payload => {
