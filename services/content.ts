@@ -15,11 +15,19 @@ const createPosition = ({ image, name }) => ({
   size: null,
 })
 
-let realTimePositions = [
-  createPosition({ image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg', name: '박호두' }),
-  createPosition({ image: 'http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg', name: '짭구' }),
-  createPosition({ image: 'https://yt3.ggpht.com/ytc/AKedOLQJ_N26u5siKQw3PAr3LeY3lfJLGo4_V3G5LlYssg=s900-c-k-c0x00ffffff-no-rj', name: '사또' }),
-]
+let realTimePositions = {
+  data: [
+    createPosition({ image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg', name: '박호두' }),
+    createPosition({ image: 'http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg', name: '짭구' }),
+    createPosition({ image: 'https://yt3.ggpht.com/ytc/AKedOLQJ_N26u5siKQw3PAr3LeY3lfJLGo4_V3G5LlYssg=s900-c-k-c0x00ffffff-no-rj', name: '사또' }),
+  ],
+  lastUpdate: null,
+}
+
+const setRealTimePositions = o => {
+  o.lastUpdate = helpers.dayjs().format('YYYY-MM-DD HH:mm:ss')
+  cache.set('content:realTimePositions', o)
+}
 
 const foo = (val: string) => parseFloat(val.replace(/[^.0-9]+/g, ''))
 
@@ -76,12 +84,12 @@ const contentService = {
     all: async () => {
       const stored: any = await cache.get('content:realTimePositions')
       if (stored) realTimePositions = stored
-
+      realTimePositions.data = realTimePositions.data.filter(o => o.name)
       return realTimePositions
     },
     set: payload => {
       if (!payload) {
-        realTimePositions.push({
+        realTimePositions.data.push({
           id: helpers.generateUUID(true),
           image: null,
           name: null,
@@ -90,13 +98,13 @@ const contentService = {
           contract: null,
           size: null,
         })
-        cache.set('content:realTimePositions', realTimePositions)
+        setRealTimePositions(realTimePositions)
         return
       }
 
       try {
-        const found = realTimePositions.find(o => o.id === payload.id)
-        if (!found) realTimePositions.push(payload)
+        const found = realTimePositions.data.find(o => o.id === payload.id)
+        if (!found) realTimePositions.data.push(payload)
         else {
           found.image = payload.image
           found.entryPrice = parseFloat(payload.entryPrice)
@@ -105,15 +113,15 @@ const contentService = {
           found.contract = payload.contract
           found.name = payload.name
         }
-        cache.set('content:realTimePositions', realTimePositions)
+        setRealTimePositions(realTimePositions)
       } catch (e) {
         return Promise.reject(e)
       }
     },
     delete: id => {
-      const idx = realTimePositions.findIndex(o => o.id === id)
-      if (idx >= 0) realTimePositions.splice(idx, 1)
-      cache.set('content:realTimePositions', realTimePositions)
+      const idx = realTimePositions.data.findIndex(o => o.id === id)
+      if (idx >= 0) realTimePositions.data.splice(idx, 1)
+      setRealTimePositions(realTimePositions)
     },
   },
 }
