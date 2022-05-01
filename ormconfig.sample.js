@@ -23,5 +23,6 @@ module.exports = {
     subscribersDir,
   },
   timezone: 'Z',
+  charset: 'utf8mb4_unicode_ci',
   namingStrategy: new SnakeNamingStrategy(),
 }
