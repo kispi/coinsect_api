@@ -28,6 +28,7 @@ const contentController = {
         try {
           c.res.success(await service.content.news.coinness.feeds(c.req.query['lastId']))
         } catch (e) {
+          console.error('coinness error:', e)
           c.res.failed({ message: '코인니스 피드를 가져오는 중 문제가 발생했습니다' })
         }
       },
@@ -35,6 +36,7 @@ const contentController = {
         try {
           c.res.success(await service.content.news.coinness.articles(c.req.query))
         } catch (e) {
+          console.error('coinness error:', e)
           c.res.failed({ message: '코인니스 뉴스룸 기사를 가져오는 중 문제가 발생했습니다' })
         }
       },
