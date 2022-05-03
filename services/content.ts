@@ -5,21 +5,42 @@ import { parse } from 'node-html-parser'
 
 const cache = useCache()
 
-const createPosition = ({ image, name }) => ({
+const createPosition = ({
+  image,
+  name,
+  link,
+}: {
+  image: string,
+  name: string,
+  link?: string,
+}) => ({
   id: helpers.generateUUID(true),
   image,
   name,
   entryPrice: null,
   liqPrice: null,
-  contract: null,
+  contract: 'BTCUSDT',
   size: null,
+  link: null,
 })
 
 let realTimePositions = {
   data: [
-    createPosition({ image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg', name: '박호두' }),
-    createPosition({ image: 'http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg', name: '짭구' }),
-    createPosition({ image: 'https://yt3.ggpht.com/ytc/AKedOLQJ_N26u5siKQw3PAr3LeY3lfJLGo4_V3G5LlYssg=s900-c-k-c0x00ffffff-no-rj', name: '사또' }),
+    createPosition({
+      image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg',
+      name: '박호두',
+      link: 'https://bj.afreecatv.com/sweet31w',
+    }),
+    createPosition({
+      image: 'http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg',
+      name: '짭구',
+      link: 'https://play.afreecatv.com/cyzhgw/240402153',
+    }),
+    createPosition({
+      image: 'https://yt3.ggpht.com/ytc/AKedOLQJ_N26u5siKQw3PAr3LeY3lfJLGo4_V3G5LlYssg=s900-c-k-c0x00ffffff-no-rj',
+      name: '사또',
+      link: 'https://www.youtube.com/channel/UCnXe6v0-5vmMMRU2qx0XwUw',
+    }),
   ],
   lastUpdate: null,
 }
@@ -96,6 +117,7 @@ const contentService = {
           entryPrice: null,
           contract: null,
           size: null,
+          link: null,
         })
         setRealTimePositions(realTimePositions)
         return
@@ -111,6 +133,7 @@ const contentService = {
           found.size = parseFloat(payload.size)
           found.contract = payload.contract
           found.name = payload.name
+          found.link = payload.link
         }
         setRealTimePositions(realTimePositions)
       } catch (e) {
