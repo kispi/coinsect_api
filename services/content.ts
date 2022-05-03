@@ -115,7 +115,7 @@ const contentService = {
           name: null,
           liqPrice: null,
           entryPrice: null,
-          contract: null,
+          contract: 'BTCUSDT',
           size: null,
           link: null,
         })
