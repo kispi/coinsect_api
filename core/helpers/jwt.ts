@@ -3,7 +3,7 @@ import IContext from '../interfaces/context'
 const jwt = require('jsonwebtoken')
 
 const jwtHelper = {
-  sign: (payload: object) => jwt.sign(payload, store.state.serverConfig.JWT_SECRET, { expiresIn: 60 * 60 * 24 * 365 }),
+  sign: (payload: object) => jwt.sign(payload, store.state.serverConfig.JWT_SECRET, { expiresIn: 60 * 60 * 24 * 7 }),
   decode: (token: string) => new Promise((resolve, reject) => {
     jwt.verify(token, store.state.serverConfig.JWT_SECRET, (err, decoded) => {
       if (err) return reject(err)
