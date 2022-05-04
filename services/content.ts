@@ -3,6 +3,17 @@ import helpers from '../core/helpers'
 import useCache from '../core/cache'
 import { parse } from 'node-html-parser'
 
+type IPosition = {
+  id: string
+  name: string
+  link: string
+  image: string
+  contract: string
+  entryPrice: number
+  liqPrice: number
+  size: number
+}
+
 const cache = useCache()
 
 const createPosition = ({
@@ -13,7 +24,7 @@ const createPosition = ({
   image: string,
   name: string,
   link?: string,
-}) => ({
+}): IPosition => ({
   id: helpers.generateUUID(true),
   image,
   name,
@@ -34,13 +45,23 @@ let realTimePositions = {
     createPosition({
       image: 'http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg',
       name: '짭구',
-      link: 'https://play.afreecatv.com/cyzhgw/240402153',
+      link: 'https://play.afreecatv.com/cyzhgw',
     }),
     createPosition({
       image: 'https://yt3.ggpht.com/ytc/AKedOLQJ_N26u5siKQw3PAr3LeY3lfJLGo4_V3G5LlYssg=s900-c-k-c0x00ffffff-no-rj',
       name: '사또',
       link: 'https://www.youtube.com/channel/UCnXe6v0-5vmMMRU2qx0XwUw',
     }),
+    createPosition({
+      image: 'https://yt3.ggpht.com/Cc-OWp5QZyoSRUWDY4qIT5FjiAhSdmTBukvLxuMRc2L_UeS4VVbPBYnr3FpLfSw_JVC5lwChBLM=s900-c-k-c0x00ffffff-no-rj',
+      name: '강은호',
+      link: 'https://play.afreecatv.com/cocoa898',
+    }),
+    createPosition({
+      image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/lala.png',
+      name: '랄라',
+      link: 'https://bj.afreecatv.com/lsbm0317',
+    })
   ],
   lastUpdate: null,
 }
@@ -102,12 +123,24 @@ const contentService = {
     }
   },
   realTimePositions: {
+    validate: async payload => {
+      if (
+        (payload.liqPrice && isNaN(parseFloat(payload.liqPrice))) ||
+        (payload.entryPrice && isNaN(parseFloat(payload.entryPrice))) ||
+        (payload.size && isNaN(parseFloat(payload.size)))
+      ) throw { message: '진입가, 청산가, 규모는 숫자여야 합니다.' }
+
+      if ((payload.name || '').length > 10) throw { message: '스트리머 이름은 10자 미만으로 적어주세요' }
+      if ((payload.image || '').length > 300) throw { message: '300자 미만의 이미지 URL을 사용해주세요' }
+      if ((payload.link || '').length > 200) throw { message: '200자 미만의 방송플랫폼 URL을 사용해주세요' }
+      if (payload.contract && !payload.contract.endsWith('USDT')) throw { message: '계약은 반드시 USDT로 끝나야 합니다' }
+    },
     all: async () => {
       const stored: any = await cache.get('content:realTimePositions')
       if (stored) realTimePositions = stored
       return realTimePositions
     },
-    set: payload => {
+    set: async payload => {
       if (!payload) {
         realTimePositions.data.push({
           id: helpers.generateUUID(true),
@@ -124,23 +157,25 @@ const contentService = {
       }
 
       try {
+        await contentService.realTimePositions.validate(payload)
+
         const found = realTimePositions.data.find(o => o.id === payload.id)
         if (!found) realTimePositions.data.push(payload)
         else {
-          found.image = payload.image
-          found.entryPrice = parseFloat(payload.entryPrice)
-          found.liqPrice = parseFloat(payload.liqPrice)
-          found.size = parseFloat(payload.size)
-          found.contract = payload.contract
-          found.name = payload.name
-          found.link = payload.link
+          found.image = (payload.image || '').trim()
+          payload.entryPrice ? found.entryPrice = parseFloat(payload.entryPrice) : delete found.entryPrice
+          payload.liqPrice ? found.liqPrice = parseFloat(payload.liqPrice) : delete found.liqPrice
+          payload.size ? found.size = parseFloat(payload.size) : delete found.size
+          found.contract = (payload.contract || '').trim()
+          found.name = (payload.name || '').trim()
+          found.link = (payload.link || '').trim()
         }
         setRealTimePositions(realTimePositions)
       } catch (e) {
         return Promise.reject(e)
       }
     },
-    delete: id => {
+    delete: async id => {
       const idx = realTimePositions.data.findIndex(o => o.id === id)
       if (idx >= 0) realTimePositions.data.splice(idx, 1)
       setRealTimePositions(realTimePositions)

@@ -13,13 +13,21 @@ const contentController = {
   },
   realTimePositions: {
     all: async (c: IContext) => c.res.asJSON(await service.content.realTimePositions.all()),
-    set: (c: IContext) => {
-      service.content.realTimePositions.set(c.req.body)
-      c.res.success()
+    set: async (c: IContext) => {
+      try {
+        await service.content.realTimePositions.set(c.req.body)
+        c.res.success()
+      } catch (e) {
+        c.res.failed(e)
+      }
     },
-    delete: (c: IContext) => {
-      service.content.realTimePositions.delete(c.req.params['id'])
-      c.res.success()
+    delete: async (c: IContext) => {
+      try {
+        await service.content.realTimePositions.delete(c.req.params['id'])
+        c.res.success()
+      } catch (e) {
+        c.res.failed(e)
+      }
     },
   },
   news: {
