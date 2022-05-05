@@ -97,11 +97,11 @@ const realTimePositionService = {
     return cachedPositions
   },
   set: async payload => {
-    if (!payload) {
+    if (!payload.id) {
       cachedPositions.data.push({
         id: helpers.generateUUID(true),
-        image: null,
-        name: null,
+        image: payload.image,
+        name: payload.name,
         liqPrice: null,
         entryPrice: null,
         contract: 'BTCUSDT',
