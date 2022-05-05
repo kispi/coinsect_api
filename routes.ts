@@ -6,6 +6,7 @@ import useControllers from './controllers'
 
 const ctrls = useControllers()
 
+// 최소 권한을 정의하는 미들웨어들
 const auth = {
   admin: middlewares.adminAuth,
 }
@@ -44,6 +45,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.post('/admin/store/banned_users/invalidate', ctrls.admin.store.bannedUser.invalidate, auth.admin.super)
     router.post('/admin/store/messages/invalidate', ctrls.admin.store.message.invalidate, auth.admin.super)
 
+    router.get('/admin/contents/real_time_positions/presets', ctrls.content.realTimePositions.presets, auth.admin.position)
     router.post('/admin/contents/real_time_positions', ctrls.content.realTimePositions.set, auth.admin.position)
     router.delete('/admin/contents/real_time_positions/:id', ctrls.content.realTimePositions.delete, auth.admin.position)
 

@@ -2,6 +2,7 @@ import axios from 'axios'
 import helpers from '../core/helpers'
 import useCache from '../core/cache'
 import { parse } from 'node-html-parser'
+const presets = require('./positions-presets.json')
 
 type IPosition = {
   id: string
@@ -32,37 +33,11 @@ const createPosition = ({
   liqPrice: null,
   contract: 'BTCUSDT',
   size: null,
-  link: null,
+  link,
 })
 
 let realTimePositions = {
-  data: [
-    createPosition({
-      image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg',
-      name: '박호두',
-      link: 'https://bj.afreecatv.com/sweet31w',
-    }),
-    createPosition({
-      image: 'http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg',
-      name: '짭구',
-      link: 'https://play.afreecatv.com/cyzhgw',
-    }),
-    createPosition({
-      image: 'https://yt3.ggpht.com/ytc/AKedOLQJ_N26u5siKQw3PAr3LeY3lfJLGo4_V3G5LlYssg=s900-c-k-c0x00ffffff-no-rj',
-      name: '사또',
-      link: 'https://www.youtube.com/channel/UCnXe6v0-5vmMMRU2qx0XwUw',
-    }),
-    createPosition({
-      image: 'https://yt3.ggpht.com/Cc-OWp5QZyoSRUWDY4qIT5FjiAhSdmTBukvLxuMRc2L_UeS4VVbPBYnr3FpLfSw_JVC5lwChBLM=s900-c-k-c0x00ffffff-no-rj',
-      name: '강은호',
-      link: 'https://play.afreecatv.com/cocoa898',
-    }),
-    createPosition({
-      image: 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/lala.png',
-      name: '랄라',
-      link: 'https://bj.afreecatv.com/lsbm0317',
-    })
-  ],
+  data: presets.map(createPosition),
   lastUpdate: null,
 }
 
@@ -123,6 +98,7 @@ const contentService = {
     }
   },
   realTimePositions: {
+    presets: () => presets,
     validate: async payload => {
       if (
         (payload.liqPrice && isNaN(parseFloat(payload.liqPrice))) ||
@@ -159,8 +135,10 @@ const contentService = {
       try {
         await contentService.realTimePositions.validate(payload)
 
+        if (!payload.id) payload.id = helpers.generateUUID(true)
+
         const found = realTimePositions.data.find(o => o.id === payload.id)
-        if (!found) realTimePositions.data.push(payload)
+        if (!found) realTimePositions.data.push(createPosition(payload))
         else {
           found.image = (payload.image || '').trim()
           payload.entryPrice ? found.entryPrice = parseFloat(payload.entryPrice) : delete found.entryPrice
