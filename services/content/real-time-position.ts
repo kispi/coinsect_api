@@ -11,6 +11,7 @@ type IPosition = {
   entryPrice: number
   liqPrice: number
   size: number
+  onAir: boolean,
 }
 
 const cache = useCache()
@@ -32,6 +33,7 @@ const createPosition = ({
   contract: 'BTCUSDT',
   size: null,
   link,
+  onAir: true,
 })
 
 let cachedPositions = {
@@ -106,6 +108,7 @@ const realTimePositionService = {
         entryPrice: null,
         contract: 'BTCUSDT',
         size: null,
+        onAir: true,
       })
       setRealTimePositions(cachedPositions)
       return
@@ -126,6 +129,7 @@ const realTimePositionService = {
         found.contract = (payload.contract || '').trim()
         found.name = (payload.name || '').trim()
         found.link = (payload.link || '').trim()
+        found.onAir = payload.onAir
       }
       removeNotifiedPositionHistoriesOf(found.id)
       setRealTimePositions(cachedPositions)
