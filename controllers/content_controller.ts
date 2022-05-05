@@ -6,17 +6,28 @@ const service = useService()
 const contentController = {
   publicTreasuries: async (c: IContext) => {
     try {
-      c.res.asJSON(await service.content.publicTreasuries())
+      c.res.asJSON(await service.content.publicTreasury.all())
     } catch (e) {
       c.res.failed()
     }
   },
   realTimePositions: {
-    presets: (c: IContext) => c.res.asJSON(service.content.realTimePositions.presets()),
-    all: async (c: IContext) => c.res.asJSON(await service.content.realTimePositions.all()),
+    presets: (c: IContext) => c.res.asJSON(service.content.realTimePosition.presets()),
+    changeNotification: {
+      all: (c: IContext) => c.res.asJSON(service.content.realTimePosition.changeNotification.all()),
+      create: async (c: IContext) => {
+        try {
+          await service.content.realTimePosition.changeNotification.create(c.req.body)
+          c.res.success()
+        } catch (e) {
+          c.res.failed(e)
+        }
+      }
+    },
+    all: async (c: IContext) => c.res.asJSON(await service.content.realTimePosition.all()),
     set: async (c: IContext) => {
       try {
-        await service.content.realTimePositions.set(c.req.body)
+        await service.content.realTimePosition.set(c.req.body)
         c.res.success()
       } catch (e) {
         c.res.failed(e)
@@ -24,7 +35,7 @@ const contentController = {
     },
     delete: async (c: IContext) => {
       try {
-        await service.content.realTimePositions.delete(c.req.params['id'])
+        await service.content.realTimePosition.delete(c.req.params['id'])
         c.res.success()
       } catch (e) {
         c.res.failed(e)
