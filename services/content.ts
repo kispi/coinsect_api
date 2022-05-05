@@ -1,8 +1,8 @@
 import axios from 'axios'
 import helpers from '../core/helpers'
 import useCache from '../core/cache'
+import presets from './positions-presets'
 import { parse } from 'node-html-parser'
-const presets = require('./positions-presets.json')
 
 type IPosition = {
   id: string
