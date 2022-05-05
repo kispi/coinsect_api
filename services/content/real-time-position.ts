@@ -43,7 +43,6 @@ const notifiedPositionHistories = []
 
 const removeNotifiedPositionHistoriesOf = id => {
   const idx = notifiedPositionHistories.findIndex(o => o.id === id)
-  console.log(notifiedPositionHistories, id)
   if (idx >= 0) {
     notifiedPositionHistories.splice(idx, 1)
     removeNotifiedPositionHistoriesOf(id)
@@ -101,12 +100,12 @@ const realTimePositionService = {
       cachedPositions.data.push({
         id: helpers.generateUUID(true),
         image: payload.image,
+        link: payload.link,
         name: payload.name,
         liqPrice: null,
         entryPrice: null,
         contract: 'BTCUSDT',
         size: null,
-        link: null,
       })
       setRealTimePositions(cachedPositions)
       return

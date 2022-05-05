@@ -3,7 +3,7 @@ export default [{
   "image": "https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg",
   "link": "https://bj.afreecatv.com/sweet31w"
 }, {
-  "image": "http://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg",
+  "image": "https://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg",
   "name": "짭구",
   "link": "https://play.afreecatv.com/cyzhgw"
 }, {
