@@ -1,6 +1,6 @@
 import news from './news'
-import publicTreasury from './public-treasury'
-import realTimePosition from './real-time-position'
+import publicTreasury from './public_treasury'
+import realTimePosition from './real_time_position'
 
 const contentService = {
   news,

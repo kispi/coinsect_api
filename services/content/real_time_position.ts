@@ -1,6 +1,6 @@
 import helpers from '../../core/helpers'
 import useCache from '../../core/cache'
-import presets from './positions-presets'
+import presets from './position_presets'
 
 type IPosition = {
   id: string
