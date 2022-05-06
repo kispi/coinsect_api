@@ -44,6 +44,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.post('/admin/store/bad_words/invalidate', ctrls.admin.store.badWord.invalidate, auth.admin.super)
     router.post('/admin/store/banned_users/invalidate', ctrls.admin.store.bannedUser.invalidate, auth.admin.super)
     router.post('/admin/store/messages/invalidate', ctrls.admin.store.message.invalidate, auth.admin.super)
+    router.post('/admin/store/admin_token', ctrls.admin.store.setAdminToken)
 
     router.get('/admin/contents/real_time_positions/change_notifications', ctrls.content.realTimePositions.changeNotification.all, auth.admin.position)
     router.get('/admin/contents/real_time_positions/presets', ctrls.content.realTimePositions.presets, auth.admin.position)

@@ -12,6 +12,7 @@ const state = {
     writePost: {},
     writeReply: {},
   },
+  adminToken: null, // 운영자의 토큰
   badWords: [],
   bannedUsers: [],
   globalVariables: {

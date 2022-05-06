@@ -17,8 +17,7 @@ const contentController = {
       all: (c: IContext) => c.res.asJSON(service.content.realTimePosition.changeNotification.all()),
       create: async (c: IContext) => {
         try {
-          await service.content.realTimePosition.changeNotification.create(c.req.body)
-          c.res.success()
+          c.res.success(await service.content.realTimePosition.changeNotification.create(c.req.body))
         } catch (e) {
           c.res.failed(e)
         }
