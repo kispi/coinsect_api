@@ -31,12 +31,17 @@ const checkServerConfig = () => {
     'USE_REDIS',
   ]
 
+  const c = store.state.serverConfig
   requiredFields.forEach(field => {
-    if (!store.state.serverConfig[field]) {
+    if (!c[field]) {
       console.error(`[.env] missing required field: ${field}`)
       process.exit()
     }
   })
+
+  if (!c['LAMBDA_COINNESS']) {
+    console.warn(`[.env] missing required field: LAMBDA_COINNESS = Coinness News API won't work`)
+  }
 }
 
 export const initApp = async (app: FastifyInstance) => {
