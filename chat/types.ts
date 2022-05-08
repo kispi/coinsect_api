@@ -3,13 +3,13 @@ import { SocketStream } from 'fastify-websocket'
 export interface IUser {
   profile?: {
     nickname: string,
-    image: string,
+    image?: string,
   },
   token: string,
 }
 
 export interface IMessage {
-  type: 'auth' | 'text' | 'connections' | 'ping',
+  type: 'auth' | 'text' | 'connections' | 'ping' | 'account',
   user: IUser,
   text?: string,
   numConnections: number,
