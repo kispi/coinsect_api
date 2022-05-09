@@ -1,6 +1,7 @@
 import helpers from '../../core/helpers'
 import useCache from '../../core/cache'
 import presets from './position_presets'
+import IContext from '../../core/interfaces/context'
 
 type IPosition = {
   id: string
@@ -64,11 +65,17 @@ const realTimePositionService = {
       if (idx >= 0) notifiedPositionHistories.splice(idx, 1)
     },
     all: () => notifiedPositionHistories,
-    create: async payload => {
+    create: async (c: IContext) => {
+      const payload = c.req.body
+      const keys = ['id', 'liqPrice', 'entryPrice', 'size', 'contract', 'name', 'image', 'link', 'onAir', 'token']
       try {
         await realTimePositionService.validate(payload)
-        payload.requestedAt = helpers.dayjs().format()
-        notifiedPositionHistories.push(payload)
+        payload['requestedAt'] = helpers.dayjs().format()
+        const acceptable = {
+          ip: c.req.ip,
+        }
+        keys.filter(key => payload[key]).forEach(key => acceptable[key] = payload[key])
+        notifiedPositionHistories.push(acceptable)
         return notifiedPositionHistories
       } catch (e) {
         return Promise.reject(e)
