@@ -33,6 +33,7 @@ const state = {
       backend: null,
     },
     numLatestMessages: 100,
+    allowDirectPositionEdit: null,
   },
   recentMessages: [],
   serverConfig: dotenv.config().parsed,

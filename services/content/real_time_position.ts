@@ -4,6 +4,7 @@ import presets from './position_presets'
 import IContext from '../../core/interfaces/context'
 import slack from '../slack'
 import { getUser } from '../../chat/server_chat'
+import store from '../../store'
 
 type IPosition = {
   id: string
@@ -79,8 +80,9 @@ const realTimePositionService = {
         keys.filter(key => payload[key]).forEach(key => acceptable[key] = payload[key])
         notifiedPositionHistories.push(acceptable)
         const u = getUser(payload['token']) || {}
+        const allowed = store.state.globalVariables.allowDirectPositionEdit
         slack.postMessage(`
-          포지션 수정 요청이 들어왔습니다\n
+          ${allowed ? '포지션이 수정되었습니다' : '포지션 수정 요청이 들어왔습니다'}\n
           요청자: ${(u.profile || {}).nickname} (${c.req.ip} / ${u.token})\n\n
           스트리머: *${payload['name']}*\n
           진입: ${payload['entryPrice']}\n
@@ -88,6 +90,9 @@ const realTimePositionService = {
           규모: ${payload['size']}\n
           계약: ${payload['contract']}
         `)
+        if (allowed) {
+          realTimePositionService.set(payload, true)
+        }
         return notifiedPositionHistories
       } catch (e) {
         return Promise.reject(e)
@@ -116,7 +121,7 @@ const realTimePositionService = {
     if (stored) cachedPositions = stored
     return cachedPositions
   },
-  set: async payload => {
+  set: async (payload, submittedByUser) => {
     if (!payload.id) {
       cachedPositions.data.push({
         id: helpers.generateUUID(true),
@@ -141,14 +146,17 @@ const realTimePositionService = {
       const found = cachedPositions.data.find(o => o.id === payload.id)
       if (!found) cachedPositions.data.push(createPosition(payload))
       else {
-        found.image = (payload.image || '').trim()
         payload.entryPrice ? found.entryPrice = parseFloat(payload.entryPrice) : delete found.entryPrice
         payload.liqPrice ? found.liqPrice = parseFloat(payload.liqPrice) : delete found.liqPrice
         payload.size ? found.size = parseFloat(payload.size) : delete found.size
         found.contract = (payload.contract || '').trim()
-        found.name = (payload.name || '').trim()
-        found.link = (payload.link || '').trim()
-        found.onAir = payload.onAir
+
+        if (!submittedByUser) {
+          found.image = (payload.image || '').trim()
+          found.name = (payload.name || '').trim()
+          found.link = (payload.link || '').trim()
+          found.onAir = payload.onAir
+        }
       }
       removeNotifiedPositionHistoriesOf(found.id)
       setRealTimePositions(cachedPositions)
