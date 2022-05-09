@@ -121,7 +121,7 @@ const realTimePositionService = {
     if (stored) cachedPositions = stored
     return cachedPositions
   },
-  set: async (payload, submittedByUser) => {
+  set: async (payload, submittedByUser?) => {
     if (!payload.id) {
       cachedPositions.data.push({
         id: helpers.generateUUID(true),
