@@ -40,7 +40,11 @@ const checkServerConfig = () => {
   })
 
   if (!c['LAMBDA_COINNESS']) {
-    console.warn(`[.env] missing required field: LAMBDA_COINNESS = Coinness News API won't work`)
+    console.warn(`[.env] missing field LAMBDA_COINNESS: Coinness News API won't work`)
+  }
+
+  if (!c['SLACK_COINSECT_API']) {
+    console.warn(`[.env] missing field SLACK_COINSECT_API: Slackbot posting won't work`)
   }
 }
 

@@ -32,7 +32,7 @@ const asIMessage = message => {
   return iMessage
 }
 
-const getUser = (token: string) => users[token]
+export const getUser = (token: string) => users[token]
 
 const createUser = (token: string) => ({
   token,
@@ -231,6 +231,7 @@ export const useChat = (app: FastifyInstance) => {
 }
 
 export default {
+  getUser,
   sendMessage,
   useChat,
 }

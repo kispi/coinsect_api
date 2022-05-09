@@ -2,6 +2,8 @@ import helpers from '../../core/helpers'
 import useCache from '../../core/cache'
 import presets from './position_presets'
 import IContext from '../../core/interfaces/context'
+import slack from '../slack'
+import { getUser } from '../../chat/server_chat'
 
 type IPosition = {
   id: string
@@ -76,6 +78,16 @@ const realTimePositionService = {
         }
         keys.filter(key => payload[key]).forEach(key => acceptable[key] = payload[key])
         notifiedPositionHistories.push(acceptable)
+        const u = getUser(payload['token']) || {}
+        slack.postMessage(`
+          포지션 수정 요청이 들어왔습니다\n
+          요청자: ${(u.profile || {}).nickname} (${c.req.ip} / ${u.token})\n\n
+          스트리머: *${payload['name']}*\n
+          진입: ${payload['entryPrice']}\n
+          청산: ${payload['liqPrice']}\n
+          규모: ${payload['size']}\n
+          계약: ${payload['contract']}
+        `)
         return notifiedPositionHistories
       } catch (e) {
         return Promise.reject(e)
