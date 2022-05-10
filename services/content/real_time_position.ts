@@ -17,6 +17,7 @@ type IPosition = {
   liqPrice: number
   size: number
   onAir: boolean,
+  editable: boolean,
 }
 
 const cache = useCache()
@@ -39,6 +40,7 @@ const createPosition = ({
   size: null,
   link,
   onAir: true,
+  editable: true,
 })
 
 let cachedPositions = {
@@ -70,8 +72,11 @@ const realTimePositionService = {
     },
     all: () => notifiedPositionHistories,
     create: async (c: IContext) => {
+      const found = cachedPositions.data.find(o => o.id === c.req.body['id'])
+      if (found && !found.editable) return Promise.reject({ message: '수정이 불가능한 포지션입니다.' })
+
       const bannedUser = helpers.useBannedUser(c.req.ip)
-      if (bannedUser) return Promise.reject({ message: `오기입으로 수정 요청이 제한되었습니다 ${helpers.dayjs(bannedUser.until).format('YYYY-MM-DD HH:mm:ss')}` })
+      if (bannedUser) return Promise.reject({ message: `오기입으로 수정 요청이 제한되었습니다. (해제: ${helpers.dayjs(bannedUser.until).format('YYYY-MM-DD HH:mm:ss')}` })
 
       const payload = c.req.body
       const keys = ['id', 'liqPrice', 'entryPrice', 'size', 'contract', 'name', 'image', 'link', 'onAir', 'token']
@@ -137,6 +142,7 @@ const realTimePositionService = {
         contract: 'BTCUSDT',
         size: null,
         onAir: true,
+        editable: true,
       })
       setRealTimePositions(cachedPositions)
       return
@@ -160,6 +166,7 @@ const realTimePositionService = {
           found.name = (payload.name || '').trim()
           found.link = (payload.link || '').trim()
           found.onAir = payload.onAir
+          found.editable = payload.editable
         }
       }
       removeNotifiedPositionHistoriesOf(found.id)

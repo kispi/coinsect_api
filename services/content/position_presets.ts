@@ -7,7 +7,7 @@ export default [{
   "name": "짭구",
   "link": "https://play.afreecatv.com/cyzhgw"
 }, {
-  "image": "https://yt3.ggpht.com/ytc/AKedOLQJ_N26u5siKQw3PAr3LeY3lfJLGo4_V3G5LlYssg=s900-c-k-c0x00ffffff-no-rj",
+  "image": "https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/saddo.png",
   "name": "사또",
   "link": "https://www.youtube.com/channel/UCnXe6v0-5vmMMRU2qx0XwUw"
 }, {
