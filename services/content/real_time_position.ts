@@ -3,8 +3,9 @@ import useCache from '../../core/cache'
 import presets from './position_presets'
 import IContext from '../../core/interfaces/context'
 import slack from '../slack'
-import { getUser } from '../../chat/server_chat'
 import store from '../../store'
+import { getUser } from '../../chat/server_chat'
+
 
 type IPosition = {
   id: string
@@ -69,6 +70,9 @@ const realTimePositionService = {
     },
     all: () => notifiedPositionHistories,
     create: async (c: IContext) => {
+      const bannedUser = helpers.useBannedUser(c.req.ip)
+      if (bannedUser) return Promise.reject({ message: `오기입으로 수정 요청이 제한되었습니다 ${helpers.dayjs(bannedUser.until).format('YYYY-MM-DD HH:mm:ss')}` })
+
       const payload = c.req.body
       const keys = ['id', 'liqPrice', 'entryPrice', 'size', 'contract', 'name', 'image', 'link', 'onAir', 'token']
       try {

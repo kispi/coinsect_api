@@ -52,7 +52,7 @@ const helpers = {
     return uuid
   },
   includesBadWords: (message: string) => store.state.badWords.map(o => o.word).some(badWord => message.includes(badWord)),
-  useBannedUser: (ip: string): BannedUser => store.state.bannedUsers.find(u => u.ip === ip),
+  useBannedUser: (ip: string): BannedUser => store.state.bannedUsers.filter(o => dayjs().isBefore(o.until)).find(u => u.ip === ip),
   parseImageSources: (content: string) => {
     try {
       return parse(content).getElementsByTagName('img').map(o => o.attributes.src)
