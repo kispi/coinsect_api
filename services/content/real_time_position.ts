@@ -173,7 +173,7 @@ const realTimePositionService = {
       if (found.contract && found.entryPrice && found.size && found.onAir && found.editable) {
         broadcast({
           type: 'alert',
-          text: `[${found.name}] 포지션이 수정되었습니다.\n계약 / 규모: ${found.contract} / ${found.size}\n진입 / 청산: ${found.entryPrice} / ${found.liqPrice}`,
+          text: `[${found.name}] 포지션이 업데이트되었습니다.\n계약 / 규모: ${found.contract} / ${found.size}\n진입 / 청산: ${found.entryPrice} / ${found.liqPrice}`,
         })
       }
       setRealTimePositions(cachedPositions)
