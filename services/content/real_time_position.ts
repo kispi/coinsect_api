@@ -4,7 +4,7 @@ import presets from './position_presets'
 import IContext from '../../core/interfaces/context'
 import slack from '../slack'
 import store from '../../store'
-import { getUser } from '../../chat/server_chat'
+import { getUser, broadcast } from '../../chat/server_chat'
 
 
 type IPosition = {
@@ -170,6 +170,12 @@ const realTimePositionService = {
         }
       }
       removeNotifiedPositionHistoriesOf(found.id)
+      if (found.contract && found.entryPrice && found.size && found.onAir && found.editable) {
+        broadcast({
+          type: 'alert',
+          text: `[${found.name}] 포지션이 수정되었습니다.\n계약 / 규모: ${found.contract} / ${found.size}\n진입 / 청산: ${found.entryPrice} / ${found.liqPrice}`,
+        })
+      }
       setRealTimePositions(cachedPositions)
     } catch (e) {
       return Promise.reject(e)
