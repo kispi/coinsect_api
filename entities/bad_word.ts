@@ -8,4 +8,7 @@ export class BadWord extends BaseModel {
 
   @Column()
   word: string
+
+  @Column({ nullable: true })
+  alternative: string
 }

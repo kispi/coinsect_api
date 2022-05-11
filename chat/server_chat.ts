@@ -7,6 +7,7 @@ import { getConnection } from 'typeorm'
 import helpers from './helpers'
 import coreHelpers from '../core/helpers'
 import IContext from '../core/interfaces/context'
+import badWord from '../services/bad_word'
 import chat from '../services/chat'
 import store from '../store'
 import useCache from '../core/cache'
@@ -142,24 +143,12 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
       }
 
       chat.banIP(req.ip, store.state.globalVariables.lastUserActionTimeouts.message)
-      if (!(o.text || '').trim()) return
-
-      if (coreHelpers.includesBadWords(o.text)) {
-        sendMessage({
-          message: {
-            type: 'alert',
-            text: '비속어, 음란글, 광고 채팅이 누적되면 사용이 제한될 수 있습니다.',
-          },
-          token,
-        })
-        return
-      }
-
-      if (!(o.text || '').trim()) return
+      if (!(o.text || '').trim() || o.text.length > store.state.globalVariables.maxlength.message) return
 
       // IP 차단하려면 비속어도 DB에 저장하긴 해야되는데 나중에 따로 bad_word_history 뭐 이런거 만드는게 나을듯
       saveMessage(o, req.ip)
 
+      if (badWord.includedIn(o.text)) o.text = badWord.filtered(o.text)
       broadcast(o)
       return
     }
@@ -202,6 +191,11 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   })
 }
 
+const filteredMessages = (messages: Array<IMessage>) => messages.map(m => ({
+  ...m,
+  text: badWord.filtered(m.text),
+}))
+
 const chatCtrl = {
   messages: {
     all: (c: IContext) => {
@@ -209,13 +203,13 @@ const chatCtrl = {
       const cursor = c.req.query['firstMessageId']
       if (cursor) qb.where(`id < ${cursor}`)
       else {
-        return c.res.asJSON(store.state.recentMessages)
+        return c.res.asJSON(filteredMessages(store.state.recentMessages))
       }
 
       qb.getMany()
         .then(data => {
           const json = JSON.parse(JSON.stringify(data))
-          c.res.asJSON(json.map(Message.asIMessage))
+          c.res.asJSON(filteredMessages(json.map(Message.asIMessage)))
         })
         .catch(c.res.failed)
     },

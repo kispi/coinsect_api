@@ -2,6 +2,7 @@ import { getConnection } from 'typeorm'
 import { BadWord } from './entities/bad_word'
 import { BannedUser } from './entities/banned_user'
 import { Message } from './entities/message'
+import { IMessage } from './chat/types'
 import * as dotenv from 'dotenv'
 
 const state = {
@@ -13,8 +14,8 @@ const state = {
     writeReply: {},
   },
   adminToken: null, // 운영자의 토큰
-  badWords: [],
-  bannedUsers: [],
+  badWords: [] as Array<BadWord>,
+  bannedUsers: [] as Array<BannedUser>,
   globalVariables: {
     // unit: ms
     lastUserActionTimeouts: {
@@ -27,6 +28,7 @@ const state = {
       nickname: 10,
       postTitle: 40,
       replyContent: 1000,
+      message: 120,
     },
     version: {
       frontend: null,
@@ -35,7 +37,7 @@ const state = {
     numLatestMessages: 100,
     allowDirectPositionEdit: null,
   },
-  recentMessages: [],
+  recentMessages: [] as Array<IMessage>,
   serverConfig: dotenv.config().parsed,
 }
 
