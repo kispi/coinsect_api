@@ -100,6 +100,7 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/contents/news/coinness/feeds', ctrls.content.news.coinness.feeds)
     router.get('/contents/news/coinness/articles', ctrls.content.news.coinness.articles)
+    router.get('/contents/news/coinness/issues', ctrls.content.news.coinness.issues)
 
     router.get('/notifications', ctrls.notification.all)
 

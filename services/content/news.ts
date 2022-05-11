@@ -5,7 +5,6 @@ const endpoint = store.state.serverConfig.LAMBDA_COINNESS
 
 const newsService = {
   coinness: {
-    feeds: (lastId: number) => axios.get(endpoint, { params: { lastId, type: 'news' } }),
     articles: ({
       limit = 10,
       section = 'latest',
@@ -22,6 +21,8 @@ const newsService = {
         type: 'articles',
       },
     }),
+    feeds: (lastId: number) => axios.get(endpoint, { params: { lastId, type: 'news' } }),
+    issues: () => axios.get(endpoint, { params: { type: 'issues' } }),
   },
 }
 
