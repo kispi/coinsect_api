@@ -109,6 +109,20 @@ const postController = {
         .then((post: Post) => {
           post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
           post.replies = helpers.organizeReplies(post.replies)
+
+          // post.reactions 삭제 (추천한 사람들 ip 노출 방지)
+          post['$$reactions'] = { up: { count: 0 }, down: { count: 0 } }
+          post.reactions.forEach(reaction => {
+            if (reaction.type === 'up') {
+              post['$$reactions']['up'].count++
+              post['$$reactions']['up'].activated = reaction.ip === c.req.ip
+            }
+            if (reaction.type === 'down') {
+              post['$$reactions']['down'].count++
+              post['$$reactions']['down'].activated = reaction.ip === c.req.ip
+            }
+          })
+          delete post.reactions
           post.increaseViews(c)
           c.res.asJSON(post)
         })
