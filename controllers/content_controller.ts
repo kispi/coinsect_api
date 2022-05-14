@@ -61,7 +61,6 @@ const contentController = {
         try {
           c.res.success(await service.content.news.coinness.issues())
         } catch (e) {
-          console.error(e, 'sibal')
           c.res.failed({ message: '코인니스 이슈를 가져오는 중 문제가 발생했습니다' })
         }
       }

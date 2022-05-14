@@ -4,9 +4,9 @@ import helpers from './helpers'
 export const createLogger = () => {
   return {
     info: (...args) => console.log(...args),
-    debug: (...args) => console.log(...args),
-    error: (...args) => console.log(...args),
-    warn: (...args) => console.log(...args),
+    debug: (...args) => console.info(...args),
+    error: (...args) => console.error(...args),
+    warn: (...args) => console.warn(...args),
   }
 }
 

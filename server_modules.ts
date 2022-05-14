@@ -34,17 +34,17 @@ const checkServerConfig = () => {
   const c = store.state.serverConfig
   requiredFields.forEach(field => {
     if (!c[field]) {
-      console.error(`[.env] missing required field: ${field}`)
+      log.error(`[.env] missing required field: ${field}`)
       process.exit()
     }
   })
 
   if (!c['LAMBDA_COINNESS']) {
-    console.warn(`[.env] missing field LAMBDA_COINNESS: Coinness News API won't work`)
+    log.warn(`[.env] missing field LAMBDA_COINNESS: Coinness News API won't work`)
   }
 
   if (!c['SLACK_COINSECT_API']) {
-    console.warn(`[.env] missing field SLACK_COINSECT_API: Slackbot posting won't work`)
+    log.warn(`[.env] missing field SLACK_COINSECT_API: Slackbot posting won't work`)
   }
 }
 

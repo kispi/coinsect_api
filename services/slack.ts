@@ -1,5 +1,6 @@
 import axios from 'axios'
 import store from '../store'
+import { log } from '../core/logger'
 
 const endpoint = store.state.serverConfig.SLACK_COINSECT_API
 
@@ -11,7 +12,7 @@ const trimmed = (text: string) => {
 
 const postMessage = async (text: string) => {
   if (!endpoint) {
-    console.error('slack.postMessage: .env SLACK_COINSECT_API is missing')
+    log.error('slack.postMessage: .env SLACK_COINSECT_API is missing')
     return
   }
 
