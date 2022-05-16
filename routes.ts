@@ -53,6 +53,7 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     useRouteCRUD({ app, model: 'badWord' })
     useRouteCRUD({ app, model: 'bannedUser' })
+    useRouteCRUD({ app, model: 'blockchain' })
     useRouteCRUD({ app, model: 'board' })
     useRouteCRUD({ app, model: 'image' })
     useRouteCRUD({ app, model: 'message' })
@@ -61,12 +62,15 @@ export const useRoutes = (app: FastifyInstance) => ({
     useRouteCRUD({ app, model: 'post' })
     useRouteCRUD({ app, model: 'reaction' })
     useRouteCRUD({ app, model: 'reply' })
+    useRouteCRUD({ app, model: 'wallet' })
   },
   service: () => {
     const router = useRouter(app)
 
     router.get('/config', ctrls.config.get)
     router.post('/config', ctrls.config.post)
+
+    router.get('/wallets', ctrls.wallet.all)
 
     router.post('/sign_in', ctrls.auth.signIn)
     router.get('/users/me', ctrls.auth.me)

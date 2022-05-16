@@ -1,6 +1,7 @@
 import { sendMessage } from '../chat/server_chat'
 import { BadWord } from '../entities/bad_word'
 import { BannedUser } from '../entities/banned_user'
+import { Blockchain } from '../entities/blockchain'
 import { Board } from '../entities/board'
 import { Image } from '../entities/image'
 import { Message } from '../entities/message'
@@ -9,6 +10,7 @@ import { Person } from '../entities/person'
 import { Post } from '../entities/post'
 import { Reaction } from '../entities/reaction'
 import { Reply } from '../entities/reply'
+import { Wallet } from '../entities/wallet'
 import { useCRUD } from '../core/controller'
 import IContext from '../core/interfaces/context'
 import useService from '../services'
@@ -75,6 +77,7 @@ const adminController = {
   store: routesStore,
   badWord: useCRUD({ model: BadWord }),
   bannedUser: useCRUD({ model: BannedUser }),
+  blockchain: useCRUD({ model: Blockchain }),
   board: useCRUD({ model: Board, useSoftDelete: true }),
   image: useCRUD({ model: Image }),
   message: useCRUD({ model: Message, useSoftDelete: true }),
@@ -83,6 +86,7 @@ const adminController = {
   post: routesPost,
   reaction: useCRUD({ model: Reaction }),
   reply: useCRUD({ model: Reply, useSoftDelete: true }),
+  wallet: useCRUD({ model: Wallet }),
 }
 
 export default adminController
