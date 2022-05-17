@@ -7,7 +7,6 @@ const endpoint = store.state.serverConfig.COINSECT_CHAT
 
 const chatService = {
   getUser: async (token: string): Promise<IUser> => {
-    console.log('토큰', token)
     try {
       return await axios.get(`${endpoint}/webchat/users/${token}`)
     } catch (e) {
@@ -15,7 +14,6 @@ const chatService = {
     }
   },
   broadcast: async message => {
-    console.log('이건 또 됨?', message)
     try {
       await axios.post(endpoint + '/webchat/messages/broadcast', { message })
     } catch (e) {
@@ -26,7 +24,6 @@ const chatService = {
     try {
       await axios.post(endpoint + '/webchat/messages', { message, ip, token })
     } catch (e) {
-      console.error('axios error:', e)
       return Promise.reject(e)
     }
   },
