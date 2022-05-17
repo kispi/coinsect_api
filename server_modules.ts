@@ -6,7 +6,7 @@ import axios from 'axios'
 import fastifyWebsocket from 'fastify-websocket'
 import store from './store'
 import helpers from './core/helpers'
-import { useChat } from './chat/server_chat'
+import useChat from './chat/server_chat'
 import { log, createHttpLog } from './core/logger'
 
 axios.defaults.timeout = 5000
@@ -29,6 +29,7 @@ const checkServerConfig = () => {
     'AWS_ACCESS_KEY_ID',
     'AWS_SECRET_ACCESS_KEY',
     'USE_REDIS',
+    'COINSECT_CHAT',
   ]
 
   const c = store.state.serverConfig

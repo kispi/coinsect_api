@@ -20,20 +20,7 @@ let users = cache.get('chat:users') || {}
 
 const currentTokens = () => connections.map(conn => conn.user.token)
 
-const asIMessage = message => {
-  const iMessage = {
-    type: message.type,
-    user: (message || {}).user,
-    text: message.text,
-    numConnections: connections.length - (message.type === 'leave' ? 1 : 0),
-    ts: new Date(),
-  }
-
-  if (message.meta) iMessage['meta'] = message.meta
-  return iMessage
-}
-
-export const getUser = (token: string) => users[token]
+const getUser = (token: string) => users[token]
 
 const createUser = (token: string) => ({
   token,
@@ -47,7 +34,8 @@ const getTargetConnections = ({ ip, token }: { ip?: string, token?: string }) =>
   if (token) return conn.user.token === token
 })
 
-export const sendMessage = ({ message, token, ip }: { message, token?: string, ip?: string }) => {
+// token은 받는 사람의 토큰이고, message.user.token은 보낸 사람의 토큰이다.
+const sendMessage = ({ message, token, ip }: { message, token?: string, ip?: string }) => {
   const targetConnections = getTargetConnections({ ip, token })
 
   // 프로필은 클라이언트에서 준 토큰만을 가지고 찾아서 assign
@@ -55,7 +43,7 @@ export const sendMessage = ({ message, token, ip }: { message, token?: string, i
     const user = getUser(message.user.token)
     message.user.profile = user.profile
   }
-  const finalMessage = asIMessage(message)
+  const finalMessage = helpers.asIMessage(message, connections)
 
   targetConnections.forEach(connectionWrapper => connectionWrapper.connection.socket.send(JSON.stringify(finalMessage)))
 }
@@ -65,7 +53,7 @@ const saveMessage = (message, ip) => {
 
   if (!message.user || !message.user.token) return
 
-  const iMessage = asIMessage(message)
+  const iMessage = helpers.asIMessage(message, connections)
   store.state.recentMessages.unshift(iMessage)
   store.state.recentMessages = store.state.recentMessages.slice(0, store.state.globalVariables.numLatestMessages)
 
@@ -89,7 +77,7 @@ const saveMessage = (message, ip) => {
 }
 
 // 메시지를 접속된 클라이언트들에게 뿌리고 서버 메모리에 저장한다. (나중에 redis pubsub으로 변경)
-export const broadcast = message => {
+const broadcast = message => {
   // 동일 유저가 n >= 2개 이상의 커넥션을 만든 경우 (새 탭 등) sendMessage를 한 번만 하기 위해 해시로 필터링한다.
   // (그냥 connections.forEach(conn => sendMessage...) 하게 되면 같은 계정 n개 탭에서 접속한 경우 걔들은 메시지 n번씩 찍힘)
   const o = {}
@@ -197,6 +185,18 @@ const filteredMessages = (messages: Array<IMessage>) => messages.map(m => ({
 }))
 
 const chatCtrl = {
+  authApiServer: (c: IContext) => {
+    // TODO: 채팅서버가 분리된 이후로는 권한 없을 시 (API서버가 아닌 일반 브라우저에서의 호출 등) Promise.reject해야함.
+    // 토큰은 API 서버별 env등에 채팅서버 이용권한 토큰같은걸 넣으면 될듯
+  },
+  users: {
+    one: (c: IContext) => {
+      const token = c.req.query['token']
+      if (!token) return c.res.failed({ message: 'user token is missing' })
+
+      c.res.success(getUser(token))
+    },
+  },
   messages: {
     all: (c: IContext) => {
       const qb = c.orm.getRepository(Message).createQueryBuilder().limit(store.state.globalVariables.numLatestMessages).orderBy('id', 'DESC')
@@ -213,20 +213,38 @@ const chatCtrl = {
         })
         .catch(c.res.failed)
     },
+    send: (c: IContext) => {
+      const message = c.req.body['message']
+      if (!message) return c.res.failed({ message: 'message is required' })
+
+      const ip = c.req.body['ip']
+      const token = c.req.body['token']
+      if (!message) return c.res.failed({ message: 'message is required' })
+      if (!ip && !token) return c.res.failed({ message: 'either ip or token is required to determine who to send the message' })
+
+      sendMessage({ message, ip, token })
+      c.res.success()
+    },
+    broadcast: (c: IContext) => {
+      const message = c.req.body['message']
+      if (!message) return c.res.failed({ message: 'message is required' })
+
+      broadcast(message)
+      c.res.success()
+    },
   },
 }
 
 export const useChat = (app: FastifyInstance) => {
   const routes = useRouter(app)
 
-  app.get('/chat', { websocket: true }, onConnected)
+  app.get('/webchat', { websocket: true }, onConnected)
 
-  routes.get('/messages', chatCtrl.messages.all)
+  // 추후에는 채팅서버와 WebSocket을 연결해서 쭉 유지하면서 티키타카할까 생각중 (연결을 맺었다 끊었다 하면 비용이 크니)
+  routes.get('/webchat/messages', chatCtrl.messages.all)
+  routes.post('/webchat/messages', chatCtrl.messages.send, chatCtrl.authApiServer)
+  routes.post('/webchat/messages/broadcast', chatCtrl.messages.broadcast, chatCtrl.authApiServer)
+  routes.get('/webchat/users/:token', chatCtrl.users.one, chatCtrl.authApiServer)
 }
 
-export default {
-  getUser,
-  broadcast,
-  sendMessage,
-  useChat,
-}
+export default useChat

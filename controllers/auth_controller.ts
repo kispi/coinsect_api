@@ -13,7 +13,7 @@ const dummyUsers = () => [{
   auth: 'position',
 }]
 
-const getUser = (email: string) => {
+const findUser = (email: string) => {
   const user = dummyUsers().find(u => u.email === email)
   if (!user) return Promise.reject({ message: 'user not found' })
 
@@ -23,7 +23,7 @@ const getUser = (email: string) => {
 const authController = {
   signIn: async (c: IContext) => {
     try {
-      const user = await getUser(c.req.body['email'])
+      const user = await findUser(c.req.body['email'])
       if (!user) return 
 
       if (!helpers.compare(user.password, c.req.body['password'])) return c.res.failed({ message: 'password not match' })
@@ -37,7 +37,7 @@ const authController = {
   me: async (c: IContext) => {
     try {
       const decoded = await helpers.jwt.getPayload(c)
-      const user = await getUser(decoded['email'])
+      const user = await findUser(decoded['email'])
       delete user.password
       c.res.success(user)
     } catch (e) {

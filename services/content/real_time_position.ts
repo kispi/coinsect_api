@@ -4,8 +4,7 @@ import presets from './position_presets'
 import IContext from '../../core/interfaces/context'
 import slack from '../slack'
 import store from '../../store'
-import { getUser, broadcast } from '../../chat/server_chat'
-
+import chatService from '../chat'
 
 type IPosition = {
   id: string
@@ -48,7 +47,7 @@ let cachedPositions = {
   lastUpdate: null,
 }
 
-const notifiedPositionHistories = []
+let notifiedPositionHistories = []
 
 const removeNotifiedPositionHistoriesOf = id => {
   const idx = notifiedPositionHistories.findIndex(o => o.id === id)
@@ -88,11 +87,12 @@ const realTimePositionService = {
         }
         keys.filter(key => payload[key]).forEach(key => acceptable[key] = payload[key])
         notifiedPositionHistories.push(acceptable)
-        const u = getUser(payload['token']) || {}
+        notifiedPositionHistories = notifiedPositionHistories.slice(-5) // 최근 5개까지만 유지
+        const u = await chatService.getUser(payload['token'])
         const allowed = store.state.globalVariables.allowDirectPositionEdit
         slack.postMessage(`
           ${allowed ? '포지션이 수정되었습니다' : '포지션 수정 요청이 들어왔습니다'}\n
-          요청자: ${(u.profile || {}).nickname} (${c.req.ip} / ${u.token})\n\n
+          요청자: ${((u || {}).profile || {}).nickname} (${c.req.ip} / ${(u || {}).token})\n\n
           스트리머: *${payload['name']}*\n
           진입: ${payload['entryPrice']}\n
           청산: ${payload['liqPrice']}\n
@@ -171,7 +171,7 @@ const realTimePositionService = {
       }
       removeNotifiedPositionHistoriesOf(found.id)
       if (found.contract && found.entryPrice && found.size && found.onAir && found.editable) {
-        broadcast({
+        chatService.broadcast({
           type: 'alert',
           text: `[${found.name}] 포지션이 업데이트되었습니다.\n계약 / 규모: ${found.contract} / ${found.size}\n진입 / 청산: ${found.entryPrice} / ${found.liqPrice}`,
         })

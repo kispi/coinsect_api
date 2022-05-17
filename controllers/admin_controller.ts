@@ -1,4 +1,3 @@
-import { sendMessage } from '../chat/server_chat'
 import { BadWord } from '../entities/bad_word'
 import { BannedUser } from '../entities/banned_user'
 import { Blockchain } from '../entities/blockchain'
@@ -30,7 +29,7 @@ const routesChat = {
     c.res.asJSON({ data: until })
   },
   sendMessage: (c: IContext) => {
-    sendMessage({
+    service.chat.sendMessage({
       message: {
         type: 'admin',
         text: c.req.body['text'],

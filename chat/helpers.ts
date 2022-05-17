@@ -45,7 +45,7 @@ const recommendNickname = () => {
   return `${nicknameRecommendations[randIdx]}${randNo}`
 }
 
-const asSendableMessage = (message, connections) => {
+const asIMessage = (message, connections) => {
   const iMessage = {
     type: message.type,
     user: (message || {}).user,
@@ -60,7 +60,7 @@ const asSendableMessage = (message, connections) => {
 
 export default {
   mustJSON,
-  asSendableMessage,
+  asIMessage,
   recommendNickname,
   mustToken,
 }
