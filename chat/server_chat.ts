@@ -191,7 +191,7 @@ const chatCtrl = {
   },
   users: {
     one: (c: IContext) => {
-      const token = c.req.query['token']
+      const token = c.req.params['token']
       if (!token) return c.res.failed({ message: 'user token is missing' })
 
       c.res.success(getUser(token))
