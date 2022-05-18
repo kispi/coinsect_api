@@ -23,6 +23,7 @@ const state = {
     maxlength: {
       nickname: 10,
       postTitle: 40,
+      profileImageUrl: 300,
       replyContent: 1000,
     },
     version: {

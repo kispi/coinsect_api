@@ -60,25 +60,6 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
       token,
     })
   },
-  account: () => {
-    if (!(message.user || {}).token || !(message.user || {}).profile) return
-
-    const user = store.getters.user(message.user.token)
-    user.profile.nickname = coreHelpers.sanitize.strict(message.user.profile.nickname)
-    const connections = store.getters.targetConnections({ token: message.user.token })
-    connections.forEach(conn => {
-      message.user = user
-      conn.user = message.user
-    })
-
-    helpers.sendMessage({
-      message: {
-        type: 'account',
-        user: message.user,
-      },
-      token,
-    })
-  },
 })
 
 export default messageHandlers

@@ -5,6 +5,7 @@ import { useRouter } from '../core/router'
 import { Message } from '../entities/message'
 import { log } from '../core/logger'
 import helpers from './helpers'
+import coreHelpers from '../core/helpers'
 import store from './store'
 import IContext from '../core/interfaces/context'
 import badWord from '../services/bad_word'
@@ -59,6 +60,34 @@ const chatCtrl = {
     ban: (c: IContext) => {
       c.res.success(store.actions.banIP(c.req.body['ip'], c.req.body['timeout']))
     },
+    update: (c: IContext) => {
+      const profile = c.req.body['profile']
+      const token = c.req.params['token']
+      if (!profile || !token) return c.res.failed({ message: 'invalid payload' })
+
+      // 토큰을 변조해서 날린 경우 차단
+      const user = store.getters.user(token)
+      if (!user) return c.res.failed({ message: 'user not found' })
+
+      user.profile.nickname = coreHelpers.sanitize.strict(profile.nickname)
+      if (user.profile.nickname.length > store.getters.config().nicknameMaxLength) return c.res.failed({ message: '닉네임이 너무 깁니다' })
+
+      if (profile.image) {
+        user.profile.image = coreHelpers.sanitize.strict(profile.image)
+
+        const l = store.getters.config().imageUrlMaxLength
+        if (profile.image.length > l) return c.res.failed({ message: `죄송하지만 이미지 URL은 ${l}자 이내의 것으로 사용해주세요.` })
+
+        if (!profile.image.startsWith('http')) return c.res.failed({ message: '올바른 이미지 URL이 아닙니다. (http로 시작하는 주소를 사용해주세요.)' })
+      } else {
+        delete user.profile.image
+      }
+
+      const connections = store.getters.targetConnections({ token })
+      connections.forEach(conn => conn.user = user)
+
+      c.res.success(user)
+    },
   },
   messages: {
     all: (c: IContext) => {
@@ -108,8 +137,11 @@ export const useChat = (app: FastifyInstance) => {
   app.get('/webchat', { websocket: true }, onConnected)
 
   // 추후에는 채팅서버와 WebSocket을 연결해서 쭉 유지하면서 티키타카할까 생각중 (연결을 맺었다 끊었다 하면 비용이 크니)
-  routes.get('/webchat/users/:token', chatCtrl.users.one, chatCtrl.authApiServer)
+  routes.put('/webchat/users/:token', chatCtrl.users.update)
   routes.get('/webchat/messages', chatCtrl.messages.all)
+
+  // API 서버에서 찌르는 API들 (인증 필요))
+  routes.get('/webchat/users/:token', chatCtrl.users.one, chatCtrl.authApiServer)
   routes.post('/webchat/messages', chatCtrl.messages.send, chatCtrl.authApiServer)
   routes.post('/webchat/messages/broadcast', chatCtrl.messages.broadcast, chatCtrl.authApiServer)
   routes.post('/webchat/messages/invalidate', chatCtrl.messages.invalidate, chatCtrl.authApiServer)
