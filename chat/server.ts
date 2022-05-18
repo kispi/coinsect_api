@@ -3,11 +3,12 @@ import { IMessage } from './types'
 import { SocketStream } from 'fastify-websocket'
 import { useRouter } from '../core/router'
 import { Message } from '../entities/message'
+import { log } from '../core/logger'
 import helpers from './helpers'
 import store from './store'
 import IContext from '../core/interfaces/context'
 import badWord from '../services/bad_word'
-import messageHandler from './message_handler'
+import messageHandlers from './message_handler'
 
 const connections = store.getters.connections()
 
@@ -23,8 +24,16 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
     if (idx >= 0) connections.splice(idx, 1)
   })
 
-  connection.socket.on('message', message => {
-    messageHandler({ message, token, ip: req.ip })
+  connection.socket.on('message', rawMessage => {
+    const message: IMessage = JSON.parse(rawMessage)
+    const handler = messageHandlers({ message, token, ip: req.ip })[message.type]
+    if (!handler) {
+      // message.type은 클라이언트에서 채팅서버로 보낸 메시지의 타입임.
+      log.error(`Invalid request: ${req.ip} requested unknown incoming message type '${message.type}'.`)
+      return
+    }
+
+    handler()
   })
 }
 
