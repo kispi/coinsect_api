@@ -1,14 +1,11 @@
 import { getConnection } from 'typeorm'
 import { BadWord } from './entities/bad_word'
 import { BannedUser } from './entities/banned_user'
-import { Message } from './entities/message'
-import { IMessage } from './chat/types'
 import * as dotenv from 'dotenv'
 
 const state = {
   // save users last action timestamp to prevent too frequent DB insert.
   lastUserActions: {
-    message: {},
     viewPost: {},
     writePost: {},
     writeReply: {},
@@ -19,7 +16,6 @@ const state = {
   globalVariables: {
     // unit: ms
     lastUserActionTimeouts: {
-      message: 200,
       viewPost: 1000 * 60,
       writePost: 1000 * 10,
       writeReply: 1000 * 10,
@@ -28,16 +24,13 @@ const state = {
       nickname: 10,
       postTitle: 40,
       replyContent: 1000,
-      message: 120,
     },
     version: {
       frontend: null,
       backend: null,
     },
-    numLatestMessages: 100,
     allowDirectPositionEdit: null,
   },
-  recentMessages: [] as Array<IMessage>,
   serverConfig: dotenv.config().parsed,
 }
 
@@ -72,29 +65,12 @@ const actions = {
       return Promise.reject(e)
     }
   },
-  loadRecentMessages: async () => {
-    const orm = getConnection()
-    try {
-      const data = await orm
-        .getRepository(Message)
-        .createQueryBuilder()
-        .limit(state.globalVariables.numLatestMessages)
-        .orderBy('id', 'DESC')
-        .getMany()
-  
-      const json = JSON.parse(JSON.stringify(data))
-      store.state.recentMessages = json.map(Message.asIMessage)
-    } catch (e) {
-      return Promise.reject(e)
-    }
-  },
 }
 
 const initCaches = async () => {
   await Promise.all([
     actions.loadBadWords(),
     actions.loadBannedUsers(),
-    actions.loadRecentMessages(),
   ])
 }
 

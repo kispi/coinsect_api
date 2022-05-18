@@ -6,7 +6,7 @@ import axios from 'axios'
 import fastifyWebsocket from 'fastify-websocket'
 import store from './store'
 import helpers from './core/helpers'
-import useChat from './chat/server_chat'
+import useChat from './chat/server'
 import { log, createHttpLog } from './core/logger'
 
 axios.defaults.timeout = 5000
@@ -71,6 +71,8 @@ export const initApp = async (app: FastifyInstance) => {
   routeMaker.service()
 
   await store.initCaches()
+
+  // 나중에 따로 떼서 걔는 얘만 실행하는것도 가능
   useChat(app)
 }
 

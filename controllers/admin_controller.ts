@@ -19,13 +19,13 @@ import orm from '../core/orm'
 const service = useService()
 
 const routesChat = {
-  banIP: (c: IContext) => {
+  banIP: async (c: IContext) => {
     if (!c.req.body['ip'] || !c.req.body['timeout']) {
       c.res.failed({ message: 'missing params: ip, timeout' })
       return
     }
 
-    const until = service.chat.banIP(c.req.body['ip'], c.req.body['timeout'])
+    const until = await service.chat.banIP(c.req.body['ip'], c.req.body['timeout'])
     c.res.asJSON({ data: until })
   },
   sendMessage: (c: IContext) => {
@@ -50,7 +50,14 @@ const routesStore = {
     invalidate: (c: IContext) => store.actions.loadBannedUsers().then(c.res.asJSON)
   },
   message: {
-    invalidate: (c: IContext) => store.actions.loadRecentMessages().then(c.res.asJSON)
+    invalidate: async (c: IContext) => {
+      try {
+        await service.chat.invalidate()
+        c.res.success()
+      } catch (e) {
+        c.res.failed(e)
+      }
+    }
   },
   setAdminToken: (c: IContext) => {
     store.state.adminToken = c.req.body['token']

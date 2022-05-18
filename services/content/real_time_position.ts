@@ -92,7 +92,7 @@ const realTimePositionService = {
         const allowed = store.state.globalVariables.allowDirectPositionEdit
         slack.postMessage(`
           ${allowed ? '포지션이 수정되었습니다' : '포지션 수정 요청이 들어왔습니다'}\n
-          요청자: ${((u || {}).profile || {}).nickname} (${c.req.ip} / ${(u || {}).token})\n\n
+          요청자: ${u.profile.nickname} (${c.req.ip} / ${u.token})\n\n
           스트리머: *${payload['name']}*\n
           진입: ${payload['entryPrice']}\n
           청산: ${payload['liqPrice']}\n
