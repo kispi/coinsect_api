@@ -44,8 +44,8 @@ const useMiddleware = async (
   // 특별할 것 없는 매번 앱 새로고침될때마다 콜되는 API들 스킵함.
   const routesSkipLog = [
     '/config',
-    '/messages',
     '/notifications',
+    '/contents/news/coinness/issues',
     '/market_info/indices',
     '/market_info/symbols',
     '/market_info/markets',
