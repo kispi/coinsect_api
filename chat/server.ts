@@ -70,15 +70,17 @@ const chatCtrl = {
       if (!user) return c.res.failed({ message: 'user not found' })
 
       user.profile.nickname = coreHelpers.sanitize.strict(profile.nickname)
+      if (!user.profile.nickname) return c.res.failed({ message: '닉네임은 빈 문자열로 설정할 수 없습니다' })
+
       if (user.profile.nickname.length > store.getters.config().nicknameMaxLength) return c.res.failed({ message: '닉네임이 너무 깁니다' })
 
       if (profile.image) {
         user.profile.image = coreHelpers.sanitize.strict(profile.image)
 
         const l = store.getters.config().imageUrlMaxLength
-        if (profile.image.length > l) return c.res.failed({ message: `죄송하지만 이미지 URL은 ${l}자 이내의 것으로 사용해주세요.` })
+        if (profile.image.length > l) return c.res.failed({ message: `죄송하지만 이미지 URL은 ${l}자 이내의 것으로 사용해주세요` })
 
-        if (!profile.image.startsWith('http')) return c.res.failed({ message: '올바른 이미지 URL이 아닙니다. (http로 시작하는 주소를 사용해주세요.)' })
+        if (!profile.image.startsWith('http')) return c.res.failed({ message: '올바른 이미지 URL이 아닙니다. (http로 시작하는 주소를 사용해주세요)' })
       } else {
         delete user.profile.image
       }
