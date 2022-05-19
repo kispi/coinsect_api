@@ -1,6 +1,5 @@
 import store from '../store'
 import axios from 'axios'
-import helpers from '../core/helpers'
 import { IUser } from '../chat/types'
 
 const endpoint = store.state.serverConfig.COINSECT_CHAT

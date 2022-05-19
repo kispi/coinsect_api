@@ -68,17 +68,9 @@ const actions = {
   },
 }
 
-const initCaches = async () => {
-  await Promise.all([
-    actions.loadBadWords(),
-    actions.loadBannedUsers(),
-  ])
-}
-
 const store = {
   state,
   actions,
-  initCaches,
 }
 
 export default store
