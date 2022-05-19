@@ -26,6 +26,7 @@ const getters = {
   bannedUntil: (ip: string) => state.bannedUntil[ip],
   recentMessages: () => state.recentMessages,
   user: (token: string) => state.users[token],
+  users: () => state.users,
   tokens: () => state.connections.map(conn => conn.user.token),
   connections: () => state.connections,
   targetConnections: ({ ip, token }: { ip?: string, token?: string }) => state.connections.filter(conn => {

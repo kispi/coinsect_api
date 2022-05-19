@@ -15,7 +15,7 @@ const connections = store.getters.connections()
 
 const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   // 웹소켓 접속시 토큰이 query param으로 넘어온 경우 그대로 사용, 없으면 만들어줌
-  const token = req.query['token'] || helpers.mustToken(store.getters.tokens())
+  const token = req.query['token'] || helpers.mustToken()
 
   store.actions.setUser({ token, connection, ip: req.ip })
 

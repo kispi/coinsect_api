@@ -15,37 +15,17 @@ const nicknameRecommendations = [
   '불건전한조정', '2100만개', '코인왜하냐', 'BJ파월', '대공황', '부처빔', '떡상', '떡락', '무소유빔', '4년후에봐요', '비트코인은끝났다',
 ]
 
-const mustToken = existingTokens => {
-  const o = {}
-  if (existingTokens) existingTokens.forEach(t => o[t] = true)
-
+const mustToken = () => {
   let nonExistNewToken = ''
   for (let i = 0; i < 100; i++) {
     let token = [...Array(32)].map(() => Math.floor(Math.random() * 16).toString(16)).join('')
-    if (o[token]) continue
+    if (store.getters.users()[token]) continue
 
     nonExistNewToken = token
     break
   }
 
   return nonExistNewToken
-}
-
-const mustJSON = {
-  stringify: o => {
-    let result = null
-    try {
-      result = JSON.stringify(o)
-    } catch (e) {}
-    return result
-  },
-  parse: o => {
-    let result = null
-    try {
-      result = JSON.parse(o)
-    } catch (e) {}
-    return result
-  }
 }
 
 const recommendNickname = () => {
@@ -133,7 +113,6 @@ const formatWithAdd = ({
 }
 
 export default {
-  mustJSON,
   saveMessage,
   sendMessage,
   broadcast,
