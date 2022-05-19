@@ -133,6 +133,7 @@ const chatCtrl = {
 export const useChat = (app: FastifyInstance) => {
   const routes = useRouter(app)
   store.actions.loadRecentMessages()
+  store.actions.loadUsers()
 
   app.get('/webchat', { websocket: true }, onConnected)
 

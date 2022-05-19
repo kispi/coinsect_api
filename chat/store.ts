@@ -16,7 +16,7 @@ const state = {
     imageUrlMaxLength: 300,
   },
   bannedUntil: {} as { ip: string },
-  users: cache.get('chat:users') || {},
+  users: {},
   connections: [] as IConnection[],
   recentMessages: [] as Array<IMessage>,
 }
@@ -48,6 +48,9 @@ const actions = {
     cache.set('chat:users', state.users)
     state.connections.push({ connection, user, ip })
     helpers.sendMessage({ message: { type: 'auth', user }, token })
+  },
+  loadUsers: async () => {
+    state.users = await cache.get('chat:users') || {}
   },
   loadRecentMessages: async () => {
     const orm = getConnection()
