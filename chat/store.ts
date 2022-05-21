@@ -1,6 +1,6 @@
 import { getConnection } from 'typeorm'
 import { Message } from '../entities/message'
-import { IConnection, IMessage } from './types'
+import { IConnection, IMessage, IUser } from './types'
 import useCache from '../core/cache'
 import helpers from './helpers'
 const dayjs = require('dayjs')
@@ -25,7 +25,7 @@ const getters = {
   config: () => state.config,
   bannedUntil: (ip: string) => state.bannedUntil[ip],
   recentMessages: () => state.recentMessages,
-  user: (token: string) => state.users[token],
+  user: (token: string): IUser => state.users[token],
   users: () => state.users,
   tokens: () => state.connections.map(conn => conn.user.token),
   connections: () => state.connections,

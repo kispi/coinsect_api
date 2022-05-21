@@ -6,6 +6,7 @@ export interface IUser {
     image?: string,
   },
   token: string,
+  path?: string, // 프론트엔드에서 어떤 페이지를 이용중인지
 }
 
 export interface IMessage {
