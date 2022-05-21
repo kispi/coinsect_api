@@ -82,7 +82,7 @@ const chatCtrl = {
         const trimmedImageUrl = coreHelpers.sanitize.strict(profile.image)
 
         const l = store.getters.config().imageUrlMaxLength
-        if (trimmedImageUrl > l) return c.res.failed({ message: `이미지 URL 길이가 ${trimmedImageUrl.length}입니다. 죄송하지만 ${l}자 이내의 것으로 사용해주세요` })
+        if (trimmedImageUrl.length > l) return c.res.failed({ message: `이미지 URL 길이가 ${trimmedImageUrl.length}입니다. 죄송하지만 ${l}자 이내의 것으로 사용해주세요` })
         user.profile.image = trimmedImageUrl
 
         if (!profile.image.startsWith('http')) return c.res.failed({ message: '올바른 이미지 URL이 아닙니다. (http로 시작하는 주소를 사용해주세요)' })
