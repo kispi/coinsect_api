@@ -54,7 +54,7 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
   },
   ping: () => {
     const user = store.getters.user(token)
-    if (user) user.path = message.user.path
+    if (user && message.user) user.path = message.user.path
 
     helpers.sendMessage({
       message: {
