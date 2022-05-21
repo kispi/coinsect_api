@@ -13,7 +13,7 @@ const state = {
     allowedChatFrequency: 500, // ms. determine how frequently users can chat
     messageMaxLength: 120,
     nicknameMaxLength: 10,
-    imageUrlMaxLength: 300,
+    imageUrlMaxLength: 255,
   },
   bannedUntil: {} as { ip: string },
   users: {},

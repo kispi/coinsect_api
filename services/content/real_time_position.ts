@@ -121,8 +121,8 @@ const realTimePositionService = {
     }
 
     if ((payload.name || '').length > 20) throw { message: '스트리머 이름은 20자 미만으로 적어주세요' }
-    if ((payload.image || '').length > 300) throw { message: '300자 미만의 이미지 URL을 사용해주세요' }
-    if ((payload.link || '').length > 200) throw { message: '200자 미만의 방송플랫폼 URL을 사용해주세요' }
+    if ((payload.image || '').length > 255) throw { message: '255자 미만의 이미지 URL을 사용해주세요' }
+    if ((payload.link || '').length > 255) throw { message: '255자 미만의 방송플랫폼 URL을 사용해주세요' }
     if (payload.contract && !payload.contract.endsWith('USDT')) throw { message: '계약은 반드시 USDT로 끝나야 합니다' }
   },
   all: async () => {

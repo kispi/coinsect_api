@@ -24,6 +24,9 @@ export class Message extends BaseModel {
   @Column()
   ts: Date
 
+  @Column({ nullable:true, type: 'text' })
+  meta: string
+
   @Column()
   numConnections: number
 

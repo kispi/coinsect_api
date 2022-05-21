@@ -48,6 +48,9 @@ const chatCtrl = {
     // TODO: 채팅서버가 분리된 이후로는 권한 없을 시 (API서버가 아닌 일반 브라우저에서의 호출 등) Promise.reject해야함.
     // 토큰은 API 서버별 env등에 채팅서버 이용권한 토큰같은걸 넣으면 될듯
   },
+  config: (c: IContext) => {
+    c.res.success(store.getters.config())
+  },
   users: {
     one: (c: IContext) => {
       const token = c.req.params['token']
@@ -69,17 +72,18 @@ const chatCtrl = {
       const user = store.getters.user(token)
       if (!user) return c.res.failed({ message: 'user not found' })
 
-      const trimmed = coreHelpers.sanitize.strict(profile.nickname)
-      if (!trimmed) return c.res.failed({ message: '닉네임은 빈 문자열로 설정할 수 없습니다' })
-      user.profile.nickname = trimmed
+      const trimmedNickname = coreHelpers.sanitize.strict(profile.nickname)
+      if (!trimmedNickname) return c.res.failed({ message: '닉네임은 빈 문자열로 설정할 수 없습니다' })
+      user.profile.nickname = trimmedNickname
 
       if (user.profile.nickname.length > store.getters.config().nicknameMaxLength) return c.res.failed({ message: '닉네임이 너무 깁니다' })
 
       if (profile.image) {
-        user.profile.image = coreHelpers.sanitize.strict(profile.image)
+        const trimmedImageUrl = coreHelpers.sanitize.strict(profile.image)
 
         const l = store.getters.config().imageUrlMaxLength
-        if (profile.image.length > l) return c.res.failed({ message: `죄송하지만 이미지 URL은 ${l}자 이내의 것으로 사용해주세요` })
+        if (trimmedImageUrl > l) return c.res.failed({ message: `이미지 URL 길이가 ${trimmedImageUrl.length}입니다. 죄송하지만 ${l}자 이내의 것으로 사용해주세요` })
+        user.profile.image = trimmedImageUrl
 
         if (!profile.image.startsWith('http')) return c.res.failed({ message: '올바른 이미지 URL이 아닙니다. (http로 시작하는 주소를 사용해주세요)' })
       } else {
@@ -139,6 +143,8 @@ export const useChat = (app: FastifyInstance) => {
   store.actions.loadUsers()
 
   app.get('/webchat', { websocket: true }, onConnected)
+
+  routes.get('/webchat/config', chatCtrl.config)
 
   // 추후에는 채팅서버와 WebSocket을 연결해서 쭉 유지하면서 티키타카할까 생각중 (연결을 맺었다 끊었다 하면 비용이 크니)
   routes.put('/webchat/users/:token', chatCtrl.users.update)

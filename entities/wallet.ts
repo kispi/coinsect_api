@@ -15,4 +15,7 @@ export class Wallet extends BaseModel {
 
   @Column({ nullable: true })
   description: string
+
+  @Column({ nullable: true, type: 'decimal', precision: 36, scale: 18 })
+  balance: number
 }
