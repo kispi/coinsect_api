@@ -69,8 +69,9 @@ const chatCtrl = {
       const user = store.getters.user(token)
       if (!user) return c.res.failed({ message: 'user not found' })
 
-      user.profile.nickname = coreHelpers.sanitize.strict(profile.nickname)
-      if (!user.profile.nickname) return c.res.failed({ message: '닉네임은 빈 문자열로 설정할 수 없습니다' })
+      const trimmed = coreHelpers.sanitize.strict(profile.nickname)
+      if (!trimmed) return c.res.failed({ message: '닉네임은 빈 문자열로 설정할 수 없습니다' })
+      user.profile.nickname = trimmed
 
       if (user.profile.nickname.length > store.getters.config().nicknameMaxLength) return c.res.failed({ message: '닉네임이 너무 깁니다' })
 
