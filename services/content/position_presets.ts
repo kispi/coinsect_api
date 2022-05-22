@@ -15,6 +15,10 @@ export default [{
   "name": "강은호",
   "link": "https://play.afreecatv.com/cocoa898",
 }, {
+  "image": "https://profile.img.afreecatv.com/LOGO/cy/cyber91/cyber91.jpg",
+  "name": "리듬타타",
+  "link": "https://bj.afreecatv.com/cyber91",
+}, {
   "image": "https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/gunchim.png",
   "name": "군침코인",
   "link": "https://play.afreecatv.com/anwhrjsqorqo",
