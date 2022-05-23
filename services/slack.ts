@@ -7,7 +7,7 @@ const endpoint = store.state.serverConfig.SLACK_COINSECT_API
 const trimmed = (text: string) => {
   if (!text) return
 
-  return text.split('\n').map(line => line.trim()).join('\n')
+  return text.split('\n').map(line => line.trim()).join('\n').trim()
 }
 
 const postMessage = async (text: string) => {

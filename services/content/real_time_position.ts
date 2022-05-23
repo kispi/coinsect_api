@@ -79,6 +79,20 @@ const realTimePositionService = {
 
       const payload = c.req.body
       const keys = ['id', 'liqPrice', 'entryPrice', 'size', 'contract', 'name', 'image', 'link', 'onAir', 'token']
+
+      const isSame = (a, b) => {
+        if (!a && !b) return true
+
+        return a === b
+      }
+
+      if (
+        isSame(found.entryPrice, payload['entryPrice']) &&
+        isSame(found.liqPrice, payload['liqPrice']) &&
+        isSame(found.size, payload['size']) &&
+        found.contract === payload['contract']
+      ) return Promise.reject({ message: '제출하신 포지션이 기존 포지션과 동일합니다.' })
+
       try {
         await realTimePositionService.validate(payload)
         payload['requestedAt'] = helpers.dayjs().format()
@@ -173,7 +187,11 @@ const realTimePositionService = {
       if (found.contract && found.entryPrice && found.size && found.onAir && found.editable) {
         chatService.broadcast({
           type: 'alert',
-          text: `[${found.name}] 포지션이 업데이트되었습니다.\n계약 / 규모: ${found.contract} / ${found.size}\n진입 / 청산: ${found.entryPrice} / ${found.liqPrice}`,
+          text: `
+            [${found.name}] 포지션이 업데이트되었습니다.
+            계약 / 규모: ${found.contract || '?'} / ${found.size || '?'}
+            진입 / 청산: ${found.entryPrice || '?'} / ${found.liqPrice || '?'}
+          `,
         })
       }
       setRealTimePositions(cachedPositions)

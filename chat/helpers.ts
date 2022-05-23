@@ -34,6 +34,12 @@ const recommendNickname = () => {
   return `${nicknameRecommendations[randIdx]}${randNo}`
 }
 
+const trimmed = (text: string) => {
+  if (!text) return
+
+  return text.split('\n').map(line => line.trim()).join('\n').trim()
+}
+
 const asIMessage = (message, connections): IMessage => {
   const iMessage = {
     type: message.type,
@@ -88,6 +94,7 @@ const sendMessage = ({ message, token, ip }: { message, token?: string, ip?: str
     message.user.profile = user.profile
   }
   const finalMessage = asIMessage(message, store.getters.connections())
+  if (finalMessage.text) finalMessage.text = trimmed(finalMessage.text)
 
   targetConnections.forEach(connectionWrapper => connectionWrapper.connection.socket.send(JSON.stringify(finalMessage)))
 }
@@ -115,6 +122,7 @@ const formatWithAdd = ({
 export default {
   saveMessage,
   sendMessage,
+  trimmed,
   broadcast,
   asIMessage,
   formatWithAdd,
