@@ -10,7 +10,15 @@ export const createLogger = () => {
   }
 }
 
-export const createHttpLog = (req: FastifyRequest, res: FastifyReply) => {
+export const createHttpLog = (req: FastifyRequest, res: FastifyReply): {
+  ts?: string,
+  method?: string,
+  url?: string,
+  status?: number,
+  ms?: number,
+  ip?: string | string[],
+  userAgent: string,
+} => {
   const time = new Date().toISOString()
   const [a, b] = time.split('T')
 

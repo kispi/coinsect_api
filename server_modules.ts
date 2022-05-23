@@ -1,4 +1,4 @@
-import fastify, { FastifyInstance } from 'fastify'
+import fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import fastifyCors from 'fastify-cors'
 import useRoutes from './routes'
 import useDB from './database'
@@ -10,7 +10,7 @@ import useChat from './chat/server'
 import { log, createHttpLog } from './core/logger'
 import marketInfoService from './services/market_info'
 
-axios.defaults.timeout = 5000
+axios.defaults.timeout = 1000 * 30
 
 axios.interceptors.response.use(
   res => res.data,
@@ -50,6 +50,23 @@ const checkServerConfig = () => {
   }
 }
 
+const o = {}
+const handleNotFound = (req: FastifyRequest, res: FastifyReply) => {
+  const k = `${req.url}:${req.ip}`
+  if (o[k]) o[k]++
+  else o[k] = 1
+
+  // 같은 IP가 존재하지 않는 같은 url로 100번 때릴때마다 한번씩 로그를 찍음
+  if (o[k] % 100 === 0) {
+    const l = createHttpLog(req, res)
+    l['missingCount'] = o[k]
+    log.error(JSON.stringify(l))
+  }
+
+  res.status(404)
+  res.send({ message: 'Not Found' })
+}
+
 export const initApp = async (app: FastifyInstance) => {
   checkServerConfig()
 
@@ -61,11 +78,7 @@ export const initApp = async (app: FastifyInstance) => {
   })
   await useDB()
 
-  app.setNotFoundHandler((req, res) => {
-    res.status(404)
-    log.error(JSON.stringify(createHttpLog(req, res)))
-    res.send({ message: 'Not Found' })
-  })
+  app.setNotFoundHandler(handleNotFound)
   const routeMaker = useRoutes(app)
   routeMaker.admin()
   routeMaker.deploy()
