@@ -72,12 +72,10 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/wallets', ctrls.wallet.all)
 
-    router.post('/sign_in', ctrls.auth.signIn)
-    router.get('/users/me', ctrls.auth.me)
+    router.post('/users/sign_in', ctrls.auth.signIn)
+    router.post('/users/sign_in_kakao', ctrls.auth.signInKakao)
 
-    router.get('/users', ctrls.user.all)
-    router.get('/users/:id', ctrls.user.detail)
-    router.post('/users', ctrls.user.create)
+    router.get('/users/me', ctrls.user.me)
 
     router.get('/persons', ctrls.person.all)
 

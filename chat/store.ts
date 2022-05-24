@@ -1,6 +1,7 @@
 import { getConnection } from 'typeorm'
 import { Message } from '../entities/message'
 import { IConnection, IMessage, IUser } from './types'
+import profileService from '../services/profile'
 import useCache from '../core/cache'
 import helpers from './helpers'
 const dayjs = require('dayjs')
@@ -39,7 +40,7 @@ const actions = {
   createUser: (token: string) => ({
     token,
     profile: {
-      nickname: helpers.recommendNickname(),
+      nickname: profileService.generate(),
     },
   }),
   setUser: ({ token, connection, ip }) => {

@@ -6,6 +6,7 @@ interface IAppResponse {
   asJSON: (json: unknown) => void
   asHTML: (html: string) => void
   failed: (payload?: string | unknown, code?: number) => void
+  error: () => void,
   success: (json?: unknown) => void
 }
 
@@ -14,4 +15,7 @@ export default interface IContext {
   cache: ICacheClient,
   req: FastifyRequest,
   res: IAppResponse,
+  validate: {
+    requiredFields: (fields: string[]) => boolean,
+  },
 }

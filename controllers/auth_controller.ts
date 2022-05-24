@@ -1,45 +1,66 @@
 import IContext from '../core/interfaces/context'
 import helpers from '../core/helpers'
+import useService from '../services'
+import { AuthToken, TypeProvider } from '../entities/auth_token'
+import { TypeUserRole, User,  } from '../entities/user'
+import { Profile } from '../entities/profile'
 
-const dummyUsers = () => [{
-  email: 'kispi@naver.com',
-  password: helpers.hashed('1029'),
-  role: 'admin',
-  auth: 'super',
-}, {
-  email: 'position@coinsect.io',
-  password: helpers.hashed('lala'),
-  role: 'admin',
-  auth: 'position',
-}]
+const service = useService()
 
-const findUser = (email: string) => {
-  const user = dummyUsers().find(u => u.email === email)
-  if (!user) return Promise.reject({ message: 'user not found' })
-
-  return user
-}
+const getUser = (c: IContext, email: string) => c.orm.getRepository(User)
+  .createQueryBuilder()
+  .where(`email = '${email}'`)
+  .leftJoinAndSelect('User.profile', 'profile')
+  .getOne()
 
 const authController = {
   signIn: async (c: IContext) => {
     try {
-      const user = await findUser(c.req.body['email'])
+      const user = await c.orm.getRepository(User).findOneOrFail({ email: c.req.body['email'] })
       if (!user) return 
 
       if (!helpers.compare(user.password, c.req.body['password'])) return c.res.failed({ message: 'password not match' })
-
-      const token = helpers.jwt.sign(user)
-      c.res.success({ token })
+      c.res.success({ token: User.jwt(user) })
     } catch (e) {
       c.res.failed(e)
     }
   },
-  me: async (c: IContext) => {
+  signInKakao: async (c: IContext) => {
+    if (!c.validate.requiredFields(['kakaoId', 'email'])) return c.res.failed({ message: 'invalid payload' })
+
     try {
-      const decoded = await helpers.jwt.getPayload(c)
-      const user = await findUser(decoded['email'])
-      delete user.password
-      c.res.success(user)
+      let authToken = await c.orm.getRepository(AuthToken).findOne(
+        { token: c.req.body['kakaoId'] },
+      )
+
+      if (authToken) {
+        authToken.user = await getUser(c, c.req.body['email'])
+        return c.res.success({ token: User.jwt(authToken.user) })
+      }
+
+      // 토큰이 없는 경우 계정도 없음 => 해당 이메일의 유저가 있나 찾아보고 없으면 생성
+      let user = await getUser(c, c.req.body['email'])
+      if (!user) {
+        user = await c.orm.getRepository(User).save({
+          email: c.req.body['email'],
+          role: TypeUserRole.TypeUser,
+        })
+      }
+
+      if (!user.profile) {
+        await c.orm.getRepository(Profile).save({
+          user,
+          nickname: await service.profile.useIfUnique(c.req.body['nickname']) || await service.profile.generateUnique(),
+        })
+      }
+  
+      authToken = await c.orm.getRepository(AuthToken).save({
+        user,
+        provider: TypeProvider.TypeKakao,
+        token: c.req.body['kakaoId'],
+      })
+      console.log('유저가 어케없노?', user)
+      c.res.success({ token: User.jwt(user) })
     } catch (e) {
       c.res.failed(e)
     }

@@ -3,12 +3,16 @@ import { getConnection } from 'typeorm'
 import { log, createHttpLog } from './logger'
 import useCache from './cache'
 import useResponse from './response'
+import IContext from './interfaces/context'
 
-const createContext = (req: FastifyRequest, reply: FastifyReply) => ({
+const createContext = (req: FastifyRequest, reply: FastifyReply): IContext => ({
   orm: getConnection(),
   cache: useCache(),
   req,
   res: useResponse(reply),
+  validate: {
+    requiredFields: (fields: string[]) => fields.every(field => req.body[field]),
+  },
 })
 
 const useMiddleware = async (

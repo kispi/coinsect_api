@@ -3,12 +3,12 @@ import BaseModel from './base_model'
 import { Post } from './post'
 import { User } from './user'
 
-enum ReactionType {
-  ReactionTypeHeart = 'heart',
-  ReactionTypeLike = 'like',
-  ReactionTypeDislike = 'dislike',
-  ReactionTypeUp = 'up',
-  ReactionTypeDown = 'down',
+enum TypeReactionType {
+  TypeReactionTypeHeart = 'heart',
+  TypeReactionTypeLike = 'like',
+  TypeReactionTypeDislike = 'dislike',
+  TypeReactionTypeUp = 'up',
+  TypeReactionTypeDown = 'down',
 }
 
 @Entity({ name: 'reactions' })
@@ -20,7 +20,7 @@ export class Reaction extends BaseModel {
   post: Post
 
   @Column()
-  type: ReactionType
+  type: TypeReactionType
 
   @JoinColumn()
   @OneToOne(() => User, { onDelete: 'CASCADE' })

@@ -8,7 +8,7 @@ import helpers from '../core/helpers'
 import store from '../store'
 import BaseModel from './base_model'
 
-enum PostType {
+enum TypePostType {
   Normal = 'normal',
 }
 
@@ -29,8 +29,8 @@ export class Post extends BaseModel {
   @Column({ type: 'text' })
   content: string
 
-  @Column({ default: PostType.Normal })
-  postType: PostType
+  @Column({ default: TypePostType.Normal })
+  TypePostType: TypePostType
 
   @Column({ default: 0 })
   views: number
