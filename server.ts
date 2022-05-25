@@ -1,6 +1,13 @@
 import store from './store'
+import walletService from './services/wallet'
 import { app, initApp, backendGitHash } from './server_modules'
 import { log } from './core/logger'
+
+const cron = {
+  run: () => {
+    walletService.all()
+  },
+}
 
 const run = async () => {
   await initApp(app)
@@ -10,6 +17,8 @@ const run = async () => {
 Server starts on port: ${store.state.serverConfig.API_PORT}
 Cache: ${store.state.serverConfig.USE_REDIS === 'yes' ? 'Redis' : 'Javascript Instance'}
   `)
+
+  // cron.run()
 }
 
 run()

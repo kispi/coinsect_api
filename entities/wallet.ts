@@ -18,4 +18,10 @@ export class Wallet extends BaseModel {
 
   @Column({ nullable: true, type: 'decimal', precision: 36, scale: 18 })
   balance: number
+
+  exploreUrl() {
+    if (!this.blockchain) return
+
+    return this.blockchain.exploreUrl + this.address
+  }
 }
