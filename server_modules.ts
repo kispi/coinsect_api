@@ -52,6 +52,8 @@ const checkServerConfig = () => {
 
 const o = {}
 const handleNotFound = (req: FastifyRequest, res: FastifyReply) => {
+  res.status(404)
+
   const k = `${req.url}:${req.ip}`
   if (o[k]) o[k]++
   else o[k] = 1
@@ -63,7 +65,6 @@ const handleNotFound = (req: FastifyRequest, res: FastifyReply) => {
     log.error(JSON.stringify(l))
   }
 
-  res.status(404)
   res.send({ message: 'Not Found' })
 }
 
