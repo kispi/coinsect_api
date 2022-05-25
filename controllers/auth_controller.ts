@@ -16,8 +16,8 @@ const getUser = (c: IContext, email: string) => c.orm.getRepository(User)
 const authController = {
   signIn: async (c: IContext) => {
     try {
-      const user = await c.orm.getRepository(User).findOneOrFail({ email: c.req.body['email'] })
-      if (!user) return 
+      const user = await c.orm.getRepository(User).findOne({ email: c.req.body['email'] })
+      if (!user) return c.res.failed({ message: 'user not found' })
 
       if (!helpers.compare(user.password, c.req.body['password'])) return c.res.failed({ message: 'password not match' })
       c.res.success({ token: User.jwt(user) })
@@ -59,7 +59,6 @@ const authController = {
         provider: TypeProvider.TypeKakao,
         token: c.req.body['kakaoId'],
       })
-      console.log('유저가 어케없노?', user)
       c.res.success({ token: User.jwt(user) })
     } catch (e) {
       c.res.failed(e)
