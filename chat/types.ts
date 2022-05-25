@@ -4,6 +4,10 @@ export interface IUser {
   profile?: {
     nickname: string,
     image?: string,
+    sentiment?: {
+      expireAt: Date,
+      type: string,
+    },
   },
   token: string,
   path?: string, // 프론트엔드에서 어떤 페이지를 이용중인지

@@ -90,6 +90,11 @@ const chatCtrl = {
         delete user.profile.image
       }
 
+      if (profile.sentiment && ['long', 'short'].indexOf(profile.sentiment.type) >= 0) {
+        profile.sentiment.expireAt = coreHelpers.dayjs().add(24, 'hours').format()
+        user.profile.sentiment = profile.sentiment
+      }
+
       const connections = store.getters.targetConnections({ token })
       connections.forEach(conn => conn.user = user)
 
