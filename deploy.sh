@@ -1,4 +1,4 @@
 git pull
-npm install --include dev
+npm install
 npm run build
 pm2 restart coinsect_api
