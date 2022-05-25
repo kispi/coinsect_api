@@ -30,7 +30,7 @@ export class Post extends BaseModel {
   content: string
 
   @Column({ default: TypePostType.Normal })
-  PostType: TypePostType
+  postType: TypePostType
 
   @Column({ default: 0 })
   views: number

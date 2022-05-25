@@ -15,7 +15,7 @@ export class Profile extends BaseModel {
   user: User
 
   @Column({ nullable: true })
-  TypeProfileGender: TypeProfileGender
+  gender: TypeProfileGender
 
   @Column({ nullable: true })
   birthday: Date
