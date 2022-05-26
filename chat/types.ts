@@ -17,7 +17,12 @@ export interface IMessage {
   type: 'auth' | 'text' | 'connections' | 'ping',
   user: IUser,
   text?: string,
-  numConnections: number,
+  numConnections: number, // 나중에 deprecate
+  stats: {
+    numConnections: number,
+    numBulls: number,
+    numBears: number,
+  },
   ts: Date,
 }
 

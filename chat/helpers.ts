@@ -23,12 +23,17 @@ const trimmed = (text: string) => {
   return text.split('\n').map(line => line.trim()).join('\n').trim()
 }
 
-const asIMessage = (message, connections): IMessage => {
+const asIMessage = (message): IMessage => {
   const iMessage = {
     type: message.type,
     user: (message || {}).user,
     text: message.text,
-    numConnections: connections.length - (message.type === 'leave' ? 1 : 0),
+    numConnections: store.getters.stats().numConnections,
+    stats: {
+      numConnections: store.getters.stats().numConnections,
+      numBulls: store.getters.stats().numBulls,
+      numBears: store.getters.stats().numBears,
+    },
     ts: new Date(),
   }
 
@@ -41,7 +46,7 @@ const saveMessage = (message, ip) => {
 
   if (!message.user || !message.user.token) return
 
-  const iMessage = asIMessage(message, store.getters.connections())
+  const iMessage = asIMessage(message)
   store.getters.recentMessages().unshift(iMessage)
 
   // 이 줄 실행 안하면 서버가 오래떠있을 경우 최근 메시지가 무한히 늘어남
@@ -76,7 +81,7 @@ const sendMessage = ({ message, token, ip }: { message, token?: string, ip?: str
     const user = store.getters.user(message.user.token)
     message.user.profile = user.profile
   }
-  const finalMessage = asIMessage(message, store.getters.connections())
+  const finalMessage = asIMessage(message)
   if (finalMessage.text) finalMessage.text = trimmed(finalMessage.text)
 
   targetConnections.forEach(connectionWrapper => connectionWrapper.connection.socket.send(JSON.stringify(finalMessage)))

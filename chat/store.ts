@@ -20,6 +20,11 @@ const state = {
   users: {},
   connections: [] as IConnection[],
   recentMessages: [] as Array<IMessage>,
+  stats: {
+    numConnections: 0,
+    numBulls: 0,
+    numBears: 0,
+  },
 }
 
 const getters = {
@@ -33,10 +38,31 @@ const getters = {
   targetConnections: ({ ip, token }: { ip?: string, token?: string }) => state.connections.filter(conn => {
     if (ip) return conn.ip === ip
     if (token) return conn.user.token === token
-  })
+  }),
+  stats: () => state.stats,
 }
 
 const actions = {
+  loadStats: () => {
+    let numConnections = 0
+    let numBulls = 0
+    let numBears = 0
+  
+    getters.connections().forEach(conn => {
+      numConnections += 1
+      if (!conn.user) return
+  
+      const sentiment = ((getters.user(conn.user.token) || {}).profile).sentiment
+      if (!sentiment) return
+  
+      if (sentiment.type === 'long') numBulls += 1
+      if (sentiment.type === 'short') numBears += 1
+    })
+
+    state.stats.numConnections = numConnections
+    state.stats.numBulls = numBulls
+    state.stats.numBears = numBears
+  },
   createUser: (token: string) => ({
     token,
     profile: {

@@ -19,10 +19,17 @@ const onConnected = (connection: SocketStream, req: FastifyRequest) => {
 
   store.actions.setUser({ token, connection, ip: req.ip })
 
+  // 유저 접속시 통계 업데이트
+  store.actions.loadStats()
+  helpers.broadcast({ type: 'enter' })
+
   connection.socket.on('close', () => {
-    helpers.broadcast({ type: 'leave' })
     const idx = connections.findIndex(conn => conn.connection === connection)
     if (idx >= 0) connections.splice(idx, 1)
+
+    // 유저 접속 끊길시 통계 업데이트
+    store.actions.loadStats()
+    helpers.broadcast({ type: 'leave' })
   })
 
   connection.socket.on('message', rawMessage => {
@@ -93,10 +100,13 @@ const chatCtrl = {
       if (profile.sentiment && ['long', 'short'].indexOf(profile.sentiment.type) >= 0) {
         profile.sentiment.expireAt = coreHelpers.dayjs().add(24, 'hours').format()
         user.profile.sentiment = profile.sentiment
+        store.actions.loadStats()
       }
 
       const connections = store.getters.targetConnections({ token })
       connections.forEach(conn => conn.user = user)
+
+      helpers.broadcast({ type: 'update' })
 
       c.res.success(user)
     },
