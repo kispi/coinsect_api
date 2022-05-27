@@ -16,7 +16,7 @@ Cache: ${store.state.serverConfig.USE_REDIS === 'yes' ? 'Redis' : 'Javascript In
   cron.addJob({
     id: 'renewWalets',
     runnable: walletService.renewAll,
-    interval: 1000 * 60 * 10,
+    interval: 1000 * 60 * 60 * 4,
   })
   cron.run()
 }
