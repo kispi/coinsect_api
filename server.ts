@@ -1,13 +1,8 @@
 import store from './store'
 import walletService from './services/wallet'
+import cron from './cron'
 import { app, initApp, backendGitHash } from './server_modules'
 import { log } from './core/logger'
-
-const cron = {
-  run: () => {
-    walletService.all()
-  },
-}
 
 const run = async () => {
   await initApp(app)
@@ -18,7 +13,12 @@ Server starts on port: ${store.state.serverConfig.API_PORT}
 Cache: ${store.state.serverConfig.USE_REDIS === 'yes' ? 'Redis' : 'Javascript Instance'}
   `)
 
-  // cron.run()
+  cron.addJob({
+    id: 'renewWalets',
+    runnable: walletService.renewAll,
+    interval: 1000 * 60 * 10,
+  })
+  cron.run()
 }
 
 run()

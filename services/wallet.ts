@@ -1,5 +1,7 @@
 import axios from 'axios'
 import slack from './slack'
+import helpers from '../core/helpers'
+import { log } from '../core/logger'
 import { HTMLElement, parse } from 'node-html-parser'
 import { getRepository } from 'typeorm'
 import { Wallet } from '../entities/wallet'
@@ -28,12 +30,21 @@ const crawlBalance = {
     if (dom) return walletHelpers.domToFloat(dom, ' LTC')
   },
   EOS: () => {},
-  DOGE: () => {},
-  SOL: () => {},
-  GRS: () => {},
+  DOGE: (doc: HTMLElement) => {
+    const wrapper = doc.querySelector('.address-general-info')
+    const dom = wrapper.querySelectorAll('span')[7]
+    if (dom) return walletHelpers.domToFloat(dom, ' DOGE')
+  },
+  GRS: (doc: HTMLElement) => {
+    const dom = doc.querySelector('.address-general-info').querySelectorAll('span')[7]
+    if (dom) return walletHelpers.domToFloat(dom, ' GRS')
+  },
   ZEC: () => {},
   XMR: () => {},
-  TRX: () => {},
+  TRX: (doc: HTMLElement) => {
+    const dom = doc.querySelector('.value.break')
+    if (dom) return walletHelpers.domToFloat(dom, ' TRX')
+  },
 }
 
 const throughApi = (wallet: Wallet) => {
@@ -45,7 +56,7 @@ const throughApi = (wallet: Wallet) => {
       } catch (e) {
         return Promise.reject(e)
       }
-    }
+    },
   }
 }
 
@@ -70,6 +81,8 @@ const scrape = async ({ html = '' as string, wallet = null as Wallet }): Promise
 
 const floatify = value => typeof value === 'string' ? parseFloat(value) : value
 
+const nameToDashed = (name: string) => name.replace(/ /g, '-').toLowerCase()
+
 const walletService = {
   // 블록체인 익스플로러 사이트를 폴링해서 잔고를 업데이트한다.
   renewBalance: async (wallet: Wallet) => {
@@ -80,22 +93,63 @@ const walletService = {
       await getRepository(Wallet).save(wallet)
       const before = walletHelpers.asCryptoBalance(originalBalance)
       const after = walletHelpers.asCryptoBalance(wallet.balance)
-      if (before !== after) slack.postMessage(`
-        ${wallet.blockchain.symbol}잔고가 업데이트되었습니다.\n
-        (BEFORE: ${before})\n
-        (AFTER: ${after})\n
-        확인: ${wallet.exploreUrl()}
-      `)
-      console.log(`${wallet.blockchain.symbol} Balance`, before, after)
+      return {
+        url: wallet.exploreUrl(),
+        symbol: wallet.blockchain.symbol,
+        before,
+        after,
+        price: wallet.blockchain['$$price'],
+      }
     } catch (e) {
       return Promise.reject(e)
+    }
+  },
+  renewAll: async () => {
+    log.info('walletService.renewAll: updating wallets...')
+    try {
+      const wallets = await walletService.all()
+      const data = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${wallets.map(w => nameToDashed(w.blockchain.name))}&vs_currencies=usd,krw,btc`)
+      if (data) wallets.forEach(wallet => {
+        const price = data[nameToDashed(wallet.blockchain.name)] || {}
+        wallet.blockchain['$$price'] = {
+          usd: price.usd,
+          krw: price.krw,
+          btc: price.btc,
+        }
+      })
+
+      const settled = await Promise.allSettled(wallets.map(walletService.renewBalance))
+      const result = settled.filter(o => o.status === 'fulfilled' && o['value']).map(o => o['value'])
+      const changed = result.filter(row => row.before !== row.after)
+      if (changed.length === 0) return
+
+      const total = { usd: 0, krw: 0, btc: 0 }
+      result.map(row => {
+        const b = parseFloat(row.after) || 0
+        return {
+          usd: row.price.usd * b,
+          krw: row.price.krw * b,
+          btc: row.price.btc * b,
+        }
+      }).forEach(row => {
+        total.usd += (row.usd || 0)
+        total.krw += (row.krw || 0)
+        total.btc += (row.btc || 0)
+      })
+
+      slack.postMessage(`
+        잔고가 변경된 크립토가 있습니다. (${changed.map(wallet => wallet.symbol).join(', ')})\n
+        ${result.map(row => `<${row.url}|${row.symbol}: ${row.before} =&gt; ${row.after}>`).join('\n')}\n
+        총 잔고: ${total.usd.toFixed(2)} USD = ${total.krw.toFixed(0)} KRW = ${total.btc.toFixed(8)} BTC
+      `)
+    } finally {
+      log.info('walletService.renewAll: updating wallets finished.')
     }
   },
   poll: async (wallet: Wallet): Promise<number> => {
     if (!wallet.blockchain) return Promise.reject({ message: 'wallet.blockchain is not populated' })
 
     try {
-      console.log(wallet.exploreUrl())
       const html: string = await axios.get(wallet.exploreUrl())
       if (!html) return Promise.reject({ message: `failed to fetch url ${wallet.exploreUrl()}` })
 
@@ -104,21 +158,10 @@ const walletService = {
       return Promise.reject(e)
     }
   },
-  all: async () => {
-    const wallets = await getRepository(Wallet)
-      .createQueryBuilder()
-      .leftJoinAndSelect('Wallet.blockchain', 'blockchain')
-      // .where(`symbol = 'LTC'`)
-      .getMany()
-
-    wallets.slice(0, 4).forEach(async wallet => {
-      try {
-        await walletService.renewBalance(wallet)
-      } catch (e) {
-        console.error(e)
-      }
-    })
-  },
+  all: () => getRepository(Wallet)
+    .createQueryBuilder()
+    .leftJoinAndSelect('Wallet.blockchain', 'blockchain')
+    .getMany(),
 }
 
 export default walletService

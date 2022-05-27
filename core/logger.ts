@@ -3,10 +3,10 @@ import helpers from './helpers'
 
 export const createLogger = () => {
   return {
-    info: (...args) => console.log(...args),
-    debug: (...args) => console.info(...args),
-    error: (...args) => console.error(...args),
-    warn: (...args) => console.warn(...args),
+    info: (...args) => console.log(`[${helpers.dayjs().format()}]`, ...args),
+    debug: (...args) => console.info(`[${helpers.dayjs().format()}]`, ...args),
+    error: (...args) => console.error(`[${helpers.dayjs().format()}]`, ...args),
+    warn: (...args) => console.warn(`[${helpers.dayjs().format()}]`, ...args),
   }
 }
 

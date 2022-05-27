@@ -15,6 +15,7 @@ import IContext from '../core/interfaces/context'
 import useService from '../services'
 import store from '../store'
 import orm from '../core/orm'
+import cron from '../cron'
 
 const service = useService()
 
@@ -79,6 +80,9 @@ routesPost.detail = (c: IContext) => {
 }
 
 const adminController = {
+  cron: {
+    all: (c: IContext) => c.res.success(cron.stats()),
+  },
   chat: routesChat,
   store: routesStore,
   badWord: useCRUD({ model: BadWord }),
