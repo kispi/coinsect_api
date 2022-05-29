@@ -13,12 +13,14 @@ Server starts on port: ${store.state.serverConfig.API_PORT}
 Cache: ${store.state.serverConfig.USE_REDIS === 'yes' ? 'Redis' : 'Javascript Instance'}
   `)
 
-  cron.addJob({
-    id: 'renewWalets',
-    runnable: walletService.renewAll,
-    interval: 1000 * 60 * 60 * 4,
-  })
-  cron.run()
+  if (process.env.NODE_ENV === 'production') {
+    cron.addJob({
+      id: 'renewWalets',
+      runnable: walletService.renewAll,
+      interval: 1000 * 60 * 60 * 4,
+    })
+    cron.run()
+  }
 }
 
 run()
