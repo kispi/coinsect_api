@@ -30,4 +30,16 @@ export default [{
   "image": "https://profile.img.afreecatv.com/LOGO/sk/skgus197/skgus197.jpg",
   "name": "티미",
   "link": "https://bj.afreecatv.com/skgus197",
+}, {
+  "image": "https://yt3.ggpht.com/4UnSavuwtqEuR5lSGhjiCKtsB5gt4fFl1Uq8iWNJXE8QV2H9bVuZyaAIlZft2Q4ZeDIzGiRebQ=s176-c-k-c0x00ffffff-no-rj",
+  "name": "이기광",
+  "link": "https://www.youtube.com/channel/UCVDmM7RXz0RSrs6vp8kz-3g",
+}, {
+  "image": "https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/soribebe.jpg",
+  "name": "소리베베",
+  "link": "https://bj.afreecatv.com/soribaby",
+}, {
+  "image": "https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/jadu.png",
+  "name": "박자두",
+  "link": "https://www.youtube.com/channel/UCIOHzEDwgUuLBZwPKEUt1AQ",
 }]
