@@ -184,6 +184,7 @@ const realTimePositionService = {
           found.link = (payload.link || '').trim()
           found.onAir = payload.onAir
           found.editable = payload.editable
+          found.tracking = payload.tracking
         }
       }
       removeNotifiedPositionHistoriesOf(found.id)
