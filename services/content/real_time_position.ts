@@ -17,6 +17,7 @@ type IPosition = {
   size: number
   onAir: boolean,
   editable: boolean,
+  tracking: boolean,
 }
 
 const cache = useCache()
@@ -40,6 +41,7 @@ const createPosition = ({
   link,
   onAir: true,
   editable: true,
+  tracking: false,
 })
 
 let cachedPositions = {
@@ -78,7 +80,7 @@ const realTimePositionService = {
       if (bannedUser) return Promise.reject({ message: `오기입으로 수정 요청이 제한되었습니다. (해제: ${helpers.dayjs(bannedUser.until).format('YYYY-MM-DD HH:mm:ss')}` })
 
       const payload = c.req.body
-      const keys = ['id', 'liqPrice', 'entryPrice', 'size', 'contract', 'name', 'image', 'link', 'onAir', 'token']
+      const keys = ['id', 'liqPrice', 'entryPrice', 'size', 'contract', 'name', 'image', 'link', 'onAir', 'token', 'tracking']
 
       const isSame = (a, b) => {
         if (!a && !b) return true
@@ -157,6 +159,7 @@ const realTimePositionService = {
         size: null,
         onAir: true,
         editable: true,
+        tracking: true,
       })
       setRealTimePositions(cachedPositions)
       return
