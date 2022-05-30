@@ -64,6 +64,19 @@ const setRealTimePositions = o => {
   cache.set('content:realTimePositions', o)
 }
 
+const isSame = (a, b) => {
+  if (!a && !b) return true
+
+  return a === b
+}
+
+const positionChanged = (a, b) =>
+  !isSame(a.entryPrice, b['entryPrice']) ||
+  !isSame(a.liqPrice, b['liqPrice']) ||
+  !isSame(a.size, b['size']) ||
+  !isSame(a.onAir, b['onAir']) ||
+  a.contract !== b['contract']
+
 const realTimePositionService = {
   presets: () => presets,
   changeNotification: {
@@ -82,19 +95,7 @@ const realTimePositionService = {
       const payload = c.req.body
       const keys = ['id', 'liqPrice', 'entryPrice', 'size', 'contract', 'name', 'image', 'link', 'onAir', 'token', 'tracking']
 
-      const isSame = (a, b) => {
-        if (!a && !b) return true
-
-        return a === b
-      }
-
-      if (
-        isSame(found.entryPrice, payload['entryPrice']) &&
-        isSame(found.liqPrice, payload['liqPrice']) &&
-        isSame(found.size, payload['size']) &&
-        isSame(found.onAir, payload['onAir']) &&
-        found.contract === payload['contract']
-      ) return Promise.reject({ message: '제출하신 포지션이 기존 포지션과 동일합니다.' })
+      if (!positionChanged(found, payload)) return Promise.reject({ message: '제출하신 포지션이 기존 포지션과 동일합니다.' })
 
       try {
         await realTimePositionService.validate(payload)
@@ -191,7 +192,14 @@ const realTimePositionService = {
         }
       }
       removeNotifiedPositionHistoriesOf(found.id)
-      if (found.contract && found.entryPrice && found.size && found.onAir && found.editable) {
+      if (
+        found.contract &&
+        found.entryPrice &&
+        found.size &&
+        found.onAir &&
+        found.editable &&
+        positionChanged(found, payload)
+      ) {
         chatService.broadcast({
           type: 'alert',
           text: `
