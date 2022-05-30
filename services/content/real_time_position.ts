@@ -196,7 +196,6 @@ const realTimePositionService = {
         found.contract &&
         found.entryPrice &&
         found.size &&
-        found.onAir &&
         found.editable &&
         positionChanged(found, payload)
       ) {
