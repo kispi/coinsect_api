@@ -92,6 +92,7 @@ const realTimePositionService = {
         isSame(found.entryPrice, payload['entryPrice']) &&
         isSame(found.liqPrice, payload['liqPrice']) &&
         isSame(found.size, payload['size']) &&
+        isSame(found.onAir, payload['onAir']) &&
         found.contract === payload['contract']
       ) return Promise.reject({ message: '제출하신 포지션이 기존 포지션과 동일합니다.' })
 
@@ -102,6 +103,7 @@ const realTimePositionService = {
           ip: c.req.ip,
         }
         keys.filter(key => payload[key]).forEach(key => acceptable[key] = payload[key])
+        acceptable['tracking'] = true // 누군가 보고 있기 때문에 이런 요청이 온 것이기 떄문
         notifiedPositionHistories.push(acceptable)
         notifiedPositionHistories = notifiedPositionHistories.slice(-5) // 최근 5개까지만 유지
         const u = await chatService.getUser(payload['token'])
@@ -114,6 +116,7 @@ const realTimePositionService = {
           청산: ${payload['liqPrice']}
           규모: ${payload['size']}
           계약: ${payload['contract']}
+          방송: ${payload['onAir']}
         `)
         if (allowed) {
           realTimePositionService.set(payload, true)
@@ -177,14 +180,14 @@ const realTimePositionService = {
         payload.liqPrice ? found.liqPrice = parseFloat(payload.liqPrice) : delete found.liqPrice
         payload.size ? found.size = parseFloat(payload.size) : delete found.size
         found.contract = (payload.contract || '').trim()
+        found.onAir = payload.onAir
+        found.tracking = payload.tracking
 
         if (!submittedByUser) {
           found.image = (payload.image || '').trim()
           found.name = (payload.name || '').trim()
           found.link = (payload.link || '').trim()
-          found.onAir = payload.onAir
           found.editable = payload.editable
-          found.tracking = payload.tracking
         }
       }
       removeNotifiedPositionHistoriesOf(found.id)
