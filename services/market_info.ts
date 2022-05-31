@@ -114,8 +114,9 @@ const marketInfoService = {
 
     try {
       const resp = await axios.get(`https://polling.finance.naver.com/api/realtime/worldstock/stock/${query}`)
-      cache.set('market_info:nasdaq', resp, 5)
-      return resp['datas']
+      const data = resp['datas']
+      cache.set('market_info:nasdaq', data, 5)
+      return data
     } catch (e) {
       return Promise.reject(e)
     }
