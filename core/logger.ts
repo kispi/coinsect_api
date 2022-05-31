@@ -19,11 +19,7 @@ export const createHttpLog = (req: FastifyRequest, res: FastifyReply): {
   ip?: string | string[],
   userAgent: string,
 } => {
-  const time = new Date().toISOString()
-  const [a, b] = time.split('T')
-
   const log = {
-    ts: `${a} ${b.substring(0, 8)}`,
     method: req.method,
     url: req.url,
     status: res.statusCode,
