@@ -105,6 +105,21 @@ const marketInfoService = {
       return Promise.reject(e)
     }
   },
+  nasdaq: async params => {
+    const stored = await cache.get('market_info:nasdaq')
+    if (stored) return stored
+
+    const query = (params || {})['query']
+    if (!query) return Promise.reject({ message: 'invalid request' })
+
+    try {
+      const resp = await axios.get(`https://polling.finance.naver.com/api/realtime/worldstock/stock/${query}`)
+      cache.set('market_info:nasdaq', resp, 5)
+      return resp['datas']
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  },
 }
 
 export default marketInfoService
