@@ -74,7 +74,7 @@ export const initApp = async (app: FastifyInstance) => {
   app.register(fastifyCors, {
     origin: (o, cb) => {
       const hostname = new URL(o).hostname
-      if (hostname === 'localhost' || hostname === 'https://coinsect.io') {
+      if (hostname === 'localhost' || hostname === 'coinsect.io') {
         cb(null, true)
         return
       }
