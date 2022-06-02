@@ -57,6 +57,15 @@ const throughApi = (wallet: Wallet) => {
         return Promise.reject(e)
       }
     },
+    XLM: async () => {
+      try {
+        const { balances }: any = await axios.get(`https://horizon.stellar.org/accounts/${wallet.address}`)
+        const xlm = balances.find(b => b.asset_type === 'native')
+        if (xlm) return xlm.balance
+      } catch (e) {
+        return Promise.reject(e)
+      }
+    },
   }
 }
 
