@@ -1,5 +1,5 @@
 import fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import fastifyCors from 'fastify-cors'
+import fastifyCors from '@fastify/cors'
 import useRoutes from './routes'
 import useDB from './database'
 import axios from 'axios'
@@ -71,7 +71,17 @@ const handleNotFound = (req: FastifyRequest, res: FastifyReply) => {
 export const initApp = async (app: FastifyInstance) => {
   checkServerConfig()
 
-  app.register(fastifyCors)
+  app.register(fastifyCors, {
+    origin: (o, cb) => {
+      const hostname = new URL(o).hostname
+      if (hostname === 'localhost' || hostname === 'https://coinsect.io') {
+        cb(null, true)
+        return
+      }
+
+      cb(new Error('Not Allowed'), false)
+    },
+  })
   app.register(fastifyWebsocket)
   app.addHook('onRequest', (req, res, next) => {
     req['$$startTime'] = helpers.now()
