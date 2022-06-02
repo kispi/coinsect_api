@@ -72,14 +72,15 @@ export const initApp = async (app: FastifyInstance) => {
   checkServerConfig()
 
   app.register(fastifyCors, {
-    origin: (o, cb) => {
-      const hostname = new URL(o).hostname
-      if (hostname === 'localhost' || hostname === 'coinsect.io') {
+    origin: (origin, cb) => {
+      if (
+        (origin || '').includes('//localhost') ||
+        origin === 'https://coinsect.io'
+      ) {
         cb(null, true)
         return
       }
-
-      cb(new Error('Not Allowed'), false)
+      cb(new Error('Not allowed'), false)
     },
   })
   app.register(fastifyWebsocket)
