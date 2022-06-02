@@ -75,7 +75,7 @@ export const initApp = async (app: FastifyInstance) => {
     origin: (origin, cb) => {
       if (
         (origin || '').includes('//localhost') ||
-        origin === 'https://coinsect.io'
+        (origin || '').includes('coinsect.io')
       ) {
         cb(null, true)
         return
