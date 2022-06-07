@@ -4,7 +4,6 @@ import { IConnection, IMessage, IUser } from './types'
 import profileService from '../services/profile'
 import useCache from '../core/cache'
 import helpers from './helpers'
-const dayjs = require('dayjs')
 
 const cache = useCache()
 
@@ -101,7 +100,7 @@ const actions = {
   },
   // timeout: millisecond
   banIP: (ip: string, timeout: number) => {
-    const date = dayjs().add(timeout, 'milliseconds')
+    const date = helpers.dayjs().add(timeout, 'milliseconds')
     state.bannedUntil[ip] = date
 
     setTimeout(() => delete state.bannedUntil[ip], timeout)

@@ -98,7 +98,7 @@ const chatCtrl = {
       }
 
       if (profile.sentiment && ['long', 'short'].indexOf(profile.sentiment.type) >= 0) {
-        profile.sentiment.expireAt = coreHelpers.dayjs().add(24, 'hours').format()
+        profile.sentiment.expireAt = helpers.dayjs().add(24, 'hours').format()
         user.profile.sentiment = profile.sentiment
         store.actions.loadStats()
       }

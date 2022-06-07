@@ -54,7 +54,7 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
   },
   ping: () => {
     const user = store.getters.user(token)
-    if (user.profile.sentiment && coreHelpers.dayjs(user.profile.sentiment.expireAt).isBefore(coreHelpers.dayjs())) {
+    if (user.profile.sentiment && helpers.dayjs(user.profile.sentiment.expireAt).isBefore(helpers.dayjs())) {
       delete user.profile.sentiment
     }
 

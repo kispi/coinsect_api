@@ -108,6 +108,7 @@ const formatWithAdd = ({
 }
 
 export default {
+  dayjs,
   saveMessage,
   sendMessage,
   trimmed,
