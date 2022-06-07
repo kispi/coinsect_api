@@ -35,7 +35,7 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
     }
   
     // 마지막 메시지 이후 무조건 0.2초는 밴
-    // store.actions.banIP(ip, store.getters.config().allowedChatFrequency)
+    store.actions.banIP(ip, store.getters.config().allowedChatFrequency)
     if (!(message.text || '').trim() || message.text.length > store.getters.config().messageMaxLength) return
   
     helpers.saveMessage(message, ip)
