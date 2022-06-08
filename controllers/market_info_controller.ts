@@ -8,7 +8,7 @@ const marketInfoController = {
   symbols: async (c: IContext) => c.res.asJSON(await service.marketInfo.symbols()),
   markets: async (c: IContext) => c.res.asJSON(await service.marketInfo.markets()),
   leaderboard: async (c: IContext) => c.res.asJSON(await service.marketInfo.leaderboard()),
-  nasdaq: async (c: IContext) => c.res.asJSON(await service.marketInfo.nasdaq(c.req.query)),
+  nasdaq: async (c: IContext) => c.res.asJSON(await service.marketInfo.nasdaq.markets()),
 }
 
 export default marketInfoController

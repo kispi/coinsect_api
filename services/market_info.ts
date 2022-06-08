@@ -1,6 +1,13 @@
 import axios from 'axios'
 import useCache from '../core/cache'
 
+const endpoints = {
+  nasdaq: {
+    symbols: 'https://api.stock.naver.com/stock/exchange/NASDAQ/marketValue',
+    markets: 'https://polling.finance.naver.com/api/realtime/worldstock/stock/',
+  }
+}
+
 const cache = useCache()
 
 const marketInfoService = {
@@ -105,22 +112,40 @@ const marketInfoService = {
       return Promise.reject(e)
     }
   },
-  nasdaq: async params => {
-    const stored = await cache.get('market_info:nasdaq')
-    if (stored) return stored
+  nasdaq: {
+    symbols: async (): Promise<Array<any>> => {
+      const stored = await cache.get('market_info:nasdaq.symbols')
+      if (stored) return stored
 
-    const query = (params || {})['query']
-    if (!query) return Promise.reject({ message: 'invalid request' })
+      const createPromise = (page: number) => axios.get(endpoints.nasdaq.symbols, { params: { page, pageSize: 50 } })
 
-    try {
-      const resp = await axios.get(`https://polling.finance.naver.com/api/realtime/worldstock/stock/${query}`)
-      const data = resp['datas']
-      data.forEach((row, idx) => row.$$rank = idx + 1)
-      cache.set('market_info:nasdaq', data, 5)
-      return data
-    } catch (e) {
-      return Promise.reject(e)
-    }
+      try {
+        const result = await Promise.all([
+          createPromise(1),
+          createPromise(2),
+        ])
+        const data = [...result[0]['stocks'], ...result[1]['stocks']].map(stock => stock.reutersCode)
+        cache.set('market_info:nasdaq.symbols', data, 60 * 60)
+        return data
+      } catch (e) {
+        return Promise.reject(e)
+      }
+    },
+    markets: async () => {
+      const stored = await cache.get('market_info:nasdaq.markets')
+      if (stored) return stored
+
+      try {
+        const symbols = await marketInfoService.nasdaq.symbols()
+        const resp = await axios.get(`${endpoints.nasdaq.markets}/${symbols.join(',')}`)
+        const data = resp['datas']
+        data.forEach((row, idx) => row.$$rank = idx + 1)
+        cache.set('market_info:nasdaq.markets', data, 5)
+        return data
+      } catch (e) {
+        return Promise.reject(e)
+      }
+    },
   },
 }
 
