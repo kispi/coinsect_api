@@ -90,7 +90,7 @@ const actions = {
         .getMany()
 
       const json = JSON.parse(JSON.stringify(data))
-      state.recentMessages = json.map(Message.asIMessage)
+      state.recentMessages = json.map(helpers.asIMessage)
     } catch (e) {
       return Promise.reject(e)
     }

@@ -123,7 +123,7 @@ const chatCtrl = {
       qb.getMany()
         .then(data => {
           const json = JSON.parse(JSON.stringify(data))
-          c.res.asJSON(filteredMessages(json.map(Message.asIMessage)))
+          c.res.asJSON(filteredMessages(json.map(helpers.asIMessage)))
         })
         .catch(c.res.failed)
     },

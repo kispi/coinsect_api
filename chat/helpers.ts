@@ -24,17 +24,27 @@ const trimmed = (text: string) => {
 }
 
 const asIMessage = (message): IMessage => {
+  const s = store.getters.stats()
+
+  const dbStoredUser = {
+    token: message.token,
+    profile: {
+      nickname: message.nickname,
+      image: message.image,
+    },
+  }
+
   const iMessage = {
     type: message.type,
-    user: (message || {}).user,
+    user: (message || {}).user || dbStoredUser,
     text: message.text,
-    numConnections: store.getters.stats().numConnections,
+    numConnections: s.numConnections,
     stats: {
-      numConnections: store.getters.stats().numConnections,
-      numBulls: store.getters.stats().numBulls,
-      numBears: store.getters.stats().numBears,
+      numConnections: s.numConnections,
+      numBulls: s.numBulls,
+      numBears: s.numBears,
     },
-    ts: new Date(),
+    ts: message.ts || new Date(),
   }
 
   if (message.meta) iMessage['meta'] = message.meta
