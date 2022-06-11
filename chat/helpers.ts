@@ -35,6 +35,7 @@ const asIMessage = (message): IMessage => {
   }
 
   const iMessage = {
+    id: message.id,
     type: message.type,
     user: (message || {}).user || dbStoredUser,
     text: message.text,
