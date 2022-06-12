@@ -26,10 +26,6 @@ const trimmed = (text: string) => {
 const asIMessage = (message): IMessage => {
   const s = store.getters.stats()
 
-  if (message.type === 'alert') {
-    message.user = { profile: { nickname: '코인충', image: 'https://coinsect.io/favicon/favicon.svg' }}
-  }
-
   const dbStoredUser = {
     token: message.token,
     profile: {
