@@ -13,6 +13,30 @@ const onchainController = {
         c.res.failed(e)
       }
     },
+    bitcoinCash: async (c: IContext) => {
+      try {
+        const data = await service.onchain.richlist.bitcoinCash()
+        c.res.asJSON(data)
+      } catch (e) {
+        c.res.failed(e)
+      }
+    },
+    dogecoin: async (c: IContext) => {
+      try {
+        const data = await service.onchain.richlist.dogecoin()
+        c.res.asJSON(data)
+      } catch (e) {
+        c.res.failed(e)
+      }
+    },
+    litecoin: async (c: IContext) => {
+      try {
+        const data = await service.onchain.richlist.litecoin()
+        c.res.asJSON(data)
+      } catch (e) {
+        c.res.failed(e)
+      }
+    },
   },
 }
 
