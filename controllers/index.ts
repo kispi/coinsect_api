@@ -5,6 +5,7 @@ import content from './content_controller'
 import deploy from './deploy_controller'
 import marketInfo from './market_info_controller'
 import notification from './notification_controller'
+import onchain from './onchain_controller'
 import person from './person_controller'
 import post from './post_controller'
 import reaction from './reaction_controller'
@@ -21,6 +22,7 @@ const useControllers = () => ({
   deploy,
   marketInfo,
   notification,
+  onchain,
   person,
   post,
   reaction,

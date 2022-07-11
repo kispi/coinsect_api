@@ -107,6 +107,8 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/contents/news/coinness/articles', ctrls.content.news.coinness.articles)
     router.get('/contents/news/coinness/issues', ctrls.content.news.coinness.issues)
 
+    router.get('/onchain/richlist/bitcoin', ctrls.onchain.richlist.bitcoin)
+
     router.get('/notifications', ctrls.notification.all)
 
     router.get('/s3/upload_url', ctrls.s3.getSignedUrl)
