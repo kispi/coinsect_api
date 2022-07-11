@@ -41,8 +41,9 @@ const useBitinfoCharts = async ({
       })
       rows.push(o)
     })
-    cache.set(cacheKey, { data: rows, link: url }, 60 * 10)
-    return rows
+    const result = { data: rows, link: url }
+    cache.set(cacheKey, result, 60 * 10)
+    return result
   } catch (e) {
     return Promise.reject(e)
   }
