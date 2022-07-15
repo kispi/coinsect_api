@@ -53,7 +53,7 @@ const asIMessage = (message): IMessage => {
 }
 
 const saveMessage = (message, ip) => {
-  if (message.type !== 'text') return
+  if (['text', 'image'].indexOf(message.type) < 0) return
 
   if (!message.user || !message.user.token) return
 

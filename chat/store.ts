@@ -11,7 +11,7 @@ const state = {
   config: {
     numLatestMessages: 100,
     allowedChatFrequency: 500, // ms. determine how frequently users can chat
-    messageMaxLength: 120,
+    messageMaxLength: 255,
     nicknameMaxLength: 10,
     imageUrlMaxLength: 255,
   },

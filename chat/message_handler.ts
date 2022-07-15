@@ -7,9 +7,8 @@ import { IMessage } from './types'
 const service = useService()
 
 const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: string, token: string }) => ({
+  image: () => messageHandlers({ message, ip, token }).text(),
   text: () => {
-    if (message.type !== 'text') return
-  
     const bannedUser = coreHelpers.useBannedUser(ip)
     if (bannedUser) {
       helpers.sendMessage({
@@ -37,7 +36,7 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
     // 마지막 메시지 이후 무조건 0.2초는 밴
     store.actions.banIP(ip, store.getters.config().allowedChatFrequency)
     if (!(message.text || '').trim() || message.text.length > store.getters.config().messageMaxLength) return
-  
+
     helpers.saveMessage(message, ip)
   
     if (service.badWord.includedIn(message.text)) message.text = service.badWord.filtered(message.text)
