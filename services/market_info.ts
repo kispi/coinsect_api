@@ -112,6 +112,14 @@ const marketInfoService = {
       return Promise.reject(e)
     }
   },
+  crypto: async params => {
+    try {
+      const data = await axios.get('https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing', { params } )
+      return data
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  },
   nasdaq: {
     symbols: async (): Promise<Array<any>> => {
       const stored = await cache.get('market_info:nasdaq.symbols')
