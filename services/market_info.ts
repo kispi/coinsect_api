@@ -1,4 +1,5 @@
 import axios from 'axios'
+import parse from 'node-html-parser'
 import useCache from '../core/cache'
 
 const endpoints = {
@@ -116,6 +117,51 @@ const marketInfoService = {
     try {
       const data = await axios.get('https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing', { params } )
       return data
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  },
+  assetsIncludingMetal: async () => {
+    const stored = await cache.get('market_info:assetsIncludingMetal')
+    if (stored) return stored
+
+    try {
+      const data = await axios.get('https://companiesmarketcap.com/assets-by-market-cap') as string
+      const html = parse(data)
+      const rows = html.getElementsByTagName('tr')
+      const arr = []
+      Array.from(rows).forEach((tr, idx) => {
+        const o = {}
+        const logo = tr.querySelector('.company-logo')
+        if (!logo) return
+
+        o['logo'] = `https://companiesmarketcap.com${logo.attributes['src']}`
+
+        const rank = tr.querySelector('.rank-td')
+        if (rank) o['rank'] = parseInt(rank.innerHTML)
+
+        const name = tr.querySelector('.company-name')
+        if (name) o['name'] = name.innerHTML
+
+        const code = tr.querySelector('.company-code')
+        if (code) o['code'] = (code.innerHTML || '').split('</span>')[1]
+
+        const tds = Array.from(tr.getElementsByTagName('td'))
+        let cap = 0
+        let val = (tds[2].innerHTML || '').replace(/[$,]/g, '')
+        if (val.includes('T')) cap = parseFloat(val.replace('T', '')) * Math.pow(10, 12)
+        if (val.includes('B')) cap = parseFloat(val.replace('T', '')) * Math.pow(10, 9)
+        if (cap) o['cap'] = cap
+
+        const price = parseFloat((tds[3].innerHTML || '').replace(/[$T,]/g, ''))
+        if (price) o['price'] = price
+
+        const dailyChange = parseFloat((tds[4].getElementsByTagName('span')[0].innerHTML || '').replace(/[%]/g, ''))
+        if (dailyChange) o['dailyChange'] = dailyChange
+        arr.push(o)
+      })
+      cache.set('market_info:assetsIncludingMetal', arr, 3600 * 24)
+      return arr
     } catch (e) {
       return Promise.reject(e)
     }

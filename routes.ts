@@ -99,6 +99,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/market_info/markets', ctrls.marketInfo.markets)
     router.get('/market_info/crypto', ctrls.marketInfo.crypto)
     router.get('/market_info/nasdaq', ctrls.marketInfo.nasdaq)
+    router.get('/market_info/assets_including_metal', ctrls.marketInfo.assetsIncludingMetal)
 
     router.get('/contents/public_treasuries', ctrls.content.publicTreasuries)
     router.get('/contents/real_time_positions', ctrls.content.realTimePositions.all)
