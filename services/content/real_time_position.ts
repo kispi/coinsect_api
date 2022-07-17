@@ -64,18 +64,14 @@ const setRealTimePositions = o => {
   cache.set('content:realTimePositions', o)
 }
 
-const isSame = (a, b) => {
-  if (!a && !b) return true
-
-  return a === b
+const positionChanged = (a, b) => {
+  // 편의상 약한 비교
+  if (a.contract != b.contract) return true
+  if (a.entryPrice != b.entryPrice) return true
+  if (a.liqPrice != b.liqPrice) return true
+  if (a.size != b.size) return true
+  return false
 }
-
-const positionChanged = (a, b) =>
-  !isSame(a.entryPrice, b['entryPrice']) ||
-  !isSame(a.liqPrice, b['liqPrice']) ||
-  !isSame(a.size, b['size']) ||
-  !isSame(a.onAir, b['onAir']) ||
-  a.contract !== b['contract']
 
 const realTimePositionService = {
   presets: () => presets,
@@ -175,6 +171,7 @@ const realTimePositionService = {
       if (!payload.id) payload.id = helpers.generateUUID(true)
 
       const found = cachedPositions.data.find(o => o.id === payload.id)
+      const changed = positionChanged(found, payload)
       if (!found) cachedPositions.data.push(createPosition(payload))
       else {
         payload.entryPrice ? found.entryPrice = parseFloat(payload.entryPrice) : delete found.entryPrice
@@ -192,20 +189,16 @@ const realTimePositionService = {
         }
       }
       removeNotifiedPositionHistoriesOf(found.id)
-      if (
-        found.contract &&
-        found.entryPrice &&
-        found.size &&
-        found.editable &&
-        positionChanged(found, payload)
-      ) {
+
+      if (changed) {
         chatService.broadcast({
           type: 'alert',
           text: `
             [${found.name}] 포지션이 업데이트되었습니다.
-            계약 / 규모: ${found.contract || '?'} / ${found.size || '?'}
-            진입 / 청산: ${found.entryPrice || '?'} / ${found.liqPrice || '?'}
+            계약 / 규모: ${found.contract || '-'} / ${found.size || '-'}
+            진입 / 청산: ${found.entryPrice || '-'} / ${found.liqPrice || '-'}
           `,
+          meta: found,
         })
       }
       setRealTimePositions(cachedPositions)
