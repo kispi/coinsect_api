@@ -9,7 +9,7 @@ const cache = useCache()
 
 const state = {
   config: {
-    numLatestMessages: 100,
+    numLatestMessages: 50,
     allowedChatFrequency: 500, // ms. determine how frequently users can chat
     messageMaxLength: 255,
     nicknameMaxLength: 10,
