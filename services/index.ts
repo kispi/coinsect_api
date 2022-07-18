@@ -1,6 +1,7 @@
 import badWord from './bad_word'
 import chat from './chat'
 import content from './content/index'
+import helper from './helper'
 import marketInfo from './market_info'
 import onchain from './onchain/index'
 import profile from './profile'
@@ -11,6 +12,7 @@ const useService = () => ({
   badWord,
   chat,
   content,
+  helper,
   marketInfo,
   onchain,
   profile,

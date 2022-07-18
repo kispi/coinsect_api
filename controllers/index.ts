@@ -3,6 +3,7 @@ import auth from './auth_controller'
 import config from './config_controller'
 import content from './content_controller'
 import deploy from './deploy_controller'
+import helper from './helper_controller'
 import marketInfo from './market_info_controller'
 import notification from './notification_controller'
 import onchain from './onchain_controller'
@@ -20,6 +21,7 @@ const useControllers = () => ({
   config,
   content,
   deploy,
+  helper,
   marketInfo,
   notification,
   onchain,
