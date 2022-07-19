@@ -1,14 +1,15 @@
+import { IMessage } from './types'
+import { log } from '../core/logger'
 import coreHelpers from '../core/helpers'
 import useService from '../services'
 import helpers from './helpers'
 import store from './store'
-import { IMessage } from './types'
 
 const service = useService()
 
 const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: string, token: string }) => ({
   image: () => messageHandlers({ message, ip, token }).text(),
-  text: () => {
+  text: async () => {
     const bannedUser = coreHelpers.useBannedUser(ip)
     if (bannedUser) {
       helpers.sendMessage({
@@ -37,9 +38,17 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
     store.actions.banIP(ip, store.getters.config().allowedChatFrequency)
     if (!(message.text || '').trim() || message.text.length > store.getters.config().messageMaxLength) return
 
-    helpers.saveMessage(message, ip)
-  
+    let savedMessage
+    try {
+      savedMessage = await helpers.saveMessage(message, ip)
+    } catch (e) {
+      log.error('failed to save message:', e)
+    }
+
+    if (savedMessage) message['id'] = savedMessage.id
+
     if (service.badWord.includedIn(message.text)) message.text = service.badWord.filtered(message.text)
+
     helpers.broadcast(message)
     return
   },

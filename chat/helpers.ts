@@ -52,7 +52,7 @@ const asIMessage = (message): IMessage => {
   return iMessage
 }
 
-const saveMessage = (message, ip) => {
+const saveMessage = async (message, ip) => {
   if (['text', 'image'].indexOf(message.type) < 0) return
 
   if (!message.user || !message.user.token) return
@@ -78,9 +78,13 @@ const saveMessage = (message, ip) => {
     row['image'] = user.profile.image
     row['token'] = user.token
   }
-
-  orm.createQueryBuilder().insert().into(Message).values([row])
-    .execute().then(store.actions.loadRecentMessages) // INSERT 이후 loadRecentMessages를 해줘야, 캐시에 있는 가장 최근에 삽입된 message의 id가 채워진다.
+  try {
+    const insert = await orm.createQueryBuilder().insert().into(Message).values([row]).execute()
+    store.actions.loadRecentMessages()
+    return insert.generatedMaps[0]
+  } catch (e) {
+    return Promise.reject(e)
+  }
 }
 
 // token은 받는 사람의 토큰이고, message.user.token은 보낸 사람의 토큰이다.
