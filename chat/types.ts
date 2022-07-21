@@ -17,6 +17,7 @@ export interface IMessage {
   type: 'auth' | 'text' | 'connections' | 'ping',
   user: IUser,
   text?: string,
+  meta?: string,
   numConnections: number, // 나중에 deprecate
   stats: {
     numConnections: number,

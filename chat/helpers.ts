@@ -39,6 +39,7 @@ const asIMessage = (message): IMessage => {
     type: message.type,
     user: (message || {}).user || dbStoredUser,
     text: message.text,
+    meta: message.meta,
     numConnections: s.numConnections,
     stats: {
       numConnections: s.numConnections,
@@ -48,7 +49,6 @@ const asIMessage = (message): IMessage => {
     ts: message.ts || new Date(),
   }
 
-  if (message.meta) iMessage['meta'] = message.meta
   return iMessage
 }
 
@@ -71,6 +71,9 @@ const saveMessage = async (message, ip) => {
     type: iMessage.type,
     text: iMessage.text,
   }
+
+  // 클라에서 stringify 해서 날아오긴 할건데, 아닐 경우 방어.
+  if (iMessage.meta) row['meta'] = typeof iMessage.meta !== 'string' ? JSON.stringify(iMessage.meta) : iMessage.meta
 
   const user = store.getters.user(message.user.token)
   if (user) {
