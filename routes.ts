@@ -105,9 +105,9 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/contents/real_time_positions', ctrls.content.realTimePositions.all)
     router.post('/contents/real_time_positions/change_notifications', ctrls.content.realTimePositions.changeNotification.create)
 
-    router.get('/contents/news/coinness/feeds', ctrls.content.news.coinness.feeds)
-    router.get('/contents/news/coinness/articles', ctrls.content.news.coinness.articles)
-    router.get('/contents/news/coinness/issues', ctrls.content.news.coinness.issues)
+    router.get('/contents/news/cobak/feeds', ctrls.content.news.cobak.feeds)
+    router.get('/contents/news/cobak/articles', ctrls.content.news.cobak.articles)
+    router.get('/contents/news/cobak/issues', ctrls.content.news.cobak.issues)
 
     router.get('/onchain/richlist/bitcoin', ctrls.onchain.richlist.bitcoin)
     router.get('/onchain/richlist/bitcoin_cash', ctrls.onchain.richlist.bitcoinCash)

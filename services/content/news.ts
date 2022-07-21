@@ -1,27 +1,39 @@
 import axios from 'axios'
-import store from '../../store'
+import helpers from '../../core/helpers'
 
-const endpoint = store.state.serverConfig.LAMBDA_COINNESS
+const endpoint = 'https://cobak.co.kr/api/media'
 
 const newsService = {
-  coinness: {
+  cobak: {
     articles: ({
-      limit = 10,
-      section = 'latest',
-      lastId,
+      page = 0,
+      current_time = helpers.dayjs().format('YYYY-MM-DD'),
+      news_type = 'best_news',
     }: ({
-      limit?: number,
-      section?: 'latest' | 'popularity',
-      lastId?: number,
-    })) => axios.get(endpoint, {
+      page: number,
+      current_time: string,
+      news_type: 'best_news',
+    })) => axios.get(`${endpoint}/news_list`, {
       params: {
-        limit,
-        section,
-        lastId,
-        type: 'articles',
+        page,
+        current_time,
+        news_type,
+        list_type: 'all'
       },
     }),
-    feeds: (lastId: number) => axios.get(endpoint, { params: { lastId, type: 'news' } }),
+    feeds: ({
+      page = 0,
+      current_time = helpers.dayjs().format('YYYY-MM-DD'),
+    }: ({
+      page: number,
+      current_time: string,
+    })) => axios.get(`${endpoint}/breaking_news_list`, {
+      params: {
+        page,
+        current_time,
+        list_type: 'all',
+      },
+    }),
     issues: () => axios.get(endpoint, { params: { type: 'issues' } }),
   },
 }

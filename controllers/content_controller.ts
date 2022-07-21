@@ -42,26 +42,28 @@ const contentController = {
     },
   },
   news: {
-    coinness: {
+    cobak: {
       articles: async (c: IContext) => {
         try {
-          c.res.success(await service.content.news.coinness.articles(c.req.query))
+          const { list } = await service.content.news.cobak.articles(c.req.query as any) as any
+          c.res.success(list)
         } catch (e) {
-          c.res.failed({ message: '코인니스 뉴스룸 기사를 가져오는 중 문제가 발생했습니다' })
+          c.res.failed({ message: '코박 뉴스를 가져오는 중 문제가 발생했습니다' })
         }
       },
       feeds: async (c: IContext) => {
         try {
-          c.res.success(await service.content.news.coinness.feeds(c.req.query['lastId']))
+          const { breaking_news_list } = await service.content.news.cobak.feeds(c.req.query as any) as any
+          c.res.success(breaking_news_list)
         } catch (e) {
-          c.res.failed({ message: '코인니스 피드를 가져오는 중 문제가 발생했습니다' })
+          c.res.failed({ message: '코박 뉴스를 가져오는 중 문제가 발생했습니다' })
         }
       },
       issues: async (c: IContext) => {
         try {
-          c.res.success(await service.content.news.coinness.issues())
+          c.res.success(await service.content.news.cobak.issues())
         } catch (e) {
-          c.res.failed({ message: '코인니스 이슈를 가져오는 중 문제가 발생했습니다' })
+          c.res.failed({ message: '코박 뉴스를 가져오는 중 문제가 발생했습니다' })
         }
       }
     },
