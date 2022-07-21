@@ -113,7 +113,13 @@ const chatCtrl = {
   },
   messages: {
     all: (c: IContext) => {
-      const qb = c.orm.getRepository(Message).createQueryBuilder().limit(store.getters.config().numLatestMessages).orderBy('id', 'DESC')
+      const limit = c.req.query['limit']
+      if (parseInt(limit) >= 1000) {
+        c.res.failed({ message: 'limit is too big' })
+        return
+      }
+
+      const qb = c.orm.getRepository(Message).createQueryBuilder().limit(limit || store.getters.config().numLatestMessages).orderBy('id', 'DESC')
       const cursor = c.req.query['firstMessageId']
       if (cursor) qb.where(`id < ${cursor}`)
       else {
