@@ -69,7 +69,7 @@ const saveMessage = async (message, ip) => {
     ts: iMessage.ts,
     numConnections: iMessage.numConnections,
     type: iMessage.type,
-    text: iMessage.text,
+    text: trimmed(iMessage.text),
   }
 
   // 클라에서 stringify 해서 날아오긴 할건데, 아닐 경우 방어.

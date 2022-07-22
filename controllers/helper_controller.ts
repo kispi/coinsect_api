@@ -4,7 +4,13 @@ import useService from '../services'
 const service = useService()
 
 const helperController = {
-  crawlMetaTags: async (c: IContext) => c.res.asJSON(await service.helper.crawlMetaTags(c.req.query['url'])),
+  crawlMetaTags: async (c: IContext) => {
+    try {
+      c.res.success(await service.helper.crawlMetaTags(c.req.query['url']))
+    } catch (e) {
+      c.res.failed({ message: 'failed to crawl given url' })
+    }
+  },
 }
 
 export default helperController
