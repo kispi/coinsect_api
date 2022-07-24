@@ -23,6 +23,7 @@ const helperController = {
         c.res.error()
       }
     },
+    examples: (c: IContext) => c.res.asJSON(service.helper.crawledWebsites.examples()),
   },
 }
 

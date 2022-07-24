@@ -2,6 +2,7 @@ import axios from 'axios'
 import parse from 'node-html-parser'
 import useCache from '../core/cache'
 import helpers from '../core/helpers'
+import sites from '../constants/sites'
 
 const cache = useCache()
 
@@ -44,6 +45,7 @@ const helperService = {
       }
     },
     all: () => (cache.get('crawled_urls') || []),
+    examples: () => sites,
   },
 }
 

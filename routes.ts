@@ -116,6 +116,7 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/helpers/crawled_websites/:url', ctrls.helper.crawledWebsites.one) // method가 post여야 할 것 같지만 get으로...
     router.get('/helpers/crawled_websites', ctrls.helper.crawledWebsites.all)
+    router.get('/helpers/crawled_websites/examples', ctrls.helper.crawledWebsites.examples)
 
     router.get('/notifications', ctrls.notification.all)
 
