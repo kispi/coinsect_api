@@ -50,6 +50,8 @@ const helperService = {
           if (key.endsWith('title')) meta['title'] = t.content
           if (key.endsWith('description')) meta['description'] = t.content
         })
+      } catch (e) {
+        return Promise.reject(e)
       } finally {
         delete crawlingUrls[url]
       }
