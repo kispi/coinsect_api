@@ -4,12 +4,25 @@ import useService from '../services'
 const service = useService()
 
 const helperController = {
-  crawlMetaTags: async (c: IContext) => {
-    try {
-      c.res.success(await service.helper.crawlMetaTags(c.req.query['url']))
-    } catch (e) {
-      c.res.failed({ message: 'failed to crawl given url' })
-    }
+  crawledWebsites: {
+    one: async (c: IContext) => {
+      try {
+        c.res.success(await service.helper.crawledWebsites.one(c.req.params['url']))
+      } catch (e) {
+        c.res.failed({ message: 'failed to crawl given url' })
+      }
+    },
+    all: async (c: IContext) => {
+      try {
+        const data = await service.helper.crawledWebsites.all()
+        c.res.asJSON({
+          total: data.length,
+          data,
+        })
+      } catch (e) {
+        c.res.error()
+      }
+    },
   },
 }
 

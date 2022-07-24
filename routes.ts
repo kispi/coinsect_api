@@ -114,7 +114,8 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/onchain/richlist/dogecoin', ctrls.onchain.richlist.dogecoin)
     router.get('/onchain/richlist/litecoin', ctrls.onchain.richlist.litecoin)
 
-    router.get('/helpers/crawl_meta_tags', ctrls.helper.crawlMetaTags)
+    router.get('/helpers/crawled_websites/:url', ctrls.helper.crawledWebsites.one) // method가 post여야 할 것 같지만 get으로...
+    router.get('/helpers/crawled_websites', ctrls.helper.crawledWebsites.all)
 
     router.get('/notifications', ctrls.notification.all)
 
