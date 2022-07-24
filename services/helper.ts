@@ -9,7 +9,11 @@ let crawledUrls = []
 
 const helperService = {
   crawledWebsites: {
-    one: async (url: string) => {
+    one: async (givenUrl: string) => {
+      if (!(givenUrl || '').includes('.')) return Promise.reject({ message: 'invalid url' })
+
+      const url = givenUrl.startsWith('http') ? givenUrl : `https://${givenUrl}`
+
       crawledUrls = await cache.get('crawled_urls') || []
       const foundIdx = crawledUrls.findIndex(o => o.url === url)
       if (foundIdx >= 0) {
