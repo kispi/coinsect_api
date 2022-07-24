@@ -21,8 +21,8 @@ const s3Service = {
   getKeyPart: (fullUrl: string) => fullUrl.split(host)[1],
   imageExt: (fileName: string) => {
     const imageExts = ['.png', '.jpeg', '.jpg', '.svg', '.bmp', '.webp', '.gif']
-    if (imageExts.some(ext => fileName.endsWith(ext))) {
-      const splitted = fileName.split('.')
+    if (imageExts.some(ext => fileName.toLowerCase().endsWith(ext))) {
+      const splitted = fileName.toLowerCase().split('.')
       return splitted[splitted.length - 1]
     }
   },
