@@ -7,7 +7,7 @@ const helperController = {
   crawledWebsites: {
     one: async (c: IContext) => {
       try {
-        c.res.success(await service.helper.crawledWebsites.one(c.req.params['url']))
+        c.res.asJSON(await service.helper.crawledWebsites.one(c.req.params['url']))
       } catch (e) {
         c.res.failed({ message: 'failed to crawl given url' })
       }

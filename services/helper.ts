@@ -8,6 +8,8 @@ const cache = useCache()
 
 let crawledUrls = []
 
+let crawlingUrls = {}
+
 const removeCachedUrl = (url: string) => {
   const idx = crawledUrls.findIndex(o => o.url === url)
   if (idx < 0) return
@@ -26,11 +28,15 @@ const helperService = {
       const foundIdx = crawledUrls.findIndex(o => o.url === url)
       if (foundIdx >= 0) {
         const found = crawledUrls[foundIdx]
-        if (helpers.dayjs().add(1, 'hours').isAfter(found.crawledAt)) {
+        if (helpers.dayjs(found.crawledAt).add(1, 'hours').isBefore(found.crawledAt)) {
           removeCachedUrl(url)
         } else return found
       }
 
+      // 현재 해당 URL을 크롤링중이면 요청을 받지 않는다.
+      if (crawlingUrls[url]) return { url, status: 'crawling' }
+
+      crawlingUrls[url] = true
       try {
         const data = await axios.get(url) as string
         const html = parse(data)
@@ -44,12 +50,14 @@ const helperService = {
           if (key.endsWith('title')) meta['title'] = t.content
           if (key.endsWith('description')) meta['description'] = t.content
         })
-        const result = { url, meta, crawledAt: helpers.dayjs().format('YYYY-MM-DD HH:mm:ss') }
+        const result = { url, meta, crawledAt: helpers.dayjs().format('YYYY-MM-DD HH:mm:ss'), status: 'crawled' }
         crawledUrls.push(result)
         cache.set('crawled_urls', crawledUrls)
         return result
       } catch (e) {
         return Promise.reject(e)
+      } finally {
+        delete crawlingUrls[url]
       }
     },
     all: () => (cache.get('crawled_urls') || []),
