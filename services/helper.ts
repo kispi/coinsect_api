@@ -32,9 +32,12 @@ const helperService = {
         const rawMeta = html.getElementsByTagName('meta').map(o => o.attributes)
         const meta = {}
         rawMeta.forEach(t => {
-          if ((t.property || '').endsWith(':image')) meta['image'] = t.content
-          if ((t.property || '').endsWith(':title')) meta['title'] = t.content
-          if ((t.property || '').endsWith(':description')) meta['description'] = t.content
+          if (!t.content) return
+
+          const key = t.property || t.name || t.itemprop || ''
+          if (key.endsWith('image')) meta['image'] = (t.content || '').startsWith('http') ? t.content : `${url}${t.content}`
+          if (key.endsWith('title')) meta['title'] = t.content
+          if (key.endsWith('description')) meta['description'] = t.content
         })
         const result = { url, meta, crawledAt: helpers.dayjs().format('YYYY-MM-DD HH:mm:ss') }
         crawledUrls.push(result)
