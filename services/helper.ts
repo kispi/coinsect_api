@@ -8,22 +8,27 @@ const cache = useCache()
 
 let crawledUrls = []
 
+const removeCachedUrl = (url: string) => {
+  const idx = crawledUrls.findIndex(o => o.url === url)
+  if (idx < 0) return
+
+  crawledUrls.splice(idx, 1)
+  removeCachedUrl(url)
+}
+
 const helperService = {
   crawledWebsites: {
     one: async (givenUrl: string) => {
       if (!(givenUrl || '').includes('.')) return Promise.reject({ message: 'invalid url' })
 
       const url = givenUrl.startsWith('http') ? givenUrl : `https://${givenUrl}`
-
       crawledUrls = await cache.get('crawled_urls') || []
       const foundIdx = crawledUrls.findIndex(o => o.url === url)
       if (foundIdx >= 0) {
         const found = crawledUrls[foundIdx]
         if (helpers.dayjs().add(1, 'hours').isAfter(found.crawledAt)) {
-          crawledUrls.splice(foundIdx, 1)
-        } else {
-          return found
-        }
+          removeCachedUrl(url)
+        } else return found
       }
 
       try {

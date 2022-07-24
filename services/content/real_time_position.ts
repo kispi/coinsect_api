@@ -53,10 +53,10 @@ let notifiedPositionHistories = []
 
 const removeNotifiedPositionHistoriesOf = id => {
   const idx = notifiedPositionHistories.findIndex(o => o.id === id)
-  if (idx >= 0) {
-    notifiedPositionHistories.splice(idx, 1)
-    removeNotifiedPositionHistoriesOf(id)
-  }
+  if (idx < 0) return
+
+  notifiedPositionHistories.splice(idx, 1)
+  removeNotifiedPositionHistoriesOf(id)
 }
 
 const setRealTimePositions = o => {
