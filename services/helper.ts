@@ -50,14 +50,13 @@ const helperService = {
           if (key.endsWith('title')) meta['title'] = t.content
           if (key.endsWith('description')) meta['description'] = t.content
         })
-        return { url, meta, crawledAt: helpers.dayjs().format('YYYY-MM-DD HH:mm:ss'), status: 'crawled' }
-      } catch (e) {
-        return Promise.reject(e)
       } finally {
         delete crawlingUrls[url]
-        crawledUrls.push({ url, meta, crawledAt: helpers.dayjs().format('YYYY-MM-DD HH:mm:ss'), status: 'crawled' })
-        cache.set('crawled_urls', crawledUrls)
       }
+      const result = { url, meta, crawledAt: helpers.dayjs().format('YYYY-MM-DD HH:mm:ss'), status: 'crawled' }
+      crawledUrls.push(result)
+      cache.set('crawled_urls', crawledUrls)
+      return result
     },
     all: () => (cache.get('crawled_urls') || []),
     examples: () => sites,
