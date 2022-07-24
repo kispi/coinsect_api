@@ -37,11 +37,11 @@ const helperService = {
       if (crawlingUrls[url]) return { url, status: 'crawling' }
 
       crawlingUrls[url] = true
+      const meta = {}
       try {
         const data = await axios.get(url) as string
         const html = parse(data)
         const rawMeta = html.getElementsByTagName('meta').map(o => o.attributes)
-        const meta = {}
         rawMeta.forEach(t => {
           if (!t.content) return
 
@@ -50,14 +50,13 @@ const helperService = {
           if (key.endsWith('title')) meta['title'] = t.content
           if (key.endsWith('description')) meta['description'] = t.content
         })
-        const result = { url, meta, crawledAt: helpers.dayjs().format('YYYY-MM-DD HH:mm:ss'), status: 'crawled' }
-        crawledUrls.push(result)
-        cache.set('crawled_urls', crawledUrls)
-        return result
+        return { url, meta, crawledAt: helpers.dayjs().format('YYYY-MM-DD HH:mm:ss'), status: 'crawled' }
       } catch (e) {
         return Promise.reject(e)
       } finally {
         delete crawlingUrls[url]
+        crawledUrls.push({ url, meta, crawledAt: helpers.dayjs().format('YYYY-MM-DD HH:mm:ss'), status: 'crawled' })
+        cache.set('crawled_urls', crawledUrls)
       }
     },
     all: () => (cache.get('crawled_urls') || []),
