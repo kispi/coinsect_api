@@ -55,7 +55,7 @@ const helperService = {
       } finally {
         delete crawlingUrls[url]
       }
-      const result = { url, meta, crawledAt: helpers.dayjs().format('YYYY-MM-DD HH:mm:ss'), status: 'crawled' }
+      const result = { url, meta, crawledAt: helpers.dayjs().format(), status: 'crawled' }
       crawledUrls.push(result)
       cache.set('crawled_urls', crawledUrls)
       return result
