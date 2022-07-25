@@ -95,9 +95,9 @@ const realTimePositionService = {
 
       try {
         await realTimePositionService.validate(payload)
-        payload['requestedAt'] = helpers.dayjs().format()
         const acceptable = {
           ip: c.req.ip,
+          requestedAt: helpers.dayjs().format(),
         }
         keys.filter(key => payload[key]).forEach(key => acceptable[key] = payload[key])
         acceptable['tracking'] = true // 누군가 보고 있기 때문에 이런 요청이 온 것이기 떄문
