@@ -20,7 +20,7 @@ const removeCachedUrl = (url: string) => {
 
 const helperService = {
   crawledWebsites: {
-    one: async (givenUrl: string) => {
+    crawl: async (givenUrl: string) => {
       if (!(givenUrl || '').includes('.')) return Promise.reject({ message: 'invalid url' })
 
       const url = givenUrl.startsWith('http') ? givenUrl : `https://${givenUrl}`
