@@ -1,6 +1,6 @@
 import helpers from '../../core/helpers'
 import useCache from '../../core/cache'
-import presets from './position_presets'
+import presets from '../../constants/position_presets'
 import IContext from '../../core/interfaces/context'
 import slack from '../slack'
 import store from '../../store'

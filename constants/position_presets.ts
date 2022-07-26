@@ -1,0 +1,49 @@
+export default [{
+  'image': 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg',
+  'name': '박호두',
+  'link': 'https://bj.afreecatv.com/sweet31w',
+}, {
+  'image': 'https://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg',
+  'name': '짭구',
+  'link': 'https://play.afreecatv.com/cyzhgw',
+}, {
+  'image': 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/saddo.png',
+  'name': '사또',
+  'link': 'https://www.youtube.com/channel/UCnXe6v0-5vmMMRU2qx0XwUw',
+}, {
+  'image': 'https://static-cdn.jtvnw.net/jtv_user_pictures/e85f1e19-e793-4a07-bbc5-5135981dc4f8-profile_image-70x70.png',
+  'name': '랄로',
+  'link': 'https://www.twitch.tv/aba4647',
+}, {
+  'image': 'https://yt3.ggpht.com/Cc-OWp5QZyoSRUWDY4qIT5FjiAhSdmTBukvLxuMRc2L_UeS4VVbPBYnr3FpLfSw_JVC5lwChBLM=s900-c-k-c0x00ffffff-no-rj',
+  'name': '강은호',
+  'link': 'https://play.afreecatv.com/cocoa898',
+}, {
+  'image': 'https://profile.img.afreecatv.com/LOGO/cy/cyber91/cyber91.jpg',
+  'name': '리듬타타',
+  'link': 'https://bj.afreecatv.com/cyber91',
+}, {
+  'image': 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/gunchim.png',
+  'name': '군침코인',
+  'link': 'https://play.afreecatv.com/anwhrjsqorqo',
+}, {
+  'image': 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/lala.png',
+  'name': '랄라',
+  'link': 'https://bj.afreecatv.com/lsbm0317',
+}, {
+  'image': 'https://profile.img.afreecatv.com/LOGO/sk/skgus197/skgus197.jpg',
+  'name': '티미',
+  'link': 'https://bj.afreecatv.com/skgus197',
+}, {
+  'image': 'https://yt3.ggpht.com/4UnSavuwtqEuR5lSGhjiCKtsB5gt4fFl1Uq8iWNJXE8QV2H9bVuZyaAIlZft2Q4ZeDIzGiRebQ=s176-c-k-c0x00ffffff-no-rj',
+  'name': '이기광',
+  'link': 'https://www.youtube.com/channel/UCVDmM7RXz0RSrs6vp8kz-3g',
+}, {
+  'image': 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/soribebe.jpg',
+  'name': '소리베베',
+  'link': 'https://bj.afreecatv.com/soribaby',
+}, {
+  'image': 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/jadu.png',
+  'name': '박자두',
+  'link': 'https://www.youtube.com/channel/UCIOHzEDwgUuLBZwPKEUt1AQ',
+}]
