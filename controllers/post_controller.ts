@@ -81,9 +81,19 @@ const postController = {
   },
   all: async (c: IContext) => {
     try {
-      const [data, total] = await orm.querySetter(c, Post)
+      const qb = orm.querySetter(c, Post)
+        .andWhere('post_type = "normal"')
         .andWhere(`board_id = ${freeBoardId}`)
-        .getManyAndCount()
+
+      // LIKE 검색이 너무 많아서 나중에 규모가 커지면 ES등 튜닝 필요함
+      const keyword = (c.req.query['query'] || '').split('=')[1]
+      if (keyword) {
+        qb.andWhere(`nickname LIKE "%${keyword}%"`)
+        qb.orWhere(`title LIKE "%${keyword}%"`)
+        qb.orWhere(`content LIKE "%${keyword}%"`)
+      }
+
+      const [data, total] = await qb.getManyAndCount()
 
       await Promise.all([
         loadChildren({ c, model: Post, childModel: Reply, items: data }),
