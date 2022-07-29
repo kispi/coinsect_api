@@ -37,9 +37,6 @@ const postController = {
     payload['title'] = helpers.sanitize.strict(payload['title'])
     payload['content'] = helpers.sanitize.html(payload['content'])
 
-    const imageKeys = helpers.parseImageSources(payload['content'])
-    imageKeys.forEach(imageUrl => services.s3.deleteObjectTagging(services.s3.getKeyPart(imageUrl)))
-
     try {
       payload['sharingKey'] = helpers.generateUUID(true)
       await orm.querySetter(c, Post).insert().into(Post).values(payload).execute()
