@@ -1,5 +1,9 @@
+import store from '../store'
+
+const cf = store.state.serverConfig.AWS_S3_CDN
+
 export default [{
-  'image': 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/influencers/hodu_park.jpg',
+  'image': `${cf}/influencers/hodu_park.jpg`,
   'name': '박호두',
   'link': 'https://bj.afreecatv.com/sweet31w',
 }, {
@@ -7,7 +11,7 @@ export default [{
   'name': '짭구',
   'link': 'https://play.afreecatv.com/cyzhgw',
 }, {
-  'image': 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/saddo.png',
+  'image': `${cf}/images/saddo.png`,
   'name': '사또',
   'link': 'https://www.youtube.com/channel/UCnXe6v0-5vmMMRU2qx0XwUw',
 }, {
@@ -23,11 +27,11 @@ export default [{
   'name': '리듬타타',
   'link': 'https://bj.afreecatv.com/cyber91',
 }, {
-  'image': 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/gunchim.png',
+  'image': `${cf}/images/gunchim.png`,
   'name': '군침코인',
   'link': 'https://play.afreecatv.com/anwhrjsqorqo',
 }, {
-  'image': 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/lala.png',
+  'image': `${cf}/images/lala.png`,
   'name': '랄라',
   'link': 'https://bj.afreecatv.com/lsbm0317',
 }, {
@@ -39,11 +43,11 @@ export default [{
   'name': '이기광',
   'link': 'https://www.youtube.com/channel/UCVDmM7RXz0RSrs6vp8kz-3g',
 }, {
-  'image': 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/soribebe.jpg',
+  'image': `${cf}/images/soribebe.jpg`,
   'name': '소리베베',
   'link': 'https://bj.afreecatv.com/soribaby',
 }, {
-  'image': 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/images/jadu.png',
+  'image': `${cf}/images/jadu.png`,
   'name': '박자두',
   'link': 'https://www.youtube.com/channel/UCIOHzEDwgUuLBZwPKEUt1AQ',
 }]

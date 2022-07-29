@@ -19,13 +19,12 @@ const helpers = {
       if (str.endsWith('way')) return `${str}s`
       if (str.endsWith('y')) return `${str.slice(0, -1)}ies`
       if (str.endsWith('s') || str.endsWith('h')) return `${str}es`
-  
+
       return `${str}s`
     },
     toCapital: (str: string) => str.charAt(0).toUpperCase() + str.slice(1),
     toSnake: (str: string, delim?: string) => (str || '').replace(/[A-Z]/g, letter => `${delim || '_'}${letter.toLowerCase()}`),
   },
-  useS3: (key: string) => `https://coinsect-production.s3.ap-northeast-2.amazonaws.com/${key}`,
   /**
  * trim values listed in fields and check if it's empty.
  * NOTE: This mutates the payload body by trimming. (EX: ' Hello world ' => 'Hello world')
