@@ -82,7 +82,6 @@ const postController = {
   all: async (c: IContext) => {
     try {
       const qb = orm.querySetter(c, Post)
-        .andWhere('post_type = "normal"')
         .andWhere(`board_id = ${freeBoardId}`)
 
       // LIKE 검색이 너무 많아서 나중에 규모가 커지면 ES등 튜닝 필요함
