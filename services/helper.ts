@@ -62,6 +62,11 @@ const helperService = {
     },
     all: () => (cache.get('crawled_urls') || []),
     examples: () => sites,
+    delete: async (url: string) => {
+      removeCachedUrl(url)
+      cache.set('crawled_urls', crawledUrls)
+      return await helperService.crawledWebsites.all()
+    },
   },
 }
 

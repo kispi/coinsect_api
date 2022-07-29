@@ -25,6 +25,17 @@ const helperController = {
         c.res.error()
       }
     },
+    delete: async (c: IContext) => {
+      try {
+        const data = await service.helper.crawledWebsites.delete(c.req.body['url'])
+        c.res.asJSON({
+          total: data.length,
+          data,
+        })
+      } catch (e) {
+        c.res.error()
+      }
+    },
     examples: (c: IContext) => c.res.asJSON(service.helper.crawledWebsites.examples()),
   },
 }
