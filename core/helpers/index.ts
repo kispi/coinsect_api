@@ -24,6 +24,7 @@ const helpers = {
     },
     toCapital: (str: string) => str.charAt(0).toUpperCase() + str.slice(1),
     toSnake: (str: string, delim?: string) => (str || '').replace(/[A-Z]/g, letter => `${delim || '_'}${letter.toLowerCase()}`),
+    toCamel: (str: string) => str.replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', '')),
   },
   /**
  * trim values listed in fields and check if it's empty.

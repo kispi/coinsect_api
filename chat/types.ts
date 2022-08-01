@@ -5,12 +5,12 @@ export interface IUser {
     nickname: string,
     image?: string,
     sentiment?: {
-      expireAt: Date,
+      expireAt: Date | string,
       type: string,
     },
   },
   token: string,
-  lastSeen?: Date,
+  lastSeen?: Date | string,
   lastIP?: string,
   path?: string, // 프론트엔드에서 어떤 페이지를 이용중인지
 }

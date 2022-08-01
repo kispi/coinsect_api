@@ -2,7 +2,9 @@ import { getConnection } from 'typeorm'
 import { Message } from '../entities/message'
 import { IConnection, IMessage } from './types'
 import store from './store'
-const dayjs = require('dayjs')
+import coreHelpers from '../core/helpers'
+
+const dayjs = coreHelpers.dayjs
 
 const mustToken = () => {
   let nonExistNewToken = ''
