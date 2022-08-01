@@ -4,14 +4,11 @@ import store from './store'
 import helpers from './helpers'
 import badWord from '../services/bad_word'
 import messageHandlers from './message_handler'
-import useCache from '../core/cache'
 import { Message } from '../entities/message'
 import { IMessage, IUser } from './types'
 import { SocketStream } from 'fastify-websocket'
 import { FastifyRequest } from 'fastify'
 import { log } from '../core/logger'
-
-const cache = useCache()
 
 const connections = store.getters.connections()
 
@@ -62,7 +59,6 @@ export const chatCtrl = {
     all: (c: IContext) => {
       try {
         const q = c.req.query
-        // if (q['sort']) qb.orderBy(columnWithTable(q['sort'], entityName), (q['order'] || 'desc').toUpperCase())
 
         const users = Object.values(store.getters.users()) as Array<IUser>
         let filtered = users
@@ -94,10 +90,10 @@ export const chatCtrl = {
 
         c.res.asJSON({
           data: filtered.slice(
-            q['offset'] || 0,
-            (q['offset'] || 0) + (q['limit'] || 0),
+            parseInt(q['offset']) || 0,
+            (parseInt(q['offset']) || 0) + (parseInt(q['limit']) || 0),
           ),
-          total: users.length,
+          total: filtered.length,
         })
       } catch (e) {
         c.res.failed()
