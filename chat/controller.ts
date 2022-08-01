@@ -86,11 +86,7 @@ export const chatCtrl = {
         if (q['sort']) {
           const sign = q['order'] === 'desc' ? -1 : 1
           const c = q['sort']
-          filtered.sort((a, b) => {
-            if (a[c] && !b[c]) return sign
-
-            if (a[c] && b[c]) return a[q[c]] > b[c] ? sign : -sign
-          })
+          filtered.sort((a, b) => (a[q[c]] || null) > (b[c] || null) ? sign : -sign) // prevent comparing on undefined
         }
 
         c.res.asJSON({
