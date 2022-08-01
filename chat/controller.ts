@@ -87,9 +87,11 @@ export const chatCtrl = {
           const sign = q['order'] === 'desc' ? -1 : 1
           const c = q['sort']
           filtered.sort((a, b) => {
-            if (!a[c] && b[c]) return -sign
-
             if (a[c] && b[c]) return a[c] > b[c] ? sign : -sign
+
+            if (!a[c]) return -sign
+
+            if (!b[c]) return sign
           })
         }
 
