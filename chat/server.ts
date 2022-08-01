@@ -10,6 +10,7 @@ import store from './store'
 import IContext from '../core/interfaces/context'
 import badWord from '../services/bad_word'
 import messageHandlers from './message_handler'
+import middlewares from '../core/middlewares'
 
 const connections = store.getters.connections()
 
@@ -55,21 +56,18 @@ const chatCtrl = {
     // TODO: 채팅서버가 분리된 이후로는 권한 없을 시 (API서버가 아닌 일반 브라우저에서의 호출 등) Promise.reject해야함.
     // 토큰은 API 서버별 env등에 채팅서버 이용권한 토큰같은걸 넣으면 될듯
   },
-  config: (c: IContext) => {
-    c.res.success(store.getters.config())
-  },
+  config: (c: IContext) => c.res.asJSON(store.getters.config()),
   users: {
+    all: (c: IContext) => c.res.asJSON(store.getters.users()),
     one: (c: IContext) => {
       const token = c.req.params['token']
       if (!token) return c.res.failed({ message: 'user token is missing' })
 
       const user = store.getters.user(token)
-      if (user) c.res.success(user)
+      if (user) c.res.asJSON(user)
       else c.res.failed({ message: 'user not found' })
     },
-    ban: (c: IContext) => {
-      c.res.success(store.actions.banIP(c.req.body['ip'], c.req.body['timeout']))
-    },
+    ban: (c: IContext) => c.res.asJSON(store.actions.banIP(c.req.body['ip'], c.req.body['timeout'])),
     update: (c: IContext) => {
       const profile = c.req.body['profile']
       const token = c.req.params['token']
@@ -108,7 +106,14 @@ const chatCtrl = {
 
       helpers.broadcast({ type: 'update' })
 
-      c.res.success(user)
+      c.res.asJSON(user)
+    },
+    delete: (c: IContext) => {
+      const token = c.req.params['token']
+      if (!token) return c.res.failed({ message: 'invalid request' })
+
+      delete store.getters.users()[token]
+      c.res.success()
     },
   },
   messages: {
@@ -169,6 +174,8 @@ export const useChat = (app: FastifyInstance) => {
 
   // 추후에는 채팅서버와 WebSocket을 연결해서 쭉 유지하면서 티키타카할까 생각중 (연결을 맺었다 끊었다 하면 비용이 크니)
   routes.put('/webchat/users/:token', chatCtrl.users.update)
+  routes.delete('/webchat/users/:token', chatCtrl.users.delete)
+  routes.get('/webchat/users', chatCtrl.users.all, middlewares.adminAuth.super)
   routes.get('/webchat/messages', chatCtrl.messages.all)
 
   // API 서버에서 찌르는 API들 (인증 필요))

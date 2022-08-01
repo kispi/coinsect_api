@@ -62,7 +62,7 @@ const actions = {
     state.stats.numBulls = numBulls
     state.stats.numBears = numBears
   },
-  createUser: (token: string) => ({
+  createUser: (token: string): IUser => ({
     token,
     profile: {
       nickname: profileService.generate(),
@@ -71,6 +71,8 @@ const actions = {
   setUser: ({ token, connection, ip }) => {
     // 해당 토큰의 유저 계정이 있으면 사용, 없으면 만들어줌
     const user = getters.user(token) || actions.createUser(token)
+    user.lastSeen = helpers.dayjs().format()
+    user.lastIP = ip
     state.users[token] = user
     cache.set('chat:users', state.users)
     state.connections.push({ connection, user, ip })

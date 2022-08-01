@@ -23,11 +23,7 @@ const useResponse = (reply: FastifyReply) => {
         .send(payload || { message: 'failed' })
     },
     error: () => responses.failed({ message: 'Internal Server Error' }, 500),
-    success: (json?: unknown) => {
-      reply
-        .header('Content-Type', 'application/json; charset=utf-8')
-        .send(json || { message: 'success' })
-    },
+    success: (json?: unknown) => responses.asJSON(json || { message: 'success' }),
   }
 
   return responses

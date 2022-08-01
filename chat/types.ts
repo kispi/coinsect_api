@@ -10,6 +10,8 @@ export interface IUser {
     },
   },
   token: string,
+  lastSeen?: Date,
+  lastIP?: string,
   path?: string, // 프론트엔드에서 어떤 페이지를 이용중인지
 }
 
