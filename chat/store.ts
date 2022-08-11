@@ -76,7 +76,10 @@ const actions = {
     const targetTokens = []
     Object.keys(state.users).forEach(token => {
       const user = state.users[token] as IUser
-      if (helpers.dayjs(user.lastSeen).isBefore(helpers.dayjs().add(-hoursPassed, 'hours'))) targetTokens.push(user.token)
+      if (
+        !user.lastSeen ||
+        helpers.dayjs(user.lastSeen).isBefore(helpers.dayjs().add(-hoursPassed, 'hours'))
+      ) targetTokens.push(user.token)
     })
 
     targetTokens.forEach(token => delete state.users[token])

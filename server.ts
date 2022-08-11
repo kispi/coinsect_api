@@ -15,7 +15,7 @@ Cache: ${store.state.serverConfig.USE_REDIS === 'yes' ? 'Redis' : 'Javascript In
 
   if (process.env.NODE_ENV === 'production') cronService.run()
 
-  chatService.deleteOldUsers(3)
+  chatService.deleteOldUsers(48)
 }
 
 run()
