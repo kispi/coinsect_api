@@ -162,6 +162,10 @@ export const chatCtrl = {
       store.actions.deleteUser(token)
       c.res.success()
     },
+    deleteOld: (c: IContext) => {
+      store.actions.deleteOldUsers(c.req.query['daysPassed'] || 3)
+      c.res.success()
+    },
   },
   messages: {
     all: (c: IContext) => {

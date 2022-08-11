@@ -72,6 +72,16 @@ const actions = {
     delete state.users[token]
     cache.set('chat:users', state.users)
   },
+  deleteOldUsers: (daysPassed: number) => {
+    const targetTokens = []
+    Object.keys(state.users).forEach(token => {
+      const user = state.users[token] as IUser
+      if (helpers.dayjs(user.lastSeen).isBefore(helpers.dayjs().add(-daysPassed, 'days'))) targetTokens.push(user.token)
+    })
+
+    targetTokens.forEach(token => delete state.users[token])
+    cache.set('chat:users', state.users)
+  },
   setUser: ({ token, connection, ip }) => {
     // 해당 토큰의 유저 계정이 있으면 사용, 없으면 만들어줌
     const user = getters.user(token) || actions.createUser(token)

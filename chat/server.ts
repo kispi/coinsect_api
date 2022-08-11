@@ -21,6 +21,7 @@ export const useChat = (app: FastifyInstance) => {
 
   // API 서버에서 찌르는 API들 (인증 필요))
   routes.get('/webchat/users/:token', chatCtrl.users.one, chatCtrl.authApiServer)
+  routes.delete('/webchat/users/old', chatCtrl.users.deleteOld, chatCtrl.authApiServer)
   routes.post('/webchat/messages', chatCtrl.messages.send, chatCtrl.authApiServer)
   routes.post('/webchat/messages/broadcast', chatCtrl.messages.broadcast, chatCtrl.authApiServer)
   routes.post('/webchat/messages/invalidate', chatCtrl.messages.invalidate, chatCtrl.authApiServer)

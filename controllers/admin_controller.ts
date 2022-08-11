@@ -15,7 +15,7 @@ import IContext from '../core/interfaces/context'
 import useService from '../services'
 import store from '../store'
 import orm from '../core/orm'
-import cron from '../cron'
+import cron from '../core/cron'
 
 const service = useService()
 

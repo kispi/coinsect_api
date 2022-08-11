@@ -1,6 +1,6 @@
 import store from './store'
-import walletService from './services/wallet'
-import cron from './cron'
+import cronService from './services/cron'
+import chatService from './services/chat'
 import { app, initApp, backendGitHash } from './server_modules'
 import { log } from './core/logger'
 
@@ -13,14 +13,9 @@ Server starts on port: ${store.state.serverConfig.API_PORT}
 Cache: ${store.state.serverConfig.USE_REDIS === 'yes' ? 'Redis' : 'Javascript Instance'}
   `)
 
-  if (process.env.NODE_ENV === 'production') {
-    cron.addJob({
-      id: 'renewWalets',
-      runnable: walletService.renewAll,
-      interval: 1000 * 60 * 30,
-    })
-    cron.run()
-  }
+  if (process.env.NODE_ENV === 'production') cronService.run()
+
+  chatService.deleteOldUsers(3)
 }
 
 run()

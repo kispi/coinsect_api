@@ -40,6 +40,13 @@ const chatService = {
       return Promise.reject(e)
     }
   },
+  deleteOldUsers: async (daysPassed: number) => {
+    try {
+      await axios.delete(`${endpoint}/webchat/users/old`, { params: { daysPassed } })
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  },
 }
 
 export default chatService

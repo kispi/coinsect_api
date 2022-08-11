@@ -1,5 +1,5 @@
-import { log } from './core/logger'
-import helpers from './core/helpers'
+import { log } from './logger'
+import helpers from './helpers'
 
 type IJob = {
   id: string,
