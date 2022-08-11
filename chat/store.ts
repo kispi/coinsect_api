@@ -72,11 +72,11 @@ const actions = {
     delete state.users[token]
     cache.set('chat:users', state.users)
   },
-  deleteOldUsers: (daysPassed: number) => {
+  deleteOldUsers: (hoursPassed: number) => {
     const targetTokens = []
     Object.keys(state.users).forEach(token => {
       const user = state.users[token] as IUser
-      if (helpers.dayjs(user.lastSeen).isBefore(helpers.dayjs().add(-daysPassed, 'days'))) targetTokens.push(user.token)
+      if (helpers.dayjs(user.lastSeen).isBefore(helpers.dayjs().add(-hoursPassed, 'hours'))) targetTokens.push(user.token)
     })
 
     targetTokens.forEach(token => delete state.users[token])

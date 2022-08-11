@@ -40,9 +40,9 @@ const chatService = {
       return Promise.reject(e)
     }
   },
-  deleteOldUsers: async (daysPassed: number) => {
+  deleteOldUsers: async (hoursPassed: number) => {
     try {
-      await axios.delete(`${endpoint}/webchat/users/old`, { params: { daysPassed } })
+      await axios.delete(`${endpoint}/webchat/users/old`, { params: { hoursPassed } })
     } catch (e) {
       return Promise.reject(e)
     }

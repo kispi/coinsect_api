@@ -163,7 +163,7 @@ export const chatCtrl = {
       c.res.success()
     },
     deleteOld: (c: IContext) => {
-      store.actions.deleteOldUsers(c.req.query['daysPassed'] || 3)
+      store.actions.deleteOldUsers(c.req.query['hoursPassed'] || 48)
       c.res.success()
     },
   },
