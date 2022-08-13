@@ -192,7 +192,6 @@ const realTimePositionService = {
         found.link = (payload.link || '').trim()
         found.editable = payload.editable
       }
-      found.lastUpdate = now()
       removeNotifiedPositionHistoriesOf(found.id)
 
       if (changed) {
@@ -205,6 +204,7 @@ const realTimePositionService = {
           `,
           meta: found,
         })
+        found.lastUpdate = now()
       }
       setRealTimePositions(cachedPositions)
     } catch (e) {
