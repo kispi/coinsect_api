@@ -8,7 +8,7 @@ import chatService from '../chat'
 
 const now = () => helpers.dayjs().format()
 
-type IPosition = {
+type IRealTimePosition = {
   id: string
   name: string
   link: string
@@ -33,7 +33,7 @@ const createPosition = ({
   image: string,
   name: string,
   link?: string,
-}): IPosition => ({
+}): IRealTimePosition => ({
   id: helpers.generateUUID(true),
   image,
   name,
