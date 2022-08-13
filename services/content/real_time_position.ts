@@ -6,6 +6,8 @@ import slack from '../slack'
 import store from '../../store'
 import chatService from '../chat'
 
+const now = () => helpers.dayjs().format()
+
 type IPosition = {
   id: string
   name: string
@@ -18,6 +20,7 @@ type IPosition = {
   onAir: boolean,
   editable: boolean,
   tracking: boolean,
+  lastUpdate: Date | string,
 }
 
 const cache = useCache()
@@ -42,6 +45,7 @@ const createPosition = ({
   onAir: true,
   editable: true,
   tracking: false,
+  lastUpdate: now(),
 })
 
 let cachedPositions = {
@@ -60,11 +64,11 @@ const removeNotifiedPositionHistoriesOf = id => {
 }
 
 const setRealTimePositions = o => {
-  o.lastUpdate = helpers.dayjs().format()
+  o.lastUpdate = now()
   cache.set('content:realTimePositions', o)
 }
 
-const positionChanged = (a, b) => {
+const positionHasChanged = (a, b) => {
   // 편의상 약한 비교
   if (a.contract != b.contract) return true
   if (a.entryPrice != b.entryPrice) return true
@@ -91,13 +95,13 @@ const realTimePositionService = {
       const payload = c.req.body
       const keys = ['id', 'liqPrice', 'entryPrice', 'size', 'contract', 'name', 'image', 'link', 'onAir', 'token', 'tracking']
 
-      if (!positionChanged(found, payload)) return Promise.reject({ message: '제출하신 포지션이 기존 포지션과 동일합니다.' })
+      if (!positionHasChanged(found, payload)) return Promise.reject({ message: '제출하신 포지션이 기존 포지션과 동일합니다.' })
 
       try {
         await realTimePositionService.validate(payload)
         const acceptable = {
           ip: c.req.ip,
-          requestedAt: helpers.dayjs().format(),
+          requestedAt: now(),
         }
         keys.filter(key => payload[key]).forEach(key => acceptable[key] = payload[key])
         acceptable['tracking'] = true // 누군가 보고 있기 때문에 이런 요청이 온 것이기 떄문
@@ -160,6 +164,7 @@ const realTimePositionService = {
         onAir: true,
         editable: true,
         tracking: true,
+        lastUpdate: now(),
       })
       setRealTimePositions(cachedPositions)
       return
@@ -171,23 +176,23 @@ const realTimePositionService = {
       if (!payload.id) payload.id = helpers.generateUUID(true)
 
       const found = cachedPositions.data.find(o => o.id === payload.id)
-      const changed = positionChanged(found, payload)
-      if (!found) cachedPositions.data.push(createPosition(payload))
-      else {
-        payload.entryPrice ? found.entryPrice = parseFloat(payload.entryPrice) : delete found.entryPrice
-        payload.liqPrice ? found.liqPrice = parseFloat(payload.liqPrice) : delete found.liqPrice
-        payload.size ? found.size = parseFloat(payload.size) : delete found.size
-        found.contract = (payload.contract || '').trim()
-        found.onAir = payload.onAir
-        found.tracking = payload.tracking
+      const changed = positionHasChanged(found, payload)
+      if (!found) return Promise.reject({ message: 'invalid request' })
 
-        if (!submittedByUser) {
-          found.image = (payload.image || '').trim()
-          found.name = (payload.name || '').trim()
-          found.link = (payload.link || '').trim()
-          found.editable = payload.editable
-        }
+      payload.entryPrice ? found.entryPrice = parseFloat(payload.entryPrice) : delete found.entryPrice
+      payload.liqPrice ? found.liqPrice = parseFloat(payload.liqPrice) : delete found.liqPrice
+      payload.size ? found.size = parseFloat(payload.size) : delete found.size
+      found.contract = (payload.contract || '').trim()
+      found.onAir = payload.onAir
+      found.tracking = payload.tracking
+
+      if (!submittedByUser) {
+        found.image = (payload.image || '').trim()
+        found.name = (payload.name || '').trim()
+        found.link = (payload.link || '').trim()
+        found.editable = payload.editable
       }
+      found.lastUpdate = now()
       removeNotifiedPositionHistoriesOf(found.id)
 
       if (changed) {

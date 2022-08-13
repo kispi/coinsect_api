@@ -6,12 +6,9 @@ import { Reaction } from '../entities/reaction'
 import IContext from '../core/interfaces/context'
 import orm from '../core/orm'
 import helpers from '../core/helpers'
-import useService from '../services'
 
 // 자유게시판 id
 const freeBoardId = 1
-
-const services = useService()
 
 const postController = {
   create: async (c: IContext) => {
@@ -105,7 +102,6 @@ const postController = {
   },
   detail: (c: IContext) => {
     orm.querySetter(c, Post)
-      .withDeleted()
       .leftJoinAndSelect('Post.board', 'board')
       .leftJoinAndSelect('Post.reactions', 'reactions')
       .leftJoinAndSelect('Post.replies', 'replies')
