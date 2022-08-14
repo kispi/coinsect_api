@@ -13,6 +13,7 @@ import reaction from './reaction_controller'
 import reply from './reply_controller'
 import user from './user_controller'
 import wallet from './wallet_controller'
+import whaleAlert from './whale_alert_controller'
 import s3 from './s3_controller'
 
 const useControllers = () => ({
@@ -31,6 +32,7 @@ const useControllers = () => ({
   reply,
   user,
   wallet,
+  whaleAlert,
   s3,
 })
 
