@@ -12,6 +12,14 @@ type IJob = {
 
 const jobs = [] as IJob[]
 
+const failableRun = async (job: IJob) => {
+  try {
+    await job.runnable()
+  } catch (e) {
+    log.error(`cronjob (id: ${job.id}) failed:`, e)
+  }
+}
+
 const cron = {
   addJob: ({
     id,
@@ -46,7 +54,7 @@ const cron = {
   run: () => {
     jobs.forEach(job => {
       job.interv = setInterval(() => {
-        job.runnable()
+        failableRun(job)
         job.iterations += 1
         job.lastRun = helpers.dayjs().format()
       }, job.interval)
