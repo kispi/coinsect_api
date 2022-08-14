@@ -10,6 +10,7 @@ import { Post } from '../entities/post'
 import { Reaction } from '../entities/reaction'
 import { Reply } from '../entities/reply'
 import { Wallet } from '../entities/wallet'
+import { WhaleAlert } from '../entities/whale_alert'
 import { useCRUD } from '../core/controller'
 import IContext from '../core/interfaces/context'
 import useService from '../services'
@@ -97,6 +98,7 @@ const adminController = {
   reaction: useCRUD({ model: Reaction }),
   reply: useCRUD({ model: Reply, useSoftDelete: true }),
   wallet: useCRUD({ model: Wallet }),
+  whaleAlert: useCRUD({ model: WhaleAlert }),
 }
 
 export default adminController
