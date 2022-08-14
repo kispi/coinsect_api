@@ -65,6 +65,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     useRouteCRUD({ app, model: 'reaction' })
     useRouteCRUD({ app, model: 'reply' })
     useRouteCRUD({ app, model: 'wallet' })
+    useRouteCRUD({ app, model: 'whaleAlert' })
   },
   service: () => {
     const router = useRouter(app)
