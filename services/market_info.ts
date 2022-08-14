@@ -1,12 +1,13 @@
 import axios from 'axios'
 import parse from 'node-html-parser'
 import useCache from '../core/cache'
+import hardCodedSymbols from '../constants/symbols'
 
 const endpoints = {
   nasdaq: {
     symbols: 'https://api.stock.naver.com/stock/exchange/NASDAQ/marketValue',
     markets: 'https://polling.finance.naver.com/api/realtime/worldstock/stock/',
-  }
+  },
 }
 
 const cache = useCache()
@@ -58,6 +59,7 @@ const marketInfoService = {
           en: o.english_name,
         }
       })
+      Object.keys(hardCodedSymbols).forEach(symbol => symbols[symbol] = hardCodedSymbols[symbol])
       cache.set('market_info:symbols', symbols, 3600 * 24)
       return symbols
     } catch (e) {

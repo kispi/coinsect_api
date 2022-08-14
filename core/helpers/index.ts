@@ -13,6 +13,7 @@ const helpers = {
   sanitize,
   jwt,
   dayjs,
+  useCdn: (key: string) => `${store.state.serverConfig.AWS_S3_CDN}/${key}`,
   case: {
     pluralize: (str: string) => {
       if (str.endsWith('day')) return `${str}s`

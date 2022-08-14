@@ -114,6 +114,8 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/onchain/richlist/dogecoin', ctrls.onchain.richlist.dogecoin)
     router.get('/onchain/richlist/litecoin', ctrls.onchain.richlist.litecoin)
 
+    router.get('/onchain/whale_alert', ctrls.onchain.whaleAlert)
+
     router.post('/helpers/crawled_websites', ctrls.helper.crawledWebsites.create)
     router.put('/helpers/crawled_websites', ctrls.helper.crawledWebsites.delete) // DELETE 메소드는 request body를 가질 수 없어서 put으로
     router.get('/helpers/crawled_websites', ctrls.helper.crawledWebsites.all)

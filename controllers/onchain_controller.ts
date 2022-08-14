@@ -38,6 +38,13 @@ const onchainController = {
       }
     },
   },
+  whaleAlert: async (c: IContext) => {
+    try {
+      c.res.asJSON(await service.onchain.whaleAlert.transactions(c))
+    } catch (e) {
+      c.res.failed(e)
+    }
+  },
 }
 
 export default onchainController

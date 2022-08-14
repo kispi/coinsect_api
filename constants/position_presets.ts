@@ -1,9 +1,7 @@
-import store from '../store'
-
-const cf = store.state.serverConfig.AWS_S3_CDN
+import helpers from '../core/helpers'
 
 export default [{
-  'image': `${cf}/influencers/hodu_park.jpg`,
+  'image': helpers.useCdn('influencers/hodu_park.jpg'),
   'name': '박호두',
   'link': 'https://bj.afreecatv.com/sweet31w',
 }, {
@@ -11,7 +9,7 @@ export default [{
   'name': '짭구',
   'link': 'https://play.afreecatv.com/cyzhgw',
 }, {
-  'image': `${cf}/images/saddo.png`,
+  'image': helpers.useCdn('images/saddo.png'),
   'name': '사또',
   'link': 'https://www.youtube.com/channel/UCnXe6v0-5vmMMRU2qx0XwUw',
 }, {
@@ -27,27 +25,15 @@ export default [{
   'name': '리듬타타',
   'link': 'https://bj.afreecatv.com/cyber91',
 }, {
-  'image': `${cf}/images/gunchim.png`,
+  'image': helpers.useCdn('images/gunchim.png'),
   'name': '군침코인',
   'link': 'https://play.afreecatv.com/anwhrjsqorqo',
 }, {
-  'image': `${cf}/images/lala.png`,
+  'image': helpers.useCdn('images/lala.png'),
   'name': '랄라',
   'link': 'https://bj.afreecatv.com/lsbm0317',
 }, {
   'image': 'https://profile.img.afreecatv.com/LOGO/sk/skgus197/skgus197.jpg',
   'name': '티미',
   'link': 'https://bj.afreecatv.com/skgus197',
-}, {
-  'image': 'https://yt3.ggpht.com/4UnSavuwtqEuR5lSGhjiCKtsB5gt4fFl1Uq8iWNJXE8QV2H9bVuZyaAIlZft2Q4ZeDIzGiRebQ=s176-c-k-c0x00ffffff-no-rj',
-  'name': '이기광',
-  'link': 'https://www.youtube.com/channel/UCVDmM7RXz0RSrs6vp8kz-3g',
-}, {
-  'image': `${cf}/images/soribebe.jpg`,
-  'name': '소리베베',
-  'link': 'https://bj.afreecatv.com/soribaby',
-}, {
-  'image': `${cf}/images/jadu.png`,
-  'name': '박자두',
-  'link': 'https://www.youtube.com/channel/UCIOHzEDwgUuLBZwPKEUt1AQ',
 }]
