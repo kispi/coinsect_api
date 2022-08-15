@@ -1,5 +1,4 @@
 import axios from 'axios'
-import helpers from '../../core/helpers'
 import store from '../../store'
 import IContext from '../../core/interfaces/context'
 import orm from '../../core/orm'
@@ -27,15 +26,15 @@ const whaleAlertService = {
       total,
     }
   },
-  crawl: async (limit: number = 500000) => {
+  crawl: async (minValue: number = 500000) => {
     if (!apiKey) {
-      log.error('slack.postMessage: .env WHALE_ALERT is missing')
+      log.error('whaleAlert.crawl: .env WHALE_ALERT is missing')
       return
     }
 
     const orm = getConnection()
     try {
-      const data = await axios.get(`https://api.whale-alert.io/v1/transactions?api_key=${apiKey}&min_value=${limit}`) as any
+      const data = await axios.get(`https://api.whale-alert.io/v1/transactions?api_key=${apiKey}&min_value=${minValue}`) as any
       const whaleAlerts = data.transactions.filter(t => t.transaction_count === 1).map(t => ({
         hash: t.hash,
         amount: t.amount,
@@ -53,7 +52,9 @@ const whaleAlertService = {
         timestamp: t.timestamp,
       }))
       orm.createQueryBuilder().insert().orIgnore().into(WhaleAlert).values(whaleAlerts).execute()
+      log.info(`whaleAlert.crawl: crawling with minValue = ${minValue} success`)
     } catch (e) {
+      log.error(`whaleAlert.crawl: crawling with minValue = ${minValue} failed`)
       return Promise.reject(e)
     }
   },
