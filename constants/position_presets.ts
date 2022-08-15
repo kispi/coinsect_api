@@ -1,7 +1,7 @@
 import helpers from '../core/helpers'
 
 export default [{
-  'image': helpers.useCdn('influencers/hodu_park.jpg'),
+  'image': helpers.useCdn('images/influencers/hodu_park.jpg'),
   'name': '박호두',
   'link': 'https://bj.afreecatv.com/sweet31w',
 }, {
@@ -9,7 +9,7 @@ export default [{
   'name': '짭구',
   'link': 'https://play.afreecatv.com/cyzhgw',
 }, {
-  'image': helpers.useCdn('images/saddo.png'),
+  'image': helpers.useCdn('images/influencers/saddo.png'),
   'name': '사또',
   'link': 'https://www.youtube.com/channel/UCnXe6v0-5vmMMRU2qx0XwUw',
 }, {
@@ -25,11 +25,11 @@ export default [{
   'name': '리듬타타',
   'link': 'https://bj.afreecatv.com/cyber91',
 }, {
-  'image': helpers.useCdn('images/gunchim.png'),
+  'image': helpers.useCdn('images/influencers/gunchim.png'),
   'name': '군침코인',
   'link': 'https://play.afreecatv.com/anwhrjsqorqo',
 }, {
-  'image': helpers.useCdn('images/lala.png'),
+  'image': helpers.useCdn('images/influencers/lala.png'),
   'name': '랄라',
   'link': 'https://bj.afreecatv.com/lsbm0317',
 }, {
