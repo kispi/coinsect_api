@@ -195,6 +195,7 @@ const realTimePositionService = {
       removeNotifiedPositionHistoriesOf(found.id)
 
       if (changed) {
+        found.lastUpdate = now()
         chatService.broadcast({
           type: 'alert',
           text: `
@@ -204,7 +205,6 @@ const realTimePositionService = {
           `,
           meta: found,
         })
-        found.lastUpdate = now()
       }
       setRealTimePositions(cachedPositions)
     } catch (e) {
