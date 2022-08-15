@@ -17,7 +17,12 @@ const cronService = {
     })
     cron.addJob({
       id: 'crawlWhaleAlerts',
-      runnable: () => whaleAlertService.crawl(),
+      runnable: () => {
+        // 이 수치가 너무 작으면 limit 100 안에서 계속 크롤링 안되고 밀림
+        whaleAlertService.crawl(10000000).then().catch()
+        setTimeout(() => whaleAlertService.crawl(5000000).then().catch(), 5000)
+        setTimeout(() => whaleAlertService.crawl(2000000).then().catch(), 10000)
+      },
       interval: 1000 * 60,
     })
     cron.run()

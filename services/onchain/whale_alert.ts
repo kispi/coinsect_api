@@ -27,7 +27,7 @@ const whaleAlertService = {
       total,
     }
   },
-  crawl: async () => {
+  crawl: async (limit: number = 500000) => {
     if (!apiKey) {
       log.error('slack.postMessage: .env WHALE_ALERT is missing')
       return
@@ -35,7 +35,7 @@ const whaleAlertService = {
 
     const orm = getConnection()
     try {
-      const data = await axios.get(`https://api.whale-alert.io/v1/transactions?api_key=${apiKey}&min_value=500000`) as any
+      const data = await axios.get(`https://api.whale-alert.io/v1/transactions?api_key=${apiKey}&min_value=${limit}`) as any
       const whaleAlerts = data.transactions.filter(t => t.transaction_count === 1).map(t => ({
         hash: t.hash,
         amount: t.amount,
