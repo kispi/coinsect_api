@@ -146,8 +146,8 @@ const realTimePositionService = {
     if (payload.contract && !payload.contract.endsWith('USDT')) throw { message: '계약은 반드시 USDT로 끝나야 합니다' }
   },
   all: async () => {
-    const stored: any = await cache.get('content:realTimePositions')
-    if (stored) cachedPositions = stored
+    if (!cachedPositions.lastUpdate) cachedPositions = await cache.get('content:realTimePositions')
+
     return cachedPositions
   },
   set: async (payload, submittedByUser?) => {
