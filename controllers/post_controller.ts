@@ -128,7 +128,7 @@ const postController = {
           post.increaseViews(c)
           c.res.asJSON(post)
         })
-        .catch(c.res.failed)
+        .catch(() => c.res.failed({ message: 'invalid request' }, 404))
   },
   delete: async (c: IContext) => {
     if (!c.req.body['password']) {

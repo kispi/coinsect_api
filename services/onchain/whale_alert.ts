@@ -14,6 +14,12 @@ const apiKey = store.state.serverConfig.WHALE_ALERT
 
 const whaleAlertService = {
   transactions: async (c: IContext) => {
+    const limit = parseInt(c.req.query['limit'])
+    if (limit > 100) {
+      c.res.failed({ message: 'limit exceeded 100' })
+      return
+    }
+
     const qb = orm.querySetter(c, WhaleAlert).orderBy('timestamp', 'DESC')
     const [data, total] = await qb.getManyAndCount()
     return {
@@ -28,9 +34,8 @@ const whaleAlertService = {
     }
 
     const orm = getConnection()
-    const beforeAnHourAgo = helpers.dayjs().add(-3599, 'seconds').unix()
     try {
-      const data = await axios.get(`https://api.whale-alert.io/v1/transactions?api_key=${apiKey}&min_value=500000&start=${beforeAnHourAgo}&limit=100`) as any
+      const data = await axios.get(`https://api.whale-alert.io/v1/transactions?api_key=${apiKey}&min_value=500000`) as any
       const whaleAlerts = data.transactions.filter(t => t.transaction_count === 1).map(t => ({
         hash: t.hash,
         amount: t.amount,
