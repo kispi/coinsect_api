@@ -103,7 +103,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/market_info/assets_including_metal', ctrls.marketInfo.assetsIncludingMetal)
 
     router.get('/contents/public_treasuries', ctrls.content.publicTreasuries)
-    router.get('/contents/real_time_positions', ctrls.content.realTimePositions.all)
+    // router.get('/contents/real_time_positions', ctrls.content.realTimePositions.all) // 부하 줄이기 위해 임시 서빙 중지
     router.post('/contents/real_time_positions/change_notifications', ctrls.content.realTimePositions.changeNotification.create)
 
     router.get('/contents/news/cobak/feeds', ctrls.content.news.cobak.feeds)
