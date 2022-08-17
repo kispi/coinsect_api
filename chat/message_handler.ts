@@ -4,7 +4,6 @@ import coreHelpers from '../core/helpers'
 import useService from '../services'
 import helpers from './helpers'
 import store from './store'
-import realTimePositionService from '../services/content/real_time_position'
 
 const service = useService()
 
@@ -72,16 +71,6 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
     helpers.sendMessage({
       message: {
         type: 'pong'
-      },
-      token,
-    })
-  },
-  rtp: async () => {
-    const rtp = await realTimePositionService.all()
-    helpers.sendMessage({
-      message: {
-        type: 'rtp',
-        meta: rtp,
       },
       token,
     })

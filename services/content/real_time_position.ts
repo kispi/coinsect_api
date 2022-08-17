@@ -146,9 +146,8 @@ const realTimePositionService = {
     if (payload.contract && !payload.contract.endsWith('USDT')) throw { message: '계약은 반드시 USDT로 끝나야 합니다' }
   },
   all: async () => {
-    const stored = await cache.get('content:realTimePositions')
-    if (!(cachedPositions || {}).lastUpdate && stored) cachedPositions = stored
-
+    // 매번 레디스에서 읽어오도록 해야 나중에 서버가 분산되었을 때 data-sync 문제가 없고, 레디스의 RPS는 워낙 높아서 걱정할 수준이 아님.
+    cachedPositions = await cache.get('content:realTimePositions')
     return cachedPositions
   },
   set: async (payload, submittedByUser?) => {
