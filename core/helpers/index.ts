@@ -82,6 +82,16 @@ const helpers = {
     const ts = process.hrtime()
     return (ts[0] * 1e3) + (ts[1] / 1e6)
   },
+  debounce(fn: Function, delay: number) {
+    let timeoutID
+
+    return function() {
+      clearTimeout(timeoutID)
+      timeoutID = setTimeout(() => {
+        fn.apply(this, arguments)
+      }, delay)
+    }
+  },
 }
 
 export default helpers

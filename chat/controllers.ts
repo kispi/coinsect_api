@@ -12,6 +12,12 @@ import { log } from '../core/logger'
 
 const connections = store.getters.connections()
 
+// 너무 짧은 시간에 수많은 소켓에 브로드캐스트하면 부하가 심해서, 특정 계정에 국한되지 않은 업데이트는 디바운스를 줌
+const debouncedBroadcast = type => coreHelpers.debounce(() => {
+  store.actions.loadStats()
+  helpers.broadcast({ type })
+}, 500)
+
 export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   // 웹소켓 접속시 토큰이 query param으로 넘어온 경우 그대로 사용, 없으면 만들어줌
   const token = req.query['token'] || helpers.mustToken()
@@ -19,14 +25,14 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   store.actions.setUser({ token, connection, ip: req.ip })
 
   // 유저 접속시 통계 업데이트
-  store.actions.loadStats()
+  debouncedBroadcast('enter')()
 
   connection.socket.on('close', () => {
     const idx = connections.findIndex(conn => conn.connection === connection)
     if (idx >= 0) connections.splice(idx, 1)
 
     // 유저 접속 끊길시 통계 업데이트
-    store.actions.loadStats()
+    debouncedBroadcast('leave')()
   })
 
   connection.socket.on('message', rawMessage => {
