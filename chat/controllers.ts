@@ -20,7 +20,6 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
 
   // 유저 접속시 통계 업데이트
   store.actions.loadStats()
-  helpers.broadcast({ type: 'enter' })
 
   connection.socket.on('close', () => {
     const idx = connections.findIndex(conn => conn.connection === connection)
@@ -28,7 +27,6 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
 
     // 유저 접속 끊길시 통계 업데이트
     store.actions.loadStats()
-    helpers.broadcast({ type: 'leave' })
   })
 
   connection.socket.on('message', rawMessage => {
