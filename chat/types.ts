@@ -16,10 +16,10 @@ export interface IUser {
 }
 
 export interface IMessage {
-  type: 'auth' | 'text' | 'connections' | 'ping',
+  type: 'auth' | 'text' | 'image' | 'alert' | 'connections' | 'ping',
   user: IUser,
   text?: string,
-  meta?: string,
+  meta?: string | Object,
   numConnections: number, // 나중에 deprecate
   stats: {
     numConnections: number,

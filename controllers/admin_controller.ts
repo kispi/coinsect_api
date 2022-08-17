@@ -91,7 +91,7 @@ const adminController = {
   blockchain: useCRUD({ model: Blockchain }),
   board: useCRUD({ model: Board, useSoftDelete: true }),
   image: useCRUD({ model: Image }),
-  message: useCRUD({ model: Message, useSoftDelete: true }),
+  message: useCRUD({ model: Message, useSoftDelete: true, withDeleted: true }),
   notification: useCRUD({ model: Notification }),
   person: useCRUD({ model: Person, useSoftDelete: true }),
   post: routesPost,

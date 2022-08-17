@@ -211,5 +211,14 @@ export const chatCtrl = {
     invalidate: (c: IContext) => {
       store.actions.loadRecentMessages().then(() => c.res.success())
     },
+    hideMessage: (c: IContext) => {
+      const messageId = parseInt(c.req.params['id'])
+      if (!messageId) return
+  
+      helpers.broadcast({
+        type: 'hideMessage',
+        meta: { messageId },
+      })
+    },
   },
 }

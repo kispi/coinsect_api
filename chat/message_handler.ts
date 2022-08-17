@@ -15,7 +15,11 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
       helpers.sendMessage({
         message: {
           type: 'alert',
-          text: `채팅 제한 해제: ${helpers.formatWithAdd({ date: bannedUser.until })}`,
+          text: `
+            채팅이 제한되었습니다
+            해제: ${helpers.formatWithAdd({ date: bannedUser.until })}
+            사유: ${bannedUser.reason}
+          `,
         },
         token,
       })
