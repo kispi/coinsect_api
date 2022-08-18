@@ -23,7 +23,13 @@ const contentController = {
         }
       }
     },
-    all: async (c: IContext) => c.res.asJSON(await service.content.realTimePosition.all()),
+    all: async (c: IContext) => {
+      try {
+        c.res.asJSON(await service.content.realTimePosition.all())
+      } catch (e) {
+        c.res.failed(e)
+      }
+    },
     set: async (c: IContext) => {
       try {
         await service.content.realTimePosition.set(c.req.body)

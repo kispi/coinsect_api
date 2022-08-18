@@ -147,7 +147,8 @@ const realTimePositionService = {
   },
   all: async () => {
     // 매번 레디스에서 읽어오도록 해야 나중에 서버가 분산되었을 때 data-sync 문제가 없고, 레디스의 RPS는 워낙 높아서 걱정할 수준이 아님.
-    cachedPositions = await cache.get('content:realTimePositions')
+    const stored = await cache.get('content:realTimePositions')
+    if (stored) cachedPositions = stored
     return cachedPositions
   },
   set: async (payload, submittedByUser?) => {

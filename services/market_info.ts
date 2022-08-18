@@ -29,8 +29,6 @@ const marketInfoService = {
         btcDominance24hChangePercent: resp[0]['btc_dominance_24h_change_percent'],
         totalMarketCap: resp[0]['total_market_cap'],
         totalMarketCap24hChangePercent: resp[0]['total_market_cap_24h_change_percent'],
-        totalVolume: resp[0]['total_volume'],
-        totalVolume24hChangePercent: resp[0]['total_volume_24h_change_percent'],
         basePrice: resp[1][0]['basePrice'],
         signedChangeRate: resp[1][0]['signedChangeRate'],
       }
