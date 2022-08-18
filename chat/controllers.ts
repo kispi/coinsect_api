@@ -34,9 +34,16 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   connection.socket.on('message', rawMessage => {
     const message: IMessage = JSON.parse(rawMessage)
     const handler = messageHandlers({ message, token, ip: req.ip })[message.type]
+    // 클라가 잘못된 요청(deprecated된 API 호출이라든지)을 하면 새로고침하도록 요청함.
     if (!handler) {
       // message.type은 클라이언트에서 채팅서버로 보낸 메시지의 타입임.
       log.error(`Invalid request: ${req.ip} requested unknown incoming message type '${message.type}'.`)
+      helpers.sendMessage({
+        message: {
+          type: 'forceRefresh',
+        },
+        token,
+      })
       return
     }
 

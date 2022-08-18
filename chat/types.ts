@@ -16,7 +16,7 @@ export interface IUser {
 }
 
 export interface IMessage {
-  type: 'auth' | 'text' | 'image' | 'alert' | 'connections' | 'ping',
+  type: 'auth' | 'text' | 'image' | 'alert' | 'connections' | 'ping' | 'pong' | 'forceRefresh' | 'enter' | 'leave',
   user: IUser,
   text?: string,
   meta?: string | Object,
