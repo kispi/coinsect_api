@@ -36,7 +36,8 @@ export const useRoutes = (app: FastifyInstance) => ({
   admin: () => {
     const router = useRouter(app)
 
-    router.post('/admin/chat/ban_ip', ctrls.admin.chat.banIP, auth.admin.super)
+    router.post('/admin/chat/ban_ip', ctrls.admin.chat.banIP, auth.admin.super) // 단순 채금
+    router.post('/admin/chat/create_banned_user', ctrls.admin.chat.createBannedUser, auth.admin.super) // 광고, 도배충들 용도 (메시지도 다 지움)
     router.post('/admin/chat/send_message', ctrls.admin.chat.sendMessage, auth.admin.super)
 
     router.get('/admin/store/bad_words', ctrls.admin.store.badWord.all, auth.admin.super)

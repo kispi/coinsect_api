@@ -17,6 +17,8 @@ import useService from '../services'
 import store from '../store'
 import orm from '../core/orm'
 import cron from '../core/cron'
+import helpers from '../core/helpers'
+import chatService from '../services/chat'
 
 const service = useService()
 
@@ -27,13 +29,27 @@ const routesChat = {
       return
     }
 
+    const until = await service.chat.banIP(c.req.body['ip'], c.req.body['timeout'])
+    c.res.asJSON({ data: until })
+  },
+  createBannedUser: async (c: IContext) => {
+    if (!c.req.body['ip'] || !c.req.body['timeout']) {
+      c.res.failed({ message: 'missing params: ip, timeout' })
+      return
+    }
+
+    const date = helpers.dayjs().add(c.req.body['timeout'], 'milliseconds')
     try {
-      const until = await service.chat.banIP(c.req.body['ip'], c.req.body['timeout'])
-      if (c.req.body['deleteMessages']) {
-        await c.orm.getRepository(Message).createQueryBuilder().where(`ip = ${c.req.body['ip']}`).delete().execute()
-        await service.chat.invalidate()
-      }
-      c.res.asJSON({ data: until })
+      await c.orm.createQueryBuilder()
+        .insert().into(BannedUser).values([{
+          ip: c.req.body['ip'],
+          reason: '운영 정책 위반',
+          until: date.format(),
+        }]).execute()
+
+      if (c.req.body['deleteMessages'] === 'ok') await c.orm.createQueryBuilder().where(`ip = "${c.req.body['ip']}"`).delete().from(Message).execute()
+      chatService.invalidate()
+      c.res.success()
     } catch (e) {
       c.res.failed(e)
     }
