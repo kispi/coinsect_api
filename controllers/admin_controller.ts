@@ -27,8 +27,16 @@ const routesChat = {
       return
     }
 
-    const until = await service.chat.banIP(c.req.body['ip'], c.req.body['timeout'])
-    c.res.asJSON({ data: until })
+    try {
+      const until = await service.chat.banIP(c.req.body['ip'], c.req.body['timeout'])
+      if (c.req.body['deleteMessages']) {
+        await c.orm.getRepository(Message).createQueryBuilder().where(`ip = ${c.req.body['ip']}`).delete().execute()
+        await service.chat.invalidate()
+      }
+      c.res.asJSON({ data: until })
+    } catch (e) {
+      c.res.failed(e)
+    }
   },
   sendMessage: (c: IContext) => {
     service.chat.sendMessage({

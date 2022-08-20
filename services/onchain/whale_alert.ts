@@ -13,13 +13,13 @@ const apiKey = store.state.serverConfig.WHALE_ALERT
 
 const whaleAlertService = {
   transactions: async (c: IContext) => {
-    const limit = parseInt(c.req.query['limit'])
+    const limit = parseInt(c.req.query['limit']) || 100
     if (limit > 100) {
       c.res.failed({ message: 'limit exceeded 100' })
       return
     }
 
-    const qb = orm.querySetter(c, WhaleAlert).orderBy('timestamp', 'DESC')
+    const qb = orm.querySetter(c, WhaleAlert).orderBy('timestamp', 'DESC').limit(limit)
     const [data, total] = await qb.getManyAndCount()
     return {
       data,
