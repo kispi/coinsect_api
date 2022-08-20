@@ -2,6 +2,7 @@ import cron from '../core/cron'
 import walletService from './wallet'
 import chatService from './chat'
 import whaleAlertService from './onchain/whale_alert'
+import marketInfoService from './market_info'
 
 const cronService = {
   run: () => {
@@ -22,6 +23,14 @@ const cronService = {
         whaleAlertService.crawl(10000000).then().catch()
         setTimeout(() => whaleAlertService.crawl(5000000).then().catch(), 5000)
         setTimeout(() => whaleAlertService.crawl(3000000).then().catch(), 10000)
+      },
+      interval: 1000 * 60,
+    })
+    cron.addJob({
+      id: 'refreshMarketInfoInAdvance', // 사람들이 콜할때 업데이트하게 하지말고(바이낸스가 느림) 미리 주기적으로 캐시해둠
+      runnable: () => {
+        marketInfoService.symbols(true)
+        marketInfoService.markets(true)
       },
       interval: 1000 * 60,
     })

@@ -38,9 +38,9 @@ const marketInfoService = {
       return Promise.reject(e)
     }
   },
-  symbols: async () => {
+  symbols: async (forceUpdateCache?: Boolean) => {
     const stored = await cache.get('market_info:symbols')
-    if (stored) return stored
+    if (stored && !forceUpdateCache) return stored
 
     try {
       const result: any = await axios.get('https://api.upbit.com/v1/market/all')
@@ -58,15 +58,15 @@ const marketInfoService = {
         }
       })
       Object.keys(hardCodedSymbols).forEach(symbol => symbols[symbol] = hardCodedSymbols[symbol])
-      cache.set('market_info:symbols', symbols, 3600 * 24)
+      cache.set('market_info:symbols', symbols, 60 * 5)
       return symbols
     } catch (e) {
       return Promise.reject(e)
     }
   },
-  markets: async () => {
+  markets: async (forceUpdateCache?: Boolean) => {
     const stored = await cache.get('market_info:markets')
-    if (stored) return stored
+    if (stored && !forceUpdateCache) return stored
 
     try {
       const data = await Promise.all([

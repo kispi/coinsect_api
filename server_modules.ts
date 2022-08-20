@@ -99,6 +99,7 @@ export const initApp = async (app: FastifyInstance) => {
     store.actions.loadBadWords(),
     store.actions.loadBannedUsers(),
     marketInfoService.symbols(),
+    marketInfoService.markets(),
   ])
 
   // 나중에 따로 떼서 걔는 얘만 실행하는것도 가능
