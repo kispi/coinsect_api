@@ -13,7 +13,7 @@ Server starts on port: ${store.state.serverConfig.API_PORT}
 Cache: ${store.state.serverConfig.USE_REDIS === 'yes' ? 'Redis' : 'Javascript Instance'}
   `)
 
-  if (process.env.NODE_ENV === 'production') cronService.run()
+  if (process.env.RUN_CRON === 'yes') cronService.run()
 
   chatService.deleteOldUsers(48)
 }
