@@ -4,6 +4,7 @@ import { IConnection, IMessage, IUser } from './types'
 import profileService from '../services/profile'
 import useCache from '../core/cache'
 import helpers from './helpers'
+import * as dotenv from 'dotenv'
 
 const cache = useCache()
 
@@ -14,6 +15,7 @@ const state = {
     messageMaxLength: 255,
     nicknameMaxLength: 10,
     imageUrlMaxLength: 255,
+    server: dotenv.config().parsed,
   },
   bannedUntil: {} as { ip: string },
   users: {},

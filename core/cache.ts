@@ -1,5 +1,4 @@
-import { RedisClientType } from '@node-redis/client'
-import { createClient } from 'redis'
+import { createClient, RedisClientType } from 'redis'
 import { log } from './logger'
 import ICacheClient from './interfaces/cache_client'
 import store from '../store'
@@ -20,7 +19,7 @@ let usedClient
 const useCache = (): ICacheClient => {
   if (store.state.serverConfig.USE_REDIS !== 'yes') return localCacheClient
 
-  const client: RedisClientType = usedClient || createClient({ url: `redis://localhost:6379` })
+  const client: RedisClientType = usedClient || createClient({ url: 'redis://localhost:6379' })
 
   if (!usedClient) {
     client.on('error', err => log.error('Redis Client Error', err))

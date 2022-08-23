@@ -1,10 +1,34 @@
 import { getConnection } from 'typeorm'
 import { Message } from '../entities/message'
 import { IConnection, IMessage } from './types'
+import { createClient } from 'redis'
+import { log } from '../core/logger'
 import store from './store'
 import coreHelpers from '../core/helpers'
 
 const dayjs = coreHelpers.dayjs
+
+const clients = {
+  pub: createClient({ url: 'redis://localhost:6379' }),
+  sub: createClient({ url: 'redis://localhost:6379' }),
+}
+
+const usePubsub = async () => {
+  try {
+    await clients.pub.connect()
+    await clients.sub.connect()
+    clients.sub.subscribe('coinsect_chat', message => {
+      try {
+        console.log(JSON.parse(message))
+        sendMessageInternal(JSON.parse(message))
+      } catch (e) {
+        log.error(`helpers.usePubsub: error => ${e}`)
+      }
+    })
+  } catch (e) {
+    log.error('helpers.usePubsub: failed to connect redis', e)
+  }
+}
 
 const mustToken = () => {
   let nonExistNewToken = ''
@@ -93,7 +117,7 @@ const saveMessage = async (message, ip) => {
 }
 
 // token은 받는 사람의 토큰이고, message.user.token은 보낸 사람의 토큰이다.
-const sendMessage = ({ message, token, ip }: { message, token?: string, ip?: string }) => {
+const sendMessageInternal = ({ message, token, ip }: { message, token?: string, ip?: string }) => {
   const targetConnections = store.getters.targetConnections({ ip, token })
 
   // 프로필은 클라이언트에서 준 토큰만을 가지고 찾아서 assign
@@ -105,6 +129,24 @@ const sendMessage = ({ message, token, ip }: { message, token?: string, ip?: str
   if (finalMessage.text) finalMessage.text = trimmed(finalMessage.text)
 
   targetConnections.forEach(connectionWrapper => connectionWrapper.connection.socket.send(JSON.stringify(finalMessage)))
+}
+
+// token은 받는 사람의 토큰이고, message.user.token은 보낸 사람의 토큰이다.
+const sendMessage = ({ message, token, ip }: { message, token?: string, ip?: string }) => {
+  if (store.getters.config().server.USE_REDIS !== 'yes') {
+    sendMessageInternal({ message, token, ip })
+    return
+  }
+
+  let stringified
+  try {
+    stringified = JSON.stringify({ message, token, ip })
+  } catch (e) {
+    log.error(`helpers.sendMessage: ${ip} is sending invalid message`)
+    return
+  }
+
+  clients.pub.publish('coinsect_chat', stringified)
 }
 
 // 메시지를 접속된 클라이언트들에게 뿌리고 서버 메모리에 저장한다. (나중에 redis pubsub으로 변경)
@@ -129,6 +171,7 @@ const formatWithAdd = ({
 
 export default {
   dayjs,
+  usePubsub,
   saveMessage,
   sendMessage,
   trimmed,
