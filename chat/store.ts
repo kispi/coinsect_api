@@ -20,8 +20,7 @@ const state = {
   bannedUntil: {} as { ip: string },
   users: {},
   connections: [] as IConnection[],
-  recentMessages: [] as Array<IMessage>,
-  stats: {
+  localStats: {
     numConnections: 0,
     numBulls: 0,
     numBears: 0,
@@ -31,7 +30,7 @@ const state = {
 const getters = {
   config: () => state.config,
   bannedUntil: (ip: string) => state.bannedUntil[ip],
-  recentMessages: () => state.recentMessages,
+  recentMessages: () => cache.get('chat:recentMessages'),
   user: (token: string): IUser => state.users[token],
   users: () => state.users,
   tokens: () => state.connections.map(conn => conn.user.token),
@@ -40,11 +39,11 @@ const getters = {
     if (ip) return conn.ip === ip
     if (token) return conn.user.token === token
   }),
-  stats: () => state.stats,
+  localStats: () => state.localStats,
 }
 
 const actions = {
-  loadStats: () => {
+  loadLocalStats: () => {
     let numConnections = 0
     let numBulls = 0
     let numBears = 0
@@ -60,9 +59,9 @@ const actions = {
       if (sentiment.type === 'short') numBears += 1
     })
 
-    state.stats.numConnections = numConnections
-    state.stats.numBulls = numBulls
-    state.stats.numBears = numBears
+    state.localStats.numConnections = numConnections
+    state.localStats.numBulls = numBulls
+    state.localStats.numBears = numBears
   },
   createUser: (token: string): IUser => ({
     token,
@@ -111,13 +110,14 @@ const actions = {
         .getMany()
 
       const json = JSON.parse(JSON.stringify(data))
-      state.recentMessages = json.map(helpers.asIMessage)
+      cache.set('chat:recentMessages', json.map(helpers.asIMessage))
     } catch (e) {
       return Promise.reject(e)
     }
   },
-  updateRecentMessages: () => {
-    state.recentMessages = state.recentMessages.slice(0, state.config.numLatestMessages)
+  updateRecentMessages: async (arr: Array<IMessage>) => {
+    arr = arr.slice(0, state.config.numLatestMessages)
+    cache.set('chat:recentMessages', arr)
   },
   // timeout: millisecond
   banIP: (ip: string, timeout: number) => {

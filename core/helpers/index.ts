@@ -82,7 +82,7 @@ const helpers = {
     const ts = process.hrtime()
     return (ts[0] * 1e3) + (ts[1] / 1e6)
   },
-  debounce(fn: Function, delay: number) {
+  debounce: (fn: Function, delay: number) => {
     let timeoutID
 
     return function() {
@@ -92,6 +92,18 @@ const helpers = {
       }, delay)
     }
   },
+  must: {
+    json: (data: any) => {
+      try {
+        return JSON.parse(data)
+      } catch (e) {}
+    },
+    string: (data: any) => {
+      try {
+        return JSON.stringify(data)
+      } catch (e) {}
+    },
+  }
 }
 
 export default helpers

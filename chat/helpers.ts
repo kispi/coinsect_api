@@ -17,12 +17,19 @@ const usePubsub = async () => {
   try {
     await clients.pub.connect()
     await clients.sub.connect()
-    clients.sub.subscribe('coinsect_chat', message => {
-      try {
-        console.log(JSON.parse(message))
-        sendMessageInternal(JSON.parse(message))
-      } catch (e) {
-        log.error(`helpers.usePubsub: error => ${e}`)
+    clients.sub.subscribe('coinsect_chat', stringified => {
+      const json = coreHelpers.must.json(stringified)
+      if (!json) {
+        log.error(`helpers.usePubsub: invalid json string => ${stringified}`)
+        return
+      }
+
+      if (json.psType === 'sendMessage' && json.data) {
+        sendMessageInternal(json.data)
+      }
+
+      if (json.psType === 'broadcast' && json.data) {
+        broadcastInternal(json.data)
       }
     })
   } catch (e) {
@@ -50,7 +57,7 @@ const trimmed = (text: string) => {
 }
 
 const asIMessage = (message): IMessage => {
-  const s = store.getters.stats()
+  const s = store.getters.localStats()
 
   const dbStoredUser = {
     token: message.token,
@@ -83,11 +90,11 @@ const saveMessage = async (message, ip) => {
 
   if (!message.user || !message.user.token) return
 
-  const iMessage = asIMessage(message)
-  store.getters.recentMessages().unshift(iMessage)
-
   // 이 줄 실행 안하면 서버가 오래떠있을 경우 최근 메시지가 무한히 늘어남
-  store.actions.updateRecentMessages()
+  const iMessage = asIMessage(message)
+  const arr = await store.getters.recentMessages()
+  arr.unshift(iMessage)
+  store.actions.updateRecentMessages(arr)
 
   const orm = getConnection()
   const row = {
@@ -109,7 +116,6 @@ const saveMessage = async (message, ip) => {
   }
   try {
     const insert = await orm.createQueryBuilder().insert().into(Message).values([row]).execute()
-    store.actions.loadRecentMessages()
     return insert.generatedMaps[0]
   } catch (e) {
     return Promise.reject(e)
@@ -122,7 +128,11 @@ const sendMessageInternal = ({ message, token, ip }: { message, token?: string, 
 
   // 프로필은 클라이언트에서 준 토큰만을 가지고 찾아서 assign
   if (message.user) {
+    // 레디스를 쓰는 경우 레디스에는 존재하는 유저정보더라도 이 서버 메모리에는 존재하지 않을 수 있다.
+    // 이런 경우 다른데서 아래 코드가 정상적으로 돌기 때문에 return하면 된다.
     const user = store.getters.user(message.user.token)
+    if (!user) return
+
     message.user.profile = user.profile
   }
   const finalMessage = asIMessage(message)
@@ -138,24 +148,31 @@ const sendMessage = ({ message, token, ip }: { message, token?: string, ip?: str
     return
   }
 
-  let stringified
-  try {
-    stringified = JSON.stringify({ message, token, ip })
-  } catch (e) {
-    log.error(`helpers.sendMessage: ${ip} is sending invalid message`)
-    return
-  }
-
-  clients.pub.publish('coinsect_chat', stringified)
+  clients.pub.publish('coinsect_chat', coreHelpers.must.string({
+    psType: 'sendMessage',
+    data: { message, token, ip },
+  }))
 }
 
 // 메시지를 접속된 클라이언트들에게 뿌리고 서버 메모리에 저장한다. (나중에 redis pubsub으로 변경)
-const broadcast = message => {
+const broadcastInternal = message => {
   // 동일 유저가 n >= 2개 이상의 커넥션을 만든 경우 (새 탭 등) sendMessage를 한 번만 하기 위해 해시로 필터링한다.
   // (그냥 connections.forEach(conn => sendMessage...) 하게 되면 같은 계정 n개 탭에서 접속한 경우 걔들은 메시지 n번씩 찍힘)
   const o = {}
   store.getters.connections().forEach(conn => o[conn.user.token] = conn)
   Object.values(o).forEach((conn: IConnection) => sendMessage({ message, token: conn.user.token }))
+}
+
+const broadcast = message => {
+  if (store.getters.config().server.USE_REDIS !== 'yes') {
+    broadcastInternal(message)
+    return
+  }
+
+  clients.pub.publish('coinsect_chat', coreHelpers.must.string({
+    psType: 'broadcast',
+    data: message,
+  }))
 }
 
 // 디폴트는 한국시각 기준

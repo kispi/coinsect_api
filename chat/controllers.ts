@@ -14,7 +14,7 @@ const connections = store.getters.connections()
 
 // 너무 짧은 시간에 수많은 소켓에 브로드캐스트하면 부하가 심해서, 특정 계정에 국한되지 않은 업데이트는 디바운스를 줌
 const debouncedBroadcast = type => coreHelpers.debounce(() => {
-  store.actions.loadStats()
+  store.actions.loadLocalStats()
   helpers.broadcast({ type })
 }, 500)
 
@@ -160,7 +160,7 @@ export const chatCtrl = {
       if (profile.sentiment && ['long', 'short'].indexOf(profile.sentiment.type) >= 0) {
         profile.sentiment.expireAt = helpers.dayjs().add(24, 'hours').format()
         user.profile.sentiment = profile.sentiment
-        store.actions.loadStats()
+        store.actions.loadLocalStats()
       }
 
       const connections = store.getters.targetConnections({ token })
@@ -183,7 +183,7 @@ export const chatCtrl = {
     },
   },
   messages: {
-    all: (c: IContext) => {
+    all: async (c: IContext) => {
       const limit = c.req.query['limit']
       if (parseInt(limit) >= 1000) {
         c.res.failed({ message: 'limit is too big' })
@@ -194,7 +194,7 @@ export const chatCtrl = {
       const cursor = c.req.query['firstMessageId']
       if (cursor) qb.where(`id < ${cursor}`)
       else {
-        return c.res.asJSON(filteredMessages(store.getters.recentMessages()))
+        return c.res.asJSON(filteredMessages(await store.getters.recentMessages()))
       }
 
       qb.getMany()

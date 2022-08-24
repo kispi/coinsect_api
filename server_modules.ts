@@ -1,3 +1,4 @@
+import { log, createHttpLog } from './core/logger'
 import fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import fastifyCors from '@fastify/cors'
 import useRoutes from './routes'
@@ -7,7 +8,6 @@ import fastifyWebsocket from 'fastify-websocket'
 import store from './store'
 import helpers from './core/helpers'
 import useChat from './chat/server'
-import { log, createHttpLog } from './core/logger'
 import marketInfoService from './services/market_info'
 
 axios.defaults.timeout = 1000 * 30

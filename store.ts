@@ -32,7 +32,12 @@ const state = {
     },
     allowDirectPositionEdit: null,
   },
-  serverConfig: dotenv.config().parsed,
+  serverConfig: (() => {
+    const original = dotenv.config().parsed
+    const overridable = ['COINSECT_CHAT', 'API_PORT']
+    overridable.forEach(key => original[key] = process.env[key])
+    return original
+  })(),
 }
 
 const actions = {
