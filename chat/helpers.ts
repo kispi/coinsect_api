@@ -29,6 +29,12 @@ const usePubsub = async () => {
       }
 
       if (json.psType === 'broadcast' && json.data) {
+        // 이 경우는 특정 서버의 유저가 프로필을 업데이트한 경우이므로, broadcastInternal을 실행할 필요가 없음.
+        if (json.data.type === 'update') {
+          store.actions.loadUsers()
+          return
+        }
+
         broadcastInternal(json.data)
       }
     })
@@ -92,6 +98,7 @@ const saveMessage = async (message, ip) => {
 
   // 이 줄 실행 안하면 서버가 오래떠있을 경우 최근 메시지가 무한히 늘어남
   const iMessage = asIMessage(message)
+  iMessage.user = store.getters.user(message.user.token)
   const arr = await store.getters.recentMessages()
   arr.unshift(iMessage)
   store.actions.updateRecentMessages(arr)
@@ -128,12 +135,8 @@ const sendMessageInternal = ({ message, token, ip }: { message, token?: string, 
 
   // 프로필은 클라이언트에서 준 토큰만을 가지고 찾아서 assign
   if (message.user) {
-    // 레디스를 쓰는 경우 레디스에는 존재하는 유저정보더라도 이 서버 메모리에는 존재하지 않을 수 있다.
-    // 이런 경우 다른데서 아래 코드가 정상적으로 돌기 때문에 return하면 된다.
     const user = store.getters.user(message.user.token)
-    if (!user) return
-
-    message.user.profile = user.profile
+    message.user.profile = (user || {}).profile
   }
   const finalMessage = asIMessage(message)
   if (finalMessage.text) finalMessage.text = trimmed(finalMessage.text)

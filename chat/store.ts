@@ -96,6 +96,10 @@ const actions = {
     state.connections.push({ connection, user, ip })
     helpers.sendMessage({ message: { type: 'auth', user }, token })
   },
+  updateUser: (user: IUser) => {
+    state.users[user.token] = user
+    cache.set('chat:users', state.users)
+  },
   loadUsers: async () => {
     state.users = await cache.get('chat:users') || {}
   },

@@ -166,6 +166,7 @@ export const chatCtrl = {
       const connections = store.getters.targetConnections({ token })
       connections.forEach(conn => conn.user = user)
 
+      store.actions.updateUser(user)
       helpers.broadcast({ type: 'update' })
 
       c.res.asJSON(user)
