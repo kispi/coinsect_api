@@ -108,9 +108,8 @@ const realTimePositionService = {
         notifiedPositionHistories.push(acceptable)
         notifiedPositionHistories = notifiedPositionHistories.slice(-5) // 최근 5개까지만 유지
         const u = await chatService.getUser(payload['token'])
-        const allowed = store.state.globalVariables.allowDirectPositionEdit
         slack.postMessage(`
-          ${allowed ? '포지션이 수정되었습니다' : '포지션 수정 요청이 들어왔습니다'}
+          '포지션 수정 요청이 들어왔습니다'
           요청자: ${u.profile.nickname} (${c.req.ip} / ${u.token})\n
           스트리머: *${payload['name']}*
           진입: ${payload['entryPrice']}
@@ -119,9 +118,6 @@ const realTimePositionService = {
           계약: ${payload['contract']}
           방송: ${payload['onAir']}
         `)
-        if (allowed) {
-          realTimePositionService.set(payload, true)
-        }
         return notifiedPositionHistories
       } catch (e) {
         return Promise.reject(e)

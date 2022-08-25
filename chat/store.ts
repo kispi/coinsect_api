@@ -15,16 +15,17 @@ const state = {
     messageMaxLength: 255,
     nicknameMaxLength: 10,
     imageUrlMaxLength: 255,
-    server: dotenv.config().parsed,
+    server: (() => {
+      const original = dotenv.config().parsed
+      const overridable = ['COINSECT_CHAT', 'API_PORT']
+      overridable.forEach(key => original[key] = process.env[key])
+      return original
+    })(),
   },
   bannedUntil: {} as { ip: string },
   users: {},
   connections: [] as IConnection[],
-  localStats: {
-    numConnections: 0,
-    numBulls: 0,
-    numBears: 0,
-  },
+  stats: {},
 }
 
 const getters = {
@@ -39,11 +40,28 @@ const getters = {
     if (ip) return conn.ip === ip
     if (token) return conn.user.token === token
   }),
-  localStats: () => state.localStats,
+  stats: () => state.stats,
+  aggregatedStats: () => {
+    const serverPorts = Object.keys(state.stats)
+    let numConnections = 0
+    let numBulls = 0
+    let numBears = 0
+    serverPorts.forEach(port => {
+      numConnections += (state.stats[port].numConnections || 0)
+      numBulls += (state.stats[port].numBulls || 0)
+      numBears += (state.stats[port].numBears || 0)
+    })
+
+    return {
+      numConnections,
+      numBulls,
+      numBears,
+    }
+  }
 }
 
 const actions = {
-  loadLocalStats: () => {
+  loadStats: async () => {
     let numConnections = 0
     let numBulls = 0
     let numBears = 0
@@ -59,9 +77,13 @@ const actions = {
       if (sentiment.type === 'short') numBears += 1
     })
 
-    state.localStats.numConnections = numConnections
-    state.localStats.numBulls = numBulls
-    state.localStats.numBears = numBears
+    state.stats = await cache.get('chat:stats') || {}
+    state.stats[getters.config().server.API_PORT] = {
+      numConnections,
+      numBulls,
+      numBears,
+    }
+    cache.set('chat:stats', state.stats)
   },
   createUser: (token: string): IUser => ({
     token,

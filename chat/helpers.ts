@@ -17,24 +17,23 @@ const usePubsub = async () => {
   try {
     await clients.pub.connect()
     await clients.sub.connect()
-    clients.sub.subscribe('coinsect_chat', stringified => {
+    clients.sub.subscribe('coinsect_chat', async stringified => {
       const json = coreHelpers.must.json(stringified)
-      if (!json) {
+      if (!(json || {}).data) {
         log.error(`helpers.usePubsub: invalid json string => ${stringified}`)
         return
       }
 
-      if (json.psType === 'sendMessage' && json.data) {
-        sendMessageInternal(json.data)
-      }
+      if (json.psType === 'sendMessage') sendMessageInternal(json.data)
 
-      if (json.psType === 'broadcast' && json.data) {
-        // 이 경우는 특정 서버의 유저가 프로필을 업데이트한 경우이므로, broadcastInternal을 실행할 필요가 없음.
-        if (json.data.type === 'update') {
-          store.actions.loadUsers()
-          return
+      if (json.psType === 'broadcast') {
+        // 유저가 프로필을 업데이트하거나, 채팅방에 입장하거나, 나갈 때 redis에 저장된 전체 데이터를 토대로 메모리 싱크 맞춰줌.
+        if (['enter', 'leave', 'update'].indexOf(json.data.type) >= 0) {
+          Promise.all([
+            store.actions.loadUsers(),
+            store.actions.loadStats(),
+          ])
         }
-
         broadcastInternal(json.data)
       }
     })
@@ -63,7 +62,7 @@ const trimmed = (text: string) => {
 }
 
 const asIMessage = (message): IMessage => {
-  const s = store.getters.localStats()
+  const s = store.getters.aggregatedStats()
 
   const dbStoredUser = {
     token: message.token,

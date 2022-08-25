@@ -14,7 +14,7 @@ const connections = store.getters.connections()
 
 // 너무 짧은 시간에 수많은 소켓에 브로드캐스트하면 부하가 심해서, 특정 계정에 국한되지 않은 업데이트는 디바운스를 줌
 const debouncedBroadcast = type => coreHelpers.debounce(() => {
-  store.actions.loadLocalStats()
+  store.actions.loadStats()
   helpers.broadcast({ type })
 }, 500)
 
@@ -160,7 +160,7 @@ export const chatCtrl = {
       if (profile.sentiment && ['long', 'short'].indexOf(profile.sentiment.type) >= 0) {
         profile.sentiment.expireAt = helpers.dayjs().add(24, 'hours').format()
         user.profile.sentiment = profile.sentiment
-        store.actions.loadLocalStats()
+        store.actions.loadStats()
       }
 
       const connections = store.getters.targetConnections({ token })
