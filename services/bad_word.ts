@@ -1,13 +1,23 @@
 import store from '../store'
 
-export default {
-  includedIn: (message: string) => store.state.badWords.map(o => o.word).some(badWord => message.includes(badWord)),
+const badWordService = {
+  nonAlphabetExcluded: (message: string) => {
+    return message.replace(/[!@#$%^&*()0-9]/ig, '')
+  },
+  includedIn: (message: string) => {
+    return store.state.badWords.some(badWord =>
+      ((badWord.word || '').split('/') || []).some(token => message.includes(token))
+    )
+  },
   filtered: (message: string) => {
-    let filtered = message
-    store.state.badWords.forEach(badWord => {
-      const regex = new RegExp(badWord.word, 'gi')
-      filtered = filtered.replace(regex, badWord.alternative || '*'.repeat(badWord.word.length))
-    })
+    let filtered = badWordService.nonAlphabetExcluded(message)
+    store.state.badWords.forEach(badWord =>
+      ((badWord.word || '').split('/') || []).forEach(token => {
+        filtered = filtered.replace(new RegExp(token, 'ig'), badWord.alternative || '*'.repeat(badWord.word.length))
+      })
+    )
     return filtered
   },
 }
+
+export default badWordService
