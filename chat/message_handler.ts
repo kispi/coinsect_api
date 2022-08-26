@@ -56,11 +56,11 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
     helpers.broadcast(message)
     return
   },
-  connections: () => {
+  users: () => {
     helpers.sendMessage({
       message: {
-        type: 'connections',
-        meta: store.getters.connections().map(conn => ({ ip: conn.ip, user: conn.user })),
+        type: 'users',
+        meta: store.getters.connections().map(conn => conn.user),
       }, token,
     })
   },
