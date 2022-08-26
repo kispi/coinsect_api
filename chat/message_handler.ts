@@ -51,7 +51,7 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
 
     if (savedMessage) message['id'] = savedMessage.id
 
-    if (message.type === 'text' && service.badWord.includedIn(message.text)) message.text = service.badWord.filtered(message.text)
+    if (message.type === 'text') message.text = service.badWord.filtered(message.text)
 
     helpers.broadcast(message)
     return
