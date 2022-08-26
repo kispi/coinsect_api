@@ -61,7 +61,7 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
 
 const filteredMessages = (messages: Array<IMessage>) => messages.map(m => ({
   ...m,
-  text: badWord.filtered(m.text),
+  text: (m.type === 'text' && badWord.includedIn(m.text)) ? badWord.filtered(m.text) : m.text,
 }))
 
 export const chatCtrl = {
