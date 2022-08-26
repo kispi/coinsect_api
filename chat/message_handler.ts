@@ -56,11 +56,11 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
     helpers.broadcast(message)
     return
   },
-  connections: () => {
+  users: () => {
     helpers.sendMessage({
       message: {
-        type: 'connections',
-        meta: store.getters.connections().map(conn => ({ ip: conn.ip, user: conn.user })),
+        type: 'users',
+        meta: Object.values(store.getters.users()).filter(u => helpers.dayjs(u['lastSeen']).isAfter(helpers.dayjs().add(-30, 'seconds'))), // 핑은 30초 간격으로 날리기 때문
       }, token,
     })
   },
@@ -71,6 +71,10 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
     }
 
     if (user && message.user) user.path = message.user.path
+
+    user.lastSeen = helpers.dayjs().format()
+    user.lastIP = ip
+    store.actions.updateUser(user)
 
     helpers.sendMessage({
       message: {

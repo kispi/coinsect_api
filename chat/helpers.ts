@@ -17,6 +17,7 @@ const usePubsub = async () => {
   try {
     await clients.pub.connect()
     await clients.sub.connect()
+    clients.pub.del('chat:stats')
     clients.sub.subscribe('coinsect_chat', async stringified => {
       const json = coreHelpers.must.json(stringified)
       if (!(json || {}).data) {
@@ -29,10 +30,8 @@ const usePubsub = async () => {
       if (json.psType === 'broadcast') {
         // 유저가 프로필을 업데이트하거나, 채팅방에 입장하거나, 나갈 때 redis에 저장된 전체 데이터를 토대로 메모리 싱크 맞춰줌.
         if (['enter', 'leave', 'update'].indexOf(json.data.type) >= 0) {
-          Promise.all([
-            store.actions.loadUsers(),
-            store.actions.loadStats(),
-          ])
+          await store.actions.loadUsers()
+          await store.actions.loadStats()
         }
         broadcastInternal(json.data)
       }
