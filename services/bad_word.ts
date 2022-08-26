@@ -11,6 +11,8 @@ const badWordService = {
   },
   filtered: (message: string) => {
     let filtered = badWordService.nonAlphabetExcluded(message)
+    if (!badWordService.includedIn(filtered)) return message
+
     store.state.badWords.forEach(badWord =>
       ((badWord.word || '').split('/') || []).forEach(token => {
         filtered = filtered.replace(new RegExp(token, 'ig'), badWord.alternative || '*'.repeat(badWord.word.length))
