@@ -2,7 +2,7 @@ import store from '../store'
 
 const badWordService = {
   nonAlphabetExcluded: (message: string) => {
-    return message.replace(/[!@#$%^&*()0-9.,/\|_-`~\+=]/ig, '')
+    return message.replace(/[!@#$%^&*()0-9.,/\|_\-"'`~\+=]/ig, '')
   },
   includedIn: (message: string) => {
     return store.state.badWords.some(badWord =>
