@@ -41,10 +41,6 @@ const crawlBalance = {
   },
   ZEC: () => {},
   XMR: () => {},
-  TRX: (doc: HTMLElement) => {
-    const dom = doc.querySelector('.value.break')
-    if (dom) return walletHelpers.domToFloat(dom, ' TRX')
-  },
 }
 
 const throughApi = (wallet: Wallet) => {
@@ -62,6 +58,14 @@ const throughApi = (wallet: Wallet) => {
         const { balances }: any = await axios.get(`https://horizon.stellar.org/accounts/${wallet.address}`)
         const xlm = balances.find(b => b.asset_type === 'native')
         if (xlm) return xlm.balance
+      } catch (e) {
+        return Promise.reject(e)
+      }
+    },
+    TRX: async () => {
+      try {
+        const data = await axios.get(`https://apilist.tronscanapi.com/api/accountv2?address=${wallet.address}`)
+        return data['withPriceTokens'][0].amount
       } catch (e) {
         return Promise.reject(e)
       }
