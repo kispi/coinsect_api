@@ -16,10 +16,10 @@ const middlewares = {
         return Promise.reject(e)
       }
     },
-    position: async (c: IContext) => {
+    manager: async (c: IContext) => {
       try {
         const adminUser = await helpers.jwt.getPayload(c)
-        if (adminUser['role'] !== 'admin' || ['super', 'position'].indexOf(adminUser['auth']) < 0) return Promise.reject(errorUnauthorized)
+        if (adminUser['role'] !== 'admin' || ['super', 'manager'].indexOf(adminUser['auth']) < 0) return Promise.reject(errorUnauthorized)
       } catch (e) {
         return Promise.reject(e)
       }
