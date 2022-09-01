@@ -11,16 +11,16 @@ const auth = {
   admin: middlewares.adminAuth,
 }
 
-const useRouteCRUD = ({ app, model }) => {
+const useRouteCRUD = ({ app, model, middleware = auth.admin.super }) => {
   const router = useRouter(app)
 
   const sp = helpers.case.pluralize(helpers.case.toSnake(model))
 
-  router.post(`/admin/${sp}`, ctrls.admin[model].create, auth.admin.super)
-  router.get(`/admin/${sp}`, ctrls.admin[model].all, auth.admin.super)
-  router.get(`/admin/${sp}/:id`, ctrls.admin[model].detail, auth.admin.super)
-  router.put(`/admin/${sp}/:id`, ctrls.admin[model].update, auth.admin.super)
-  router.delete(`/admin/${sp}/:id`, ctrls.admin[model].delete, auth.admin.super)
+  router.post(`/admin/${sp}`, ctrls.admin[model].create, middleware)
+  router.get(`/admin/${sp}`, ctrls.admin[model].all, middleware)
+  router.get(`/admin/${sp}/:id`, ctrls.admin[model].detail, middleware)
+  router.put(`/admin/${sp}/:id`, ctrls.admin[model].update, middleware)
+  router.delete(`/admin/${sp}/:id`, ctrls.admin[model].delete, middleware)
 }
 
 export const useRoutes = (app: FastifyInstance) => ({
@@ -36,30 +36,30 @@ export const useRoutes = (app: FastifyInstance) => ({
   admin: () => {
     const router = useRouter(app)
 
-    router.post('/admin/chat/ban_ip', ctrls.admin.chat.banIP, auth.admin.super) // 단순 채금
-    router.post('/admin/chat/create_banned_user', ctrls.admin.chat.createBannedUser, auth.admin.super) // 광고, 도배충들 용도 (메시지도 다 지움)
-    router.post('/admin/chat/send_message', ctrls.admin.chat.sendMessage, auth.admin.super)
+    router.post('/admin/chat/ban_ip', ctrls.admin.chat.banIP, auth.admin.manager) // 단순 채금
+    router.post('/admin/chat/create_banned_user', ctrls.admin.chat.createBannedUser, auth.admin.manager) // 광고, 도배충들 용도 (메시지도 다 지움)
+    router.post('/admin/chat/send_message', ctrls.admin.chat.sendMessage, auth.admin.manager)
 
     router.get('/admin/store/bad_words', ctrls.admin.store.badWord.all, auth.admin.super)
-    router.get('/admin/store/banned_users', ctrls.admin.store.bannedUser.all, auth.admin.super)
+    router.get('/admin/store/banned_users', ctrls.admin.store.bannedUser.all, auth.admin.manager)
     router.post('/admin/store/bad_words/invalidate', ctrls.admin.store.badWord.invalidate, auth.admin.super)
-    router.post('/admin/store/banned_users/invalidate', ctrls.admin.store.bannedUser.invalidate, auth.admin.super)
-    router.post('/admin/store/messages/invalidate', ctrls.admin.store.message.invalidate, auth.admin.super)
-    router.post('/admin/store/admin_token', ctrls.admin.store.setAdminToken)
+    router.post('/admin/store/banned_users/invalidate', ctrls.admin.store.bannedUser.invalidate, auth.admin.manager)
+    router.post('/admin/store/messages/invalidate', ctrls.admin.store.message.invalidate, auth.admin.manager)
+    router.post('/admin/store/admin_token', ctrls.admin.store.setAdminToken, auth.admin.super)
 
     router.get('/admin/crons', ctrls.admin.cron.all, auth.admin.super)
 
-    router.get('/admin/contents/real_time_positions/change_notifications', ctrls.content.realTimePositions.changeNotification.all, auth.admin.position)
-    router.get('/admin/contents/real_time_positions/presets', ctrls.content.realTimePositions.presets, auth.admin.position)
-    router.post('/admin/contents/real_time_positions', ctrls.content.realTimePositions.set, auth.admin.position)
-    router.delete('/admin/contents/real_time_positions/:id', ctrls.content.realTimePositions.delete, auth.admin.position)
+    router.get('/admin/contents/real_time_positions/change_notifications', ctrls.content.realTimePositions.changeNotification.all, auth.admin.manager)
+    router.get('/admin/contents/real_time_positions/presets', ctrls.content.realTimePositions.presets, auth.admin.manager)
+    router.post('/admin/contents/real_time_positions', ctrls.content.realTimePositions.set, auth.admin.manager)
+    router.delete('/admin/contents/real_time_positions/:id', ctrls.content.realTimePositions.delete, auth.admin.manager)
 
     useRouteCRUD({ app, model: 'badWord' })
-    useRouteCRUD({ app, model: 'bannedUser' })
+    useRouteCRUD({ app, model: 'bannedUser', middleware: auth.admin.manager })
     useRouteCRUD({ app, model: 'blockchain' })
     useRouteCRUD({ app, model: 'board' })
     useRouteCRUD({ app, model: 'image' })
-    useRouteCRUD({ app, model: 'message' })
+    useRouteCRUD({ app, model: 'message', middleware: auth.admin.manager })
     useRouteCRUD({ app, model: 'notification' })
     useRouteCRUD({ app, model: 'person' })
     useRouteCRUD({ app, model: 'post' })

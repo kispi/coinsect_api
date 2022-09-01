@@ -10,7 +10,7 @@ export enum TypeUserRole {
 
 export enum TypeUserAuth {
   TypeSuper = 'super',
-  TypePosition = 'position',
+  TypeManager = 'manager',
 }
 
 @Entity({ name: 'users' })
