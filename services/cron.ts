@@ -9,12 +9,12 @@ const cronService = {
     cron.addJob({
       id: 'renewWalets',
       runnable: walletService.renewAll,
-      interval: 1000 * 60 * 60,
+      interval: 1000 * 60 * 30,
     })
     cron.addJob({
       id: 'deleteOldChatUsers',
       runnable: () => chatService.deleteOldUsers(48),
-      interval: 1000 * 60 * 60,
+      interval: 1000 * 60 * 30,
     })
     cron.addJob({
       id: 'crawlWhaleAlerts',
