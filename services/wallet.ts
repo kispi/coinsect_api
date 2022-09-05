@@ -26,18 +26,17 @@ const crawlBalance = {
   },
   BCH: (doc: HTMLElement) => crawlBalance.BTC(doc), // 비트랑 똑같
   LTC: (doc: HTMLElement) => {
-    const dom = doc.querySelector('.address-general-info').querySelectorAll('span')[7]
+    const dom = doc.querySelectorAll('p.title.is-5')[1]
     if (dom) return walletHelpers.domToFloat(dom, ' LTC')
   },
   EOS: () => {},
   DOGE: (doc: HTMLElement) => {
-    const wrapper = doc.querySelector('.address-general-info')
-    const dom = wrapper.querySelectorAll('span')[7]
-    if (dom) return walletHelpers.domToFloat(dom, ' DOGE')
+    const dom = doc.querySelectorAll('p.title.is-5')[1]
+    if (dom) return walletHelpers.domToFloat(dom, ' LTC')
   },
   GRS: (doc: HTMLElement) => {
-    const dom = doc.querySelector('.address-general-info').querySelectorAll('span')[7]
-    if (dom) return walletHelpers.domToFloat(dom, ' GRS')
+    const dom = doc.querySelectorAll('p.title.is-5')[1]
+    if (dom) return walletHelpers.domToFloat(dom, ' LTC')
   },
   ZEC: () => {},
   XMR: () => {},
@@ -74,11 +73,6 @@ const throughApi = (wallet: Wallet) => {
 }
 
 const scrape = async ({ html = '' as string, wallet = null as Wallet }): Promise<number> => {
-  const api = throughApi(wallet)[wallet.blockchain.symbol]
-  if (api) {
-    return await api()
-  }
-
   try {
     const selector = crawlBalance[wallet.blockchain.symbol]
     if (!selector) return Promise.reject({ message: `scrape: crawlBalance for ${wallet.blockchain.symbol} is not defined` })
@@ -163,6 +157,9 @@ const walletService = {
     if (!wallet.blockchain) return Promise.reject({ message: 'wallet.blockchain is not populated' })
 
     try {
+      const api = throughApi(wallet)[wallet.blockchain.symbol]
+      if (api) return await api()
+
       const html: string = await axios.get(wallet.exploreUrl())
       if (!html) return Promise.reject({ message: `failed to fetch url ${wallet.exploreUrl()}` })
 
