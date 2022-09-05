@@ -18,7 +18,7 @@ const helperController = {
       try {
         const data = await service.helper.crawledWebsites.all()
         c.res.asJSON({
-          total: data.length,
+          total: Object.keys(data || {}).length,
           data,
         })
       } catch (e) {
@@ -29,7 +29,7 @@ const helperController = {
       try {
         const data = await service.helper.crawledWebsites.delete(c.req.body['url'])
         c.res.asJSON({
-          total: data.length,
+          total: Object.keys(data || {}).length,
           data,
         })
       } catch (e) {
