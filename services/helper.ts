@@ -18,7 +18,7 @@ const helperService = {
       if (!(givenUrl || '').includes('.')) return Promise.reject({ message: 'invalid url' })
 
       const url = givenUrl.startsWith('http') ? givenUrl : `https://${givenUrl}`
-      crawledUrls = await cache.get('crawled_urls') || []
+      crawledUrls = await cache.get('crawled_urls') || {}
       const found = crawledUrls[url]
       if (found) {
         if (helpers.dayjs(found.crawledAt).add(1, 'hours').isBefore(found.crawledAt)) {
@@ -46,14 +46,17 @@ const helperService = {
       } catch (e) {
         return Promise.reject(e)
       } finally {
-        delete crawlingUrls[url]
+        removeCachedUrl(url)
       }
       const result = { url, meta, crawledAt: helpers.dayjs().format(), status: 'crawled' }
       crawledUrls[url] = result
       cache.set('crawled_urls', crawledUrls)
       return result
     },
-    all: () => (cache.get('crawled_urls') || []),
+    all: async () => {
+      crawledUrls = await cache.get('crawled_urls')
+      return crawledUrls
+    },
     examples: () => sites,
     delete: async (url: string) => {
       removeCachedUrl(url)
