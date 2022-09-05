@@ -6,17 +6,11 @@ import sites from '../constants/sites'
 
 const cache = useCache()
 
-let crawledUrls = []
+let crawledUrls = {}
 
 let crawlingUrls = {}
 
-const removeCachedUrl = (url: string) => {
-  const idx = crawledUrls.findIndex(o => o.url === url)
-  if (idx < 0) return
-
-  crawledUrls.splice(idx, 1)
-  removeCachedUrl(url)
-}
+const removeCachedUrl = (url: string) => delete crawledUrls[url]
 
 const helperService = {
   crawledWebsites: {
@@ -25,9 +19,8 @@ const helperService = {
 
       const url = givenUrl.startsWith('http') ? givenUrl : `https://${givenUrl}`
       crawledUrls = await cache.get('crawled_urls') || []
-      const foundIdx = crawledUrls.findIndex(o => o.url === url)
-      if (foundIdx >= 0) {
-        const found = crawledUrls[foundIdx]
+      const found = crawledUrls[url]
+      if (found) {
         if (helpers.dayjs(found.crawledAt).add(1, 'hours').isBefore(found.crawledAt)) {
           removeCachedUrl(url)
         } else return found
@@ -56,7 +49,7 @@ const helperService = {
         delete crawlingUrls[url]
       }
       const result = { url, meta, crawledAt: helpers.dayjs().format(), status: 'crawled' }
-      crawledUrls.push(result)
+      crawledUrls[url] = result
       cache.set('crawled_urls', crawledUrls)
       return result
     },
