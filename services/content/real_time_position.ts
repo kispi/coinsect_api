@@ -128,22 +128,23 @@ const realTimePositionService = {
       }
     },
   },
-  validate: async payload => {
+  validate: async o => {
+    const p = parseFloat
     if (
-      (payload.liqPrice && isNaN(parseFloat(payload.liqPrice))) ||
-      (payload.entryPrice && isNaN(parseFloat(payload.entryPrice))) ||
-      (payload.size && isNaN(parseFloat(payload.size)))
+      (o.liqPrice && isNaN(p(o.liqPrice))) ||
+      (o.entryPrice && isNaN(p(o.entryPrice))) ||
+      (o.size && isNaN(p(o.size)))
     ) throw { message: '진입가, 청산가, 규모는 숫자여야 합니다.' }
 
-    if (payload.liqPrice && payload.entryPrice && payload.size) {
-      if (payload.liqPrice > payload.entryPrice && payload.size > 0) throw { message: '롱포지션의 청산가가 진입가보다 높을 수는 없습니다' }
-      if (payload.liqPrice < payload.entryPrice && payload.size < 0) throw { message: '숏포지션의 청산가가 진입가보다 낮을 수는 없습니다' }
+    if (o.liqPrice && o.entryPrice && o.size) {
+      if (p(o.liqPrice) > p(o.entryPrice) && o.size > 0) throw { message: '롱포지션의 청산가가 진입가보다 높을 수는 없습니다' }
+      if (p(o.liqPrice) < p(o.entryPrice) && o.size < 0) throw { message: '숏포지션의 청산가가 진입가보다 낮을 수는 없습니다' }
     }
 
-    if ((payload.name || '').length > 20) throw { message: '스트리머 이름은 20자 미만으로 적어주세요' }
-    if ((payload.image || '').length > 255) throw { message: '255자 미만의 이미지 URL을 사용해주세요' }
-    if ((payload.link || '').length > 255) throw { message: '255자 미만의 방송플랫폼 URL을 사용해주세요' }
-    if (payload.contract && !payload.contract.endsWith('USDT')) throw { message: '계약은 반드시 USDT로 끝나야 합니다' }
+    if ((o.name || '').length > 20) throw { message: '스트리머 이름은 20자 미만으로 적어주세요' }
+    if ((o.image || '').length > 255) throw { message: '255자 미만의 이미지 URL을 사용해주세요' }
+    if ((o.link || '').length > 255) throw { message: '255자 미만의 방송플랫폼 URL을 사용해주세요' }
+    if (o.contract && !o.contract.endsWith('USDT')) throw { message: '계약은 반드시 USDT로 끝나야 합니다' }
   },
   all: async () => {
     // 매번 레디스에서 읽어오도록 해야 나중에 서버가 분산되었을 때 data-sync 문제가 없고, 레디스의 RPS는 워낙 높아서 걱정할 수준이 아님.
