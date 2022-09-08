@@ -40,7 +40,16 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
   
     // 마지막 메시지 이후 무조건 0.2초는 밴
     store.actions.banIP(ip, store.getters.config().allowedChatFrequency)
-    if (!(message.text || '').trim() || message.text.length > store.getters.config().messageMaxLength) return
+    if (!(message.text || '').trim() || message.text.length > store.getters.config().messageMaxLength) {
+      helpers.sendMessage({
+        message: {
+          type: 'alert',
+          text: '입력하신 메시지가 너무 깁니다. 만약 이미지를 업로드하신 경우라면 파일명을 짧게 해주세요.',
+        },
+        token,
+      })
+      return
+    }
 
     let savedMessage
     try {
