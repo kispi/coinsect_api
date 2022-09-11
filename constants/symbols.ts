@@ -12,6 +12,7 @@ const arr = [
   { symbol: 'YFI', kr: '연 파이낸스', en: 'Yearn Finance' },
   { symbol: 'EGLD', kr: '엘론드', en: 'Elrond' },
   { symbol: 'KSM', kr: '쿠사마', en: 'Kusama' },
+  { symbol: 'BAL', kr: '밸런서', en: 'Balancer' },
   { symbol: 'MBX', kr: '마브렉스', en: 'Marblex' },
   { symbol: 'XVS', kr: '비너스', en: 'Venus' },
   { symbol: 'CAKE', kr: '팬케이크스왑', en: 'PancakeSwap' },
