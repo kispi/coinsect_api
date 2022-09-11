@@ -20,6 +20,7 @@ const arr = [
   { symbol: 'ALICE', kr: '마이네이버앨리스', en: 'MyNeighborAlice' },
   { symbol: 'DAO', kr: '다오메이커', en: 'DAO Maker' },
   { symbol: 'NPT', kr: '네오핀', en: 'Neopin' },
+  { symbol: 'SUSHI', kr: '스시스왑', en: 'SushiSwap' },
   { symbol: 'TITAN', kr: '타이탄스왑', en: 'TitanSwap' },
   { symbol: 'CTK', kr: '셴투', en: 'Shentu' },
   { symbol: 'TAVA', kr: '알타바', en: 'ALTAVA' },
