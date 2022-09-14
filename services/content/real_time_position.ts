@@ -89,7 +89,7 @@ const realTimePositionService = {
       const found = cachedPositions.data.find(o => o.id === c.req.body['id'])
       if (found && !found.editable) return Promise.reject({ message: '수정이 불가능한 포지션입니다.' })
 
-      const bannedUser = helpers.useBannedUser(c.req.ip)
+      const bannedUser = helpers.useBannedUser({ ip: c.req.ip })
       if (bannedUser) return Promise.reject({ message: `오기입으로 수정 요청이 제한되었습니다. (해제: ${helpers.dayjs(bannedUser.until).format('YYYY-MM-DD HH:mm:ss')}` })
 
       const payload = c.req.body

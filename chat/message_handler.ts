@@ -23,7 +23,7 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
     messageHandlers({ message, ip, token }).text()
   },
   text: async () => {
-    const bannedUser = coreHelpers.useBannedUser(ip)
+    const bannedUser = coreHelpers.useBannedUser({ ip, token })
     if (bannedUser) {
       helpers.sendMessage({
         message: {

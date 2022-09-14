@@ -11,6 +11,9 @@ export class BannedUser extends BaseModel {
   @Column({ nullable: true })
   ip: string
 
+  @Column({ nullable: true })
+  token: string
+
   @Column({ type: 'text', nullable: true })
   reason: string
 
