@@ -43,6 +43,7 @@ const routesChat = {
       await c.orm.createQueryBuilder()
         .insert().into(BannedUser).values([{
           ip: c.req.body['ip'],
+          token: c.req.body['token'],
           reason: '운영 정책 위반',
           until: date.format(),
         }]).execute()
