@@ -31,7 +31,10 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
       helpers.sendMessage({
         message: {
           type: 'alert',
-          text: `채팅 제한 해제: ${helpers.formatWithAdd({ date: t })}`,
+          text: helpers.dayjs(t).diff(helpers.dayjs(), 'second') < store.getters.config().allowedChatFrequency ?
+            '너무 빠른 채팅은 타인에게 피해를 줄 수 있습니다 🙂' :
+            `채팅 제한 해제: ${helpers.formatWithAdd({ date: t })}`,
+          // 정확한 로직은 아니지만, 관리자에게 채금먹은 사람이 하필 남은 채금시간이 0.5초 미만일 때 채팅을 시도할 확률은 드물기 때문에 그냥 이렇게 간단히 처리해둠.
         },
         token,
       })
