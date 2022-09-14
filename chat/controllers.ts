@@ -69,7 +69,13 @@ export const chatCtrl = {
     // TODO: 채팅서버가 분리된 이후로는 권한 없을 시 (API서버가 아닌 일반 브라우저에서의 호출 등) Promise.reject해야함.
     // 토큰은 API 서버별 env등에 채팅서버 이용권한 토큰같은걸 넣으면 될듯
   },
-  config: (c: IContext) => c.res.asJSON(store.getters.config()),
+  config: {
+    get: (c: IContext) => c.res.asJSON(store.getters.config()),
+    post: (c: IContext) => {
+      store.getters.config().allowImageMessage = c.req.body['allowImageMessage']
+      c.res.asJSON(store.getters.config())
+    },
+  },
   users: {
     all: (c: IContext) => {
       try {

@@ -7,7 +7,8 @@ const useChatRoutes = (app: FastifyInstance) => {
   const routes = useRouter(app)
   app.get('/webchat', { websocket: true }, onConnected)
 
-  routes.get('/webchat/config', chatCtrl.config)
+  routes.get('/webchat/config', chatCtrl.config.get)
+  routes.post('/webchat/config', chatCtrl.config.post)
 
   // 추후에는 채팅서버와 WebSocket을 연결해서 쭉 유지하면서 티키타카할까 생각중 (연결을 맺었다 끊었다 하면 비용이 크니)
   routes.put('/webchat/users/:token', chatCtrl.users.update)

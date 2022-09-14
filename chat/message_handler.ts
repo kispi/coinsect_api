@@ -8,7 +8,20 @@ import store from './store'
 const service = useService()
 
 const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: string, token: string }) => ({
-  image: () => messageHandlers({ message, ip, token }).text(),
+  image: () => {
+    if (!store.getters.config().allowImageMessage) {
+      helpers.sendMessage({
+        message: {
+          type: 'alert',
+          text: '현재 이미지 업로드 기능을 사용할 수 없습니다 😢',
+        },
+        token,
+      })
+      return
+    }
+
+    messageHandlers({ message, ip, token }).text()
+  },
   text: async () => {
     const bannedUser = coreHelpers.useBannedUser(ip)
     if (bannedUser) {
