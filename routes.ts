@@ -49,10 +49,10 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/admin/crons', ctrls.admin.cron.all, auth.admin.super)
 
-    router.get('/admin/contents/real_time_positions/change_notifications', ctrls.content.realTimePositions.changeNotification.all, auth.admin.manager)
-    router.get('/admin/contents/real_time_positions/presets', ctrls.content.realTimePositions.presets, auth.admin.manager)
-    router.post('/admin/contents/real_time_positions', ctrls.content.realTimePositions.set, auth.admin.manager)
-    router.delete('/admin/contents/real_time_positions/:id', ctrls.content.realTimePositions.delete, auth.admin.manager)
+    router.get('/admin/contents/real_time_positions/change_notifications', ctrls.content.realTimePositions.changeNotification.all, auth.admin.position)
+    router.get('/admin/contents/real_time_positions/presets', ctrls.content.realTimePositions.presets, auth.admin.position)
+    router.post('/admin/contents/real_time_positions', ctrls.content.realTimePositions.set, auth.admin.position)
+    router.delete('/admin/contents/real_time_positions/:id', ctrls.content.realTimePositions.delete, auth.admin.position)
 
     useRouteCRUD({ app, model: 'badWord' })
     useRouteCRUD({ app, model: 'bannedUser', middleware: auth.admin.manager })
