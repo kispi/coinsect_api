@@ -108,7 +108,7 @@ const postController = {
       .leftJoinAndSelect('replies.parent', 'parent')
       .where(`Post.sharing_key = '${c.req.params['sharingKey']}'`)
       .getOneOrFail()
-        .then((post: Post) => {
+        .then(async (post: Post) => {
           post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
           post.replies = helpers.organizeReplies(post.replies)
 
@@ -125,7 +125,7 @@ const postController = {
             }
           })
           delete post.reactions
-          post.increaseViews(c)
+          await post.increaseViews(c)
           c.res.asJSON(post)
         })
         .catch(() => c.res.failed({ message: 'invalid request' }, 404))
