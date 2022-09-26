@@ -35,6 +35,10 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
     debouncedBroadcast('leave')()
   })
 
+  connection.socket.on('error', error => {
+    log.error('websocket error:', error)
+  })
+
   connection.socket.on('message', rawMessage => {
     try {
       const message: IMessage = JSON.parse(rawMessage)
