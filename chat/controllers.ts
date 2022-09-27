@@ -36,7 +36,7 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   })
 
   connection.socket.on('error', error => {
-    log.error('websocket error:', error)
+    log.error(`websocket error (IP: ${req.ip}):`, error)
   })
 
   connection.socket.on('message', rawMessage => {
