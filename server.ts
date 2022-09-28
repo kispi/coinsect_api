@@ -11,7 +11,9 @@ const run = async () => {
 
   await initApp(app)
   store.state.globalVariables.version.backend = await backendGitHash()
-  app.listen(store.state.serverConfig.API_PORT, '0.0.0.0')
+  app.listen({
+    port: parseInt(store.state.serverConfig.API_PORT) || 4000,
+  })
   log.info(`
 Server starts on port: ${store.state.serverConfig.API_PORT}
 Cache: ${store.state.serverConfig.USE_REDIS === 'yes' ? 'Redis' : 'Javascript Instance'}
@@ -19,7 +21,9 @@ Cache: ${store.state.serverConfig.USE_REDIS === 'yes' ? 'Redis' : 'Javascript In
 
   if (process.env.RUN_CRON === 'yes') cronService.run()
 
-  chatService.deleteOldUsers(48)
+  setTimeout(() => {
+    chatService.deleteOldUsers(48)
+  }, 2000)
 }
 
 run()

@@ -6,7 +6,7 @@ import badWord from '../services/bad_word'
 import messageHandlers from './message_handler'
 import { Message } from '../entities/message'
 import { IMessage, IUser } from './types'
-import { SocketStream } from 'fastify-websocket'
+import { SocketStream } from '@fastify/websocket'
 import { FastifyRequest } from 'fastify'
 import { createHttpLog, log } from '../core/logger'
 

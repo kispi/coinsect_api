@@ -20,29 +20,29 @@
   },
   "homepage": "https://github.com/kispi/coinsect_api#readme",
   "dependencies": {
-    "@fastify/cors": "^7.0.0",
-    "@types/node": "^16.0.0",
-    "aws-sdk": "^2.987.0",
-    "axios": "^0.21.1",
+    "@fastify/cors": "^8.1.0",
+    "@fastify/websocket": "^5.0.0",
+    "@types/node": "^18.7.23",
+    "aws-sdk": "^2.1225.0",
+    "axios": "^0.27.2",
     "cross-env": "^7.0.3",
     "crypto": "^1.0.1",
-    "dayjs": "^1.10.6",
-    "fastify": "^3.18.1",
-    "fastify-websocket": "^3.2.0",
+    "dayjs": "^1.11.5",
+    "fastify": "^4.6.0",
     "jsonwebtoken": "^8.5.1",
     "mysql": "^2.18.1",
-    "node-html-parser": "^5.0.0",
-    "pino-pretty": "^6.0.0",
-    "redis": "^4.0.6",
-    "reflect-metadata": "^0.1.10",
-    "sanitize-html": "^2.4.0",
-    "slugid": "^3.0.0",
-    "ts-node-dev": "^1.1.8",
-    "typeorm": "^0.2.34",
-    "typeorm-naming-strategies": "^2.0.0",
-    "typescript": "^4.3.5"
+    "node-html-parser": "^6.1.1",
+    "pino-pretty": "^9.1.0",
+    "redis": "^4.3.1",
+    "reflect-metadata": "^0.1.13",
+    "sanitize-html": "^2.7.2",
+    "slugid": "^3.1.0",
+    "typeorm": "^0.3.10",
+    "typeorm-naming-strategies": "^4.1.0",
+    "typescript": "^4.8.4"
   },
   "devDependencies": {
-    "ts-node": "^10.0.0"
+    "ts-node": "^10.0.0",
+    "ts-node-dev": "^2.0.0"
   }
 }

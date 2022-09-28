@@ -7,7 +7,10 @@ const me = async (c: IContext) => {
     const decodedUser = await helpers.jwt.getPayload(c)
     if (!decodedUser['id']) return c.res.failed({ message: 'invalid jwt token' })
 
-    const user = await c.orm.getRepository(User).findOne(decodedUser['id'], { relations: ['profile'] })
+    const user = await c.orm.getRepository(User).findOne({
+      where: { id: decodedUser['id'] },
+      relations: ['profile'],
+    })
     delete user.password
     c.res.success(user)
   } catch (e) {

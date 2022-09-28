@@ -3,6 +3,7 @@ import { Message } from '../entities/message'
 import { IConnection, IMessage } from './types'
 import store from './store'
 import coreHelpers from '../core/helpers'
+import { ManipulateType } from 'dayjs'
 
 const dayjs = coreHelpers.dayjs
 
@@ -122,6 +123,11 @@ const formatWithAdd = ({
   format = 'YYYY-MM-DD HH:mm:ss',
   unit = 'hours',
   number = 9,
+}: {
+  date,
+  format?: string,
+  unit?: ManipulateType,
+  number?: number,
 }) => {
   const p = date
   return dayjs(p).add(number, unit).format(format)

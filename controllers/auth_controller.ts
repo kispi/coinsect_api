@@ -16,7 +16,7 @@ const getUser = (c: IContext, email: string) => c.orm.getRepository(User)
 const authController = {
   signIn: async (c: IContext) => {
     try {
-      const user = await c.orm.getRepository(User).findOne({ email: c.req.body['email'] })
+      const user = await c.orm.getRepository(User).findOne({ where: { email: c.req.body['email'] } })
       if (!user) return c.res.failed({ message: 'user not found' })
 
       if (!helpers.compare(user.password, c.req.body['password'])) return c.res.failed({ message: 'password not match' })
@@ -30,7 +30,7 @@ const authController = {
 
     try {
       let authToken = await c.orm.getRepository(AuthToken).findOne(
-        { token: c.req.body['kakaoId'] },
+        { where: { token: c.req.body['kakaoId'] } },
       )
 
       if (authToken) {

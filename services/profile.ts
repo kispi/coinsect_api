@@ -19,7 +19,7 @@ const nicknameRecommendations = [
 
 const nicknameService = {
   useIfUnique: async (nickname: string): Promise<string> => {
-    const existing = await getRepository(Profile).findOne({ nickname })
+    const existing = await getRepository(Profile).findOne({ where: { nickname } })
     if (existing) return Promise.reject({ message: 'existing nickname' })
 
     return nickname
@@ -33,7 +33,7 @@ const nicknameService = {
     if (iteration > 10) return Promise.reject({ message: `couldn't generate the unique nickname in ${iteration} iterations.` })
 
     const nickname = nicknameService.generate()
-    const existing = await getRepository(Profile).findOne({ nickname })
+    const existing = await getRepository(Profile).findOne({ where: { nickname } })
     if (!existing) return nickname
 
     return await nicknameService.generateUnique(iteration + 1)

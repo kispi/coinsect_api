@@ -138,7 +138,7 @@ const postController = {
   
     try {
       const postRepository = getRepository(Post)
-      const target = await postRepository.findOneOrFail({ where: `Post.sharing_key = '${c.req.params['sharingKey']}'`})
+      const target = await postRepository.findOneOrFail({ where: { sharingKey: c.req.params['sharingKey'] } })
       if (!helpers.compare(target.password, c.req.body['password'])) {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
         return
