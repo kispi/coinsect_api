@@ -87,6 +87,10 @@ export const initApp = async (app: FastifyInstance) => {
     req['$$startTime'] = helpers.now()
     next()
   })
+  app.addHook('onError', (req, res, error, next) => {
+    log.error('fastify onError hook:', error)
+    next()
+  })
   await useDB()
 
   app.setNotFoundHandler(handleNotFound)
