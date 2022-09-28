@@ -11,7 +11,6 @@ export const createLogger = () => {
 }
 
 export const createHttpLog = (req: FastifyRequest, res: FastifyReply): {
-  ts?: string,
   method?: string,
   url?: string,
   status?: number,

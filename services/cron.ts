@@ -4,6 +4,10 @@ import chatService from './chat'
 import whaleAlertService from './onchain/whale_alert'
 import marketInfoService from './market_info'
 
+const failableCrawl = (minValue: number) => {
+  whaleAlertService.crawl(minValue).then().catch(() => {})
+}
+
 const cronService = {
   run: () => {
     cron.addJob({
@@ -20,9 +24,9 @@ const cronService = {
       id: 'crawlWhaleAlerts',
       runnable: () => {
         // 이 수치가 너무 작으면 limit 100 안에서 계속 크롤링 안되고 밀림
-        whaleAlertService.crawl(10000000).then().catch()
-        setTimeout(() => whaleAlertService.crawl(5000000).then().catch(), 5000)
-        setTimeout(() => whaleAlertService.crawl(3000000).then().catch(), 10000)
+        failableCrawl(10000000)
+        setTimeout(() => failableCrawl(5000000), 1000 * 20)
+        setTimeout(() => failableCrawl(3000000), 1000 * 40)
       },
       interval: 1000 * 60,
     })
