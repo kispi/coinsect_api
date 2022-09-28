@@ -243,7 +243,7 @@ export const chatCtrl = {
     hideMessage: (c: IContext) => {
       const messageId = parseInt(c.req.params['id'])
       if (!messageId) return
-  
+
       helpers.broadcast({
         type: 'hideMessage',
         meta: { messageId },

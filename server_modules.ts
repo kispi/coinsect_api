@@ -89,6 +89,7 @@ export const initApp = async (app: FastifyInstance) => {
   })
   app.addHook('onError', (req, res, error, next) => {
     log.error('fastify onError hook:', error)
+    log.error(JSON.stringify(createHttpLog(req, res)))
     next()
   })
   await useDB()
