@@ -28,7 +28,7 @@ const cronService = {
         setTimeout(() => failableCrawl(5000000), 1000 * 20)
         setTimeout(() => failableCrawl(3000000), 1000 * 40)
       },
-      interval: 1000 * 60,
+      interval: 1000 * 60 * 2,
     })
     cron.addJob({
       id: 'refreshMarketInfoInAdvance', // 사람들이 콜할때 업데이트하게 하지말고(바이낸스가 느림) 미리 주기적으로 캐시해둠
