@@ -8,7 +8,7 @@ import { Message } from '../entities/message'
 import { IMessage, IUser } from './types'
 import { SocketStream } from 'fastify-websocket'
 import { FastifyRequest } from 'fastify'
-import { log } from '../core/logger'
+import { createHttpLog, log } from '../core/logger'
 
 const connections = store.getters.connections()
 
@@ -36,7 +36,8 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   })
 
   connection.socket.on('error', error => {
-    log.error(`websocket error (IP: ${req.ip}):`, error)
+    log.error('websocket error:', error)
+    log.error(JSON.stringify(createHttpLog(req, null)))
   })
 
   connection.socket.on('message', rawMessage => {

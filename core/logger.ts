@@ -22,7 +22,7 @@ export const createHttpLog = (req: FastifyRequest, res: FastifyReply): {
   const log = {
     method: req.method,
     url: req.url,
-    status: res.statusCode,
+    status: (res || {}).statusCode,
     ms: Math.round(100 * (helpers.now() - req['$$startTime'])) / 100,
     ip: req.headers['ssr-proxy-from'] || req.headers['x-forwarded-for'] ||  req.socket.remoteAddress, // ssr-proxy-from은 ssr 서버에서 그리로 들어오는 x-forwarded-for를 넘겨준 것.
     userAgent: req.headers['user-agent'],
