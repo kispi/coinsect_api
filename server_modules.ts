@@ -3,7 +3,6 @@ import fastifyCors from '@fastify/cors'
 import useRoutes from './routes'
 import useDB from './database'
 import axios from 'axios'
-import fastifyWebsocket from '@fastify/websocket'
 import store from './store'
 import helpers from './core/helpers'
 import useChat from './chat/server'
@@ -82,7 +81,6 @@ export const initApp = async (app: FastifyInstance) => {
       cb(new Error('Not allowed'), false)
     },
   })
-  app.register(fastifyWebsocket)
   app.addHook('onRequest', (req, res, next) => {
     req['$$startTime'] = helpers.now()
     next()

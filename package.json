@@ -21,7 +21,7 @@
   "homepage": "https://github.com/kispi/coinsect_api#readme",
   "dependencies": {
     "@fastify/cors": "^8.1.0",
-    "@fastify/websocket": "^5.0.0",
+    "@fastify/websocket": "^7.0.1",
     "@types/node": "^18.7.23",
     "aws-sdk": "^2.1225.0",
     "axios": "^0.27.2",

@@ -1,5 +1,5 @@
 import { FastifyRequest } from 'fastify'
-import { Connection } from 'typeorm'
+import { DataSource } from 'typeorm'
 import ICacheClient from './cache_client'
 
 interface IAppResponse {
@@ -11,7 +11,7 @@ interface IAppResponse {
 }
 
 export default interface IContext {
-  orm: Connection,
+  orm: DataSource,
   cache: ICacheClient,
   req: FastifyRequest,
   res: IAppResponse,

@@ -1,11 +1,15 @@
 import { FastifyInstance } from 'fastify'
 import { useRouter } from '../core/router'
 import { chatCtrl, onConnected } from './controllers'
+import fastifyWebsocket from '@fastify/websocket'
 import middlewares from '../core/middlewares'
 
 const useChatRoutes = (app: FastifyInstance) => {
   const routes = useRouter(app)
-  app.get('/webchat', { websocket: true }, onConnected)
+  app.register(fastifyWebsocket)
+  app.register(async fastify => {
+    fastify.get('/webchat', { websocket: true }, onConnected)
+  })
 
   routes.get('/webchat/config', chatCtrl.config.get)
   routes.post('/webchat/config', chatCtrl.config.post)
