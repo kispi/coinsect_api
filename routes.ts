@@ -125,6 +125,8 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/notifications', ctrls.notification.all)
 
+    router.post('/firebase/messaging', ctrls.firebase.send)
+
     router.get('/s3/upload_url', ctrls.s3.getSignedUrl)
     router.delete('/s3/object', ctrls.s3.deleteObject)
   },
