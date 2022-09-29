@@ -1,4 +1,4 @@
-import { getConnection } from 'typeorm'
+import { dataSource } from '../database'
 import { Message } from '../entities/message'
 import { IConnection, IMessage, IUser } from './types'
 import profileService from '../services/profile'
@@ -100,9 +100,8 @@ const actions = {
     state.users = await cache.get('chat:users') || {}
   },
   loadRecentMessages: async () => {
-    const orm = getConnection()
     try {
-      const data = await orm
+      const data = await dataSource
         .getRepository(Message)
         .createQueryBuilder()
         .limit(state.config.numLatestMessages)

@@ -1,9 +1,9 @@
-import { getConnection } from 'typeorm'
+import { dataSource } from '../database'
 import { Message } from '../entities/message'
 import { IConnection, IMessage } from './types'
+import { ManipulateType } from 'dayjs'
 import store from './store'
 import coreHelpers from '../core/helpers'
-import { ManipulateType } from 'dayjs'
 
 const dayjs = coreHelpers.dayjs
 
@@ -66,7 +66,6 @@ const saveMessage = async (message, ip) => {
   // 이 줄 실행 안하면 서버가 오래떠있을 경우 최근 메시지가 무한히 늘어남
   store.actions.updateRecentMessages()
 
-  const orm = getConnection()
   const row = {
     ip,
     ts: iMessage.ts,
@@ -85,7 +84,7 @@ const saveMessage = async (message, ip) => {
     row['token'] = user.token
   }
   try {
-    const insert = await orm.createQueryBuilder().insert().into(Message).values([row]).execute()
+    const insert = await dataSource.createQueryBuilder().insert().into(Message).values([row]).execute()
     store.actions.loadRecentMessages()
     return insert.generatedMaps[0]
   } catch (e) {

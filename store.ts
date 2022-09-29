@@ -1,4 +1,4 @@
-import { getConnection } from 'typeorm'
+import { dataSource } from './database'
 import { BadWord } from './entities/bad_word'
 import { BannedUser } from './entities/banned_user'
 import * as dotenv from 'dotenv'
@@ -37,9 +37,8 @@ const state = {
 
 const actions = {
   loadBadWords: async () => {
-    const orm = getConnection()
     try {
-      const data = await orm
+      const data = await dataSource
         .getRepository(BadWord)
         .createQueryBuilder()
         .getMany()
@@ -52,9 +51,8 @@ const actions = {
     }
   },
   loadBannedUsers: async () => {
-    const orm = getConnection()
     try {
-      const data = await orm
+      const data = await dataSource
         .getRepository(BannedUser)
         .createQueryBuilder()
         .getMany()

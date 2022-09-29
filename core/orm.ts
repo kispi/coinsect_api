@@ -1,4 +1,4 @@
-import { getRepository } from 'typeorm'
+import { dataSource } from '../database'
 import IContext from './interfaces/context'
 
 const columnWithTable = (column, entityName) => {
@@ -10,7 +10,7 @@ const columnWithTable = (column, entityName) => {
 const orm = {
   querySetter: (c: IContext, model) => {
     const q = c.req.query
-    const entityName = getRepository(model).metadata.name
+    const entityName = dataSource.getRepository(model).metadata.name
     const qb = c.orm.getRepository(model).createQueryBuilder(entityName)
     if (q['limit']) qb.limit(q['limit'])
     if (q['offset']) qb.offset(q['offset'])

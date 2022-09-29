@@ -1,14 +1,5 @@
 import 'reflect-metadata'
-import { createConnection, getConnectionOptions } from 'typeorm'
-import { log } from './core/logger'
+import { DataSource } from 'typeorm'
+const options = require('./ormconfig')
 
-const useDB = async () => {
-  try {
-    const options = await getConnectionOptions()
-    await createConnection(options)
-  } catch (e) {
-    log.error(e)
-  }
-}
-
-export default useDB
+export const dataSource = new DataSource(options)

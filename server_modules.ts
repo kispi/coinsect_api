@@ -1,13 +1,13 @@
 import fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import fastifyCors from '@fastify/cors'
 import useRoutes from './routes'
-import useDB from './database'
 import axios from 'axios'
 import store from './store'
 import helpers from './core/helpers'
 import useChat from './chat/server'
-import { log, createHttpLog } from './core/logger'
 import marketInfoService from './services/market_info'
+import { dataSource } from './database'
+import { log, createHttpLog } from './core/logger'
 
 axios.defaults.timeout = 1000 * 30
 
@@ -90,7 +90,7 @@ export const initApp = async (app: FastifyInstance) => {
     log.error(JSON.stringify(createHttpLog(req, res)))
     next()
   })
-  await useDB()
+  await dataSource.initialize()
 
   app.setNotFoundHandler(handleNotFound)
   const routeMaker = useRoutes(app)

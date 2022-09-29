@@ -5,7 +5,7 @@ import { app, initApp, backendGitHash } from './server_modules'
 import { log } from './core/logger'
 
 const run = async () => {
-  process.on('unhandledRejection', (reason, promise) => {
+  process.on('unhandledRejection', (reason) => {
     log.error('unhandled rejection:', reason)
   })
 
@@ -13,6 +13,7 @@ const run = async () => {
   store.state.globalVariables.version.backend = await backendGitHash()
   app.listen({
     port: parseInt(store.state.serverConfig.API_PORT) || 4000,
+    host: '0.0.0.0',
   })
   log.info(`
 Server starts on port: ${store.state.serverConfig.API_PORT}

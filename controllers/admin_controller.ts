@@ -94,15 +94,18 @@ const routesStore = {
 
 const routesPost = useCRUD({ model: Post, useSoftDelete: true, withDeleted: true })
 
-routesPost.detail = (c: IContext) => {
-  orm.querySetter(c, Post)
-    .withDeleted()
-    .leftJoinAndSelect('Post.board', 'board')
-    .leftJoinAndSelect('Post.replies', 'replies')
-    .leftJoinAndSelect('replies.parent', 'parent')
-    .where(`Post.id = ${c.req.params['id']}`).getOneOrFail()
-      .then(c.res.asJSON)
-      .catch(c.res.failed)
+routesPost.detail = async (c: IContext) => {
+  try {
+    const data = await orm.querySetter(c, Post)
+      .withDeleted()
+      .leftJoinAndSelect('Post.board', 'board')
+      .leftJoinAndSelect('Post.replies', 'replies')
+      .leftJoinAndSelect('replies.parent', 'parent')
+      .where(`Post.id = ${c.req.params['id']}`).getOneOrFail()
+      c.res.asJSON(data)
+  } catch (e) {
+    c.res.failed(e)
+  }
 }
 
 const adminController = {

@@ -3,8 +3,8 @@ import store from '../../store'
 import IContext from '../../core/interfaces/context'
 import orm from '../../core/orm'
 import { log } from '../../core/logger'
-import { getConnection } from 'typeorm'
 import { WhaleAlert } from '../../entities/whale_alert'
+import { dataSource } from '../../database'
 
 const apiKey = store.state.serverConfig.WHALE_ALERT
 
@@ -32,7 +32,6 @@ const whaleAlertService = {
       return
     }
 
-    const orm = getConnection()
     try {
       const data = await axios.get(`https://api.whale-alert.io/v1/transactions?api_key=${apiKey}&min_value=${minValue}`) as any
       const whaleAlerts = (data.transactions || []).filter(t => t.transaction_count === 1).map(t => ({
@@ -51,7 +50,7 @@ const whaleAlertService = {
         transactionType: t.transaction_type,
         timestamp: t.timestamp,
       }))
-      orm.createQueryBuilder().insert().orIgnore().into(WhaleAlert).values(whaleAlerts).execute()
+      dataSource.createQueryBuilder().insert().orIgnore().into(WhaleAlert).values(whaleAlerts).execute()
       log.info(`whaleAlert.crawl: crawling with minValue = ${minValue} success`)
     } catch (e) {
       log.error(`whaleAlert.crawl: crawling with minValue = ${minValue} failed`, e.data)

@@ -1,4 +1,3 @@
-import { getRepository } from 'typeorm'
 import IContext from './interfaces/context'
 import helpers from './helpers'
 import orm from './orm'
@@ -12,42 +11,57 @@ export const useCRUD = ({
   useSoftDelete?: Boolean,
   withDeleted?: Boolean,
 }) => ({
-  all: (c: IContext) => {
+  all: async (c: IContext) => {
     const qs = orm.querySetter(c, model)
     if (withDeleted) qs.withDeleted()
 
-    qs.getManyAndCount()
-      .then(res => c.res.asJSON({
+    try {
+      const res = await qs.getManyAndCount()
+      c.res.asJSON({
         data: res[0],
         total: res[1],
-      }))
-      .catch(c.res.failed)
+      })
+    } catch (e) {
+      c.res.failed(e)
+    }
   },
-  detail: (c: IContext) => {
-    const entityName = getRepository(model).metadata.name
+  detail: async (c: IContext) => {
+    const entityName = c.orm.getRepository(model).metadata.name
     const qs = orm.querySetter(c, model)
     if (withDeleted) qs.withDeleted()
 
-    qs.where(`${entityName}.id = ${c.req.params['id']}`).getOne()
-      .then(c.res.asJSON)
-      .catch(c.res.failed)
+    try {
+      const data = await qs.where(`${entityName}.id = ${c.req.params['id']}`).getOne()
+      c.res.asJSON(data)
+    } catch (e) {
+      c.res.failed(e)
+    }
   },
-  delete: (c: IContext) => {
+  delete: async (c: IContext) => {
     const o = orm.querySetter(c, model).where(`id = ${c.req.params['id']}`)
     const promise = useSoftDelete ? o.softDelete() : o.delete()
-    promise.execute()
-      .then(() => c.res.success())
-      .catch(c.res.failed)
+    try {
+      await promise.execute()
+      c.res.success()
+    } catch (e) {
+      c.res.failed(e)
+    }
   },
-  create: (c: IContext) => {
-    orm.querySetter(c, model).insert().into(model).values(c.req.body).execute()
-      .then(() => c.res.success())
-      .catch(c.res.failed)
+  create: async (c: IContext) => {
+    try {
+      await orm.querySetter(c, model).insert().into(model).values(c.req.body).execute()
+      c.res.success()
+    } catch (e) {
+      c.res.failed()
+    }
   },
-  update: (c: IContext) => {
-    getRepository(model).save(c.req.body)
-      .then(() => c.res.success())
-      .catch(c.res.failed)
+  update: async (c: IContext) => {
+    try {
+      await c.orm.getRepository(model).save(c.req.body)
+      c.res.success()
+    } catch (e) {
+      c.res.failed(e)
+    }
   },
 })
 

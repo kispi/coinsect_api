@@ -100,35 +100,37 @@ const postController = {
       c.res.failed(e)
     }
   },
-  detail: (c: IContext) => {
-    orm.querySetter(c, Post)
-      .leftJoinAndSelect('Post.board', 'board')
-      .leftJoinAndSelect('Post.reactions', 'reactions')
-      .leftJoinAndSelect('Post.replies', 'replies')
-      .leftJoinAndSelect('replies.parent', 'parent')
-      .where(`Post.sharing_key = '${c.req.params['sharingKey']}'`)
-      .getOneOrFail()
-        .then(async (post: Post) => {
-          post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
-          post.replies = helpers.organizeReplies(post.replies)
+  detail: async (c: IContext) => {
+    try {
+      const post = await orm.querySetter(c, Post)
+        .leftJoinAndSelect('Post.board', 'board')
+        .leftJoinAndSelect('Post.reactions', 'reactions')
+        .leftJoinAndSelect('Post.replies', 'replies')
+        .leftJoinAndSelect('replies.parent', 'parent')
+        .where(`Post.sharing_key = '${c.req.params['sharingKey']}'`)
+        .getOneOrFail()
 
-          // post.reactions 삭제 (추천한 사람들 ip 노출 방지)
-          post['$$reactions'] = { up: { count: 0 }, down: { count: 0 } }
-          post.reactions.forEach(reaction => {
-            if (reaction.type === 'up') {
-              post['$$reactions']['up'].count++
-              post['$$reactions']['up'].activated = reaction.ip === c.req.ip
-            }
-            if (reaction.type === 'down') {
-              post['$$reactions']['down'].count++
-              post['$$reactions']['down'].activated = reaction.ip === c.req.ip
-            }
-          })
-          delete post.reactions
-          await post.increaseViews(c)
-          c.res.asJSON(post)
-        })
-        .catch(() => c.res.failed({ message: 'invalid request' }, 404))
+      post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
+      post.replies = helpers.organizeReplies(post.replies)
+
+      // post.reactions 삭제 (추천한 사람들 ip 노출 방지)
+      post['$$reactions'] = { up: { count: 0 }, down: { count: 0 } }
+      post.reactions.forEach(reaction => {
+        if (reaction.type === 'up') {
+          post['$$reactions']['up'].count++
+          post['$$reactions']['up'].activated = reaction.ip === c.req.ip
+        }
+        if (reaction.type === 'down') {
+          post['$$reactions']['down'].count++
+          post['$$reactions']['down'].activated = reaction.ip === c.req.ip
+        }
+      })
+      delete post.reactions
+      await post.increaseViews(c)
+      c.res.asJSON(post)
+    } catch (e) {
+      c.res.failed({ message: 'invalid request' }, 404)
+    }
   },
   delete: async (c: IContext) => {
     if (!c.req.body['password']) {
