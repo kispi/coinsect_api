@@ -1,8 +1,9 @@
-import { Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToOne, getRepository, Index, DataSource } from 'typeorm'
+import { Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToOne, Index } from 'typeorm'
 import { Board } from './board'
 import { Reaction } from './reaction'
 import { Reply } from './reply'
 import { User } from './user'
+import { dataSource } from '../database'
 import IContext from '../core/interfaces/context'
 import helpers from '../core/helpers'
 import store from '../store'
@@ -65,7 +66,7 @@ export class Post extends BaseModel {
 
     this.views += 1
     try {
-      await getRepository(Post).update({ sharingKey: this.sharingKey }, { views: this.views })
+      await dataSource.getRepository(Post).update({ sharingKey: this.sharingKey }, { views: this.views })
     } catch (e) {}
     return this
   }
@@ -86,7 +87,7 @@ export class Post extends BaseModel {
 
   static async checkPassword(sharingKey: string, password: string) {
     try {
-      const target = await getRepository(Post).findOneOrFail({ where: { sharingKey }})
+      const target = await dataSource.getRepository(Post).findOneOrFail({ where: { sharingKey }})
       if (!helpers.compare(target.password, password)) {
         return Promise.reject({ message: 'INCORRECT_PASSWORD' })
       }

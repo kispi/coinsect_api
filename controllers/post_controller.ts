@@ -1,8 +1,8 @@
-import { getRepository } from 'typeorm'
 import { loadChildren } from '../core/controller'
 import { Post } from '../entities/post'
 import { Reply } from '../entities/reply'
 import { Reaction } from '../entities/reaction'
+import { dataSource } from '../database'
 import IContext from '../core/interfaces/context'
 import orm from '../core/orm'
 import helpers from '../core/helpers'
@@ -70,7 +70,7 @@ const postController = {
     payload['content'] = helpers.sanitize.html(payload['content'])
 
     try {
-      await getRepository(Post).save(payload)
+      await dataSource.getRepository(Post).save(payload)
       c.res.success()
     } catch (e) {
       c.res.failed(e)
@@ -139,7 +139,7 @@ const postController = {
     }
   
     try {
-      const postRepository = getRepository(Post)
+      const postRepository = dataSource.getRepository(Post)
       const target = await postRepository.findOneOrFail({ where: { sharingKey: c.req.params['sharingKey'] } })
       if (!helpers.compare(target.password, c.req.body['password'])) {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })

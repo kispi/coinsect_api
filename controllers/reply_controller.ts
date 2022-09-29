@@ -1,8 +1,8 @@
 import IContext from '../core/interfaces/context'
 import orm from '../core/orm'
 import helpers from '../core/helpers'
+import { dataSource } from '../database'
 import { Reply } from '../entities/reply'
-import { getRepository } from 'typeorm'
 
 const replyController = {
   create: async (c: IContext) => {
@@ -43,7 +43,7 @@ const replyController = {
     }
 
     try {
-      const replyRepository = getRepository(Reply)
+      const replyRepository = dataSource.getRepository(Reply)
       const target = await replyRepository.findOneOrFail(c.req.params['id'])
       if (!helpers.compare(target.password, c.req.body['password'])) {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
@@ -61,7 +61,7 @@ const replyController = {
     if (!c.req.body['password']) return c.res.failed({ message: 'invalid payload' })
 
     try {
-      const target = await getRepository(Reply).findOneOrFail(c.req.params['id'])
+      const target = await dataSource.getRepository(Reply).findOneOrFail(c.req.params['id'])
       if (!helpers.compare(target.password, c.req.body['password'])) {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
         return

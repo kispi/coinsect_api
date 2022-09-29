@@ -1,5 +1,6 @@
-import { Entity, Column, getRepository, OneToOne } from 'typeorm'
+import { Entity, Column, OneToOne } from 'typeorm'
 import { Profile } from './profile'
+import { dataSource } from '../database'
 import helpers from '../core/helpers'
 import BaseModel from './base_model'
 
@@ -52,12 +53,12 @@ export class User extends BaseModel {
 
   async activate() {
     delete this.deactivatedAt
-    await getRepository(User).save(this)
+    await dataSource.getRepository(User).save(this)
   }
 
   async deactivate() {
     this.deactivatedAt = new Date()
-    await getRepository(User).save(this)
+    await dataSource.getRepository(User).save(this)
   }
 
   static jwt(user) {

@@ -1,5 +1,5 @@
-import { getRepository } from 'typeorm'
 import { Profile } from '../entities/profile'
+import { dataSource } from '../database'
 
 const nicknameRecommendations = [
   '가즈아', '흑우', '블랙카우', '손절장인', '익항옳', '이말올', '이럴거면왜올림', '이럴거면왜내림', '대폰지', '결국폰지사기',
@@ -19,7 +19,7 @@ const nicknameRecommendations = [
 
 const nicknameService = {
   useIfUnique: async (nickname: string): Promise<string> => {
-    const existing = await getRepository(Profile).findOne({ where: { nickname } })
+    const existing = await dataSource.getRepository(Profile).findOne({ where: { nickname } })
     if (existing) return Promise.reject({ message: 'existing nickname' })
 
     return nickname
@@ -33,7 +33,7 @@ const nicknameService = {
     if (iteration > 10) return Promise.reject({ message: `couldn't generate the unique nickname in ${iteration} iterations.` })
 
     const nickname = nicknameService.generate()
-    const existing = await getRepository(Profile).findOne({ where: { nickname } })
+    const existing = await dataSource.getRepository(Profile).findOne({ where: { nickname } })
     if (!existing) return nickname
 
     return await nicknameService.generateUnique(iteration + 1)

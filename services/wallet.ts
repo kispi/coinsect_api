@@ -1,9 +1,8 @@
 import axios from 'axios'
 import slack from './slack'
-import helpers from '../core/helpers'
 import { log } from '../core/logger'
 import { HTMLElement, parse } from 'node-html-parser'
-import { getRepository } from 'typeorm'
+import { dataSource } from '../database'
 import { Wallet } from '../entities/wallet'
 
 const walletHelpers = {
@@ -97,7 +96,7 @@ const walletService = {
       // typeorm의 default설정은 bigNumberString: on이기 때문
       const originalBalance = floatify(wallet.balance)
       wallet.balance = floatify(await walletService.poll(wallet))
-      await getRepository(Wallet).save(wallet)
+      await dataSource.getRepository(Wallet).save(wallet)
       const before = walletHelpers.asCryptoBalance(originalBalance)
       const after = walletHelpers.asCryptoBalance(wallet.balance)
       return {
@@ -168,7 +167,7 @@ const walletService = {
       return Promise.reject(e)
     }
   },
-  all: () => getRepository(Wallet)
+  all: () => dataSource.getRepository(Wallet)
     .createQueryBuilder()
     .leftJoinAndSelect('Wallet.blockchain', 'blockchain')
     .getMany(),
