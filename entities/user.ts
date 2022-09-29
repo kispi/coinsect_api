@@ -1,7 +1,7 @@
 import { Entity, Column, getRepository, OneToOne } from 'typeorm'
+import { Profile } from './profile'
 import helpers from '../core/helpers'
 import BaseModel from './base_model'
-import { Profile } from './profile'
 
 export enum TypeUserRole {
   TypeAdmin = 'admin',

@@ -1,5 +1,8 @@
 import 'reflect-metadata'
 import { DataSource } from 'typeorm'
-const options = require('./ormconfig')
+import options from './ormconfig'
 
-export const dataSource = new DataSource(options)
+export const dataSource = new DataSource({
+  type: 'mysql',
+  ...options,
+})

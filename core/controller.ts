@@ -16,11 +16,8 @@ export const useCRUD = ({
     if (withDeleted) qs.withDeleted()
 
     try {
-      const res = await qs.getManyAndCount()
-      c.res.asJSON({
-        data: res[0],
-        total: res[1],
-      })
+      const [data, total] = await qs.getManyAndCount()
+      c.res.asJSON({ data, total })
     } catch (e) {
       c.res.failed(e)
     }
