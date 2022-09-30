@@ -48,7 +48,7 @@ const routesChat = {
           until: date.format(),
         }]).execute()
 
-      if (c.req.body['deleteMessages'] === 'ok') await c.orm.createQueryBuilder().where(`ip = "${c.req.body['ip']}"`).delete().from(Message).execute()
+      if (c.req.body['deleteMessages'] === 'ok') await c.orm.createQueryBuilder().where(`ip = "${c.req.body['ip']}"`).softDelete().from(Message).execute()
       chatService.invalidate()
       c.res.success()
     } catch (e) {
