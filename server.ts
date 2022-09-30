@@ -5,8 +5,12 @@ import { app, initApp, backendGitHash } from './server_modules'
 import { log } from './core/logger'
 
 const run = async () => {
-  process.on('unhandledRejection', (reason) => {
-    log.error('unhandled rejection:', reason)
+  process.on('unhandledRejection', err => {
+    log.error('unhandled rejection:', err)
+  })
+
+  process.on('uncaughtException', err => {
+    log.error('uncaught exception:', err)
   })
 
   await initApp(app)

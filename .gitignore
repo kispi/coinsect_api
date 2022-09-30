@@ -1,6 +1,6 @@
 node_modules
 dist
-services/firebase/fcm_cert.json
+services/firebase/fcm_cert.ts
 
 .env
 ormconfig.ts

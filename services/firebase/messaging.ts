@@ -1,7 +1,8 @@
 import { initializeApp, cert } from 'firebase-admin/app'
 import { getMessaging, MulticastMessage } from 'firebase-admin/messaging'
+import fcmCert from './fcm_cert'
 
-initializeApp({ credential: cert(require('./fcm_cert.json')) })
+initializeApp({ credential: cert(fcmCert as any) })
 
 const messaging = {
   send: (message: MulticastMessage) => getMessaging().sendMulticast(message),
