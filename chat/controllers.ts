@@ -194,7 +194,7 @@ export const chatCtrl = {
     },
   },
   messages: {
-    all: (c: IContext) => {
+    all: async (c: IContext) => {
       const limit = c.req.query['limit']
       if (parseInt(limit) >= 1000) {
         c.res.failed({ message: 'limit is too big' })
@@ -208,15 +208,14 @@ export const chatCtrl = {
         return c.res.asJSON(filteredMessages(store.getters.recentMessages()))
       }
 
-      qb.getMany()
-        .then(data => {
-          try {
-            const json = JSON.parse(JSON.stringify(data))
-            c.res.asJSON(filteredMessages(json.map(helpers.asIMessage)))
-          } catch (e) {
-            log.error(`Failed to parse json: ${data}`)
-          }
-        })
+      try {
+        const data = await qb.getMany()
+        const json = JSON.parse(JSON.stringify(data))
+        c.res.asJSON(filteredMessages(json.map(helpers.asIMessage)))
+      } catch (e) {
+        log.error('chatCtrl.messages.all:', e)
+        c.res.error()
+      }
     },
     send: (c: IContext) => {
       const message = c.req.body['message']
