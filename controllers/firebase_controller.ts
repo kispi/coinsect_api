@@ -5,18 +5,16 @@ const service = useService()
 
 const firebaseController = {
   send: async (c: IContext) => {
-    const title = c.req.body['title']
-    const body = c.req.body['body']
-    const icon = c.req.body['icon']
-    const registration_ids = c.req.body['registration_ids']
-
     const payload = {
-      notification: {
-        title,
-        body,
-        icon,
+      tokens: c.req.body['tokens'],
+      webpush: {
+        notification: {
+          title: c.req.body['title'],
+          body: c.req.body['body'],
+          icon: c.req.body['icon'],
+          image: c.req.body['image'],
+        },
       },
-      registration_ids,
     }
 
     try {

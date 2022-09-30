@@ -1,27 +1,11 @@
-import axios from 'axios'
-import { log } from '../../core/logger'
-import store from '../../store'
+import { initializeApp, cert } from 'firebase-admin/app'
+import { getMessaging, MulticastMessage } from 'firebase-admin/messaging'
 
-const apiKey = store.state.serverConfig.FCM
+
+initializeApp({ credential: cert(require('./fcm_cert.json')) })
 
 const messaging = {
-  send: async payload => {
-    if (!apiKey) {
-      log.error('firebase.messaging.send: .env FCM is missing')
-      return
-    }
-
-    try {
-      await axios.post('https://fcm.googleapis.com/fcm/send', payload, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `key=${apiKey}`
-        },
-      })
-    } catch (e) {
-      console.error(e)
-    }
-  },
+  send: (message: MulticastMessage) => getMessaging().sendMulticast(message),
 }
 
 export default messaging
