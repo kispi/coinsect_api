@@ -54,6 +54,13 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.post('/admin/contents/real_time_positions', ctrls.content.realTimePositions.set, auth.admin.position)
     router.delete('/admin/contents/real_time_positions/:id', ctrls.content.realTimePositions.delete, auth.admin.position)
 
+    router.put('/admin/helpers/crawled_websites', ctrls.helper.crawledWebsites.delete, auth.admin.super) // DELETE 메소드는 request body를 가질 수 없어서 put으로
+    router.get('/admin/helpers/crawled_websites', ctrls.helper.crawledWebsites.all, auth.admin.super)
+
+    router.post('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.create, auth.admin.super)
+    router.get('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.all, auth.admin.super)
+    router.put('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.delete, auth.admin.super) // DELETE 메소드는 request body를 가질 수 없어서 put으로
+
     useRouteCRUD({ app, model: 'badWord' })
     useRouteCRUD({ app, model: 'bannedUser', middleware: auth.admin.manager })
     useRouteCRUD({ app, model: 'blockchain' })
@@ -119,8 +126,6 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/onchain/whale_alert', ctrls.onchain.whaleAlert)
 
     router.post('/helpers/crawled_websites', ctrls.helper.crawledWebsites.create)
-    router.put('/helpers/crawled_websites', ctrls.helper.crawledWebsites.delete) // DELETE 메소드는 request body를 가질 수 없어서 put으로
-    router.get('/helpers/crawled_websites', ctrls.helper.crawledWebsites.all)
     router.get('/helpers/crawled_websites/examples', ctrls.helper.crawledWebsites.examples)
 
     router.get('/notifications', ctrls.notification.all)

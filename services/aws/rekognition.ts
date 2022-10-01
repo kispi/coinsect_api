@@ -29,7 +29,7 @@ const rekognitionService = {
   delete: async (url: string) => {
     removeTestedUrls(url)
     cache.set('rekognition_tested_urls', rekognitionTestedUrls)
-    return rekognitionService.all
+    return rekognitionService.all()
   },
   imageModeration: async (url: string) => {
     if (!url) return Promise.reject({ message: 'invalid url' })

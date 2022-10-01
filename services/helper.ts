@@ -64,7 +64,7 @@ const helperService = {
     delete: async (url: string) => {
       removeCachedUrl(url)
       cache.set('crawled_urls', crawledUrls)
-      return helperService.crawledWebsites.all
+      return helperService.crawledWebsites.all()
     },
   },
 }
