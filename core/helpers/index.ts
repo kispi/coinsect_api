@@ -4,6 +4,7 @@ import dayjs = require('dayjs')
 import store from '../../store'
 import sanitize from './sanitize'
 import jwt from './jwt'
+import axios from 'axios'
 import { BannedUser } from '../../entities/banned_user'
 import { Reply } from '../../entities/reply'
 import { parse } from 'node-html-parser'
@@ -13,6 +14,12 @@ const helpers = {
   sanitize,
   jwt,
   dayjs,
+  regex: {
+    url: /\b(?:https?|ftp):\/\/[a-z0-9-+&@#/%?=~_|!:,.;]*[a-z0-9-+&@#/%=~_|]/gim,
+    pseudoUrl: /(^|[^/])(www\.[\S]+(\b|$))/gim,
+    email: /[\w.]+@[a-zA-Z_-]+?(?:\.[a-zA-Z]{2,6})+/gim,
+  },
+  retrieveUrlFromString: url => ((url || '').match(helpers.regex.url) || [])[0],
   useCdn: (key: string) => `${store.state.serverConfig.AWS_S3_CDN}/${key}`,
   case: {
     pluralize: (str: string) => {
@@ -63,6 +70,17 @@ const helpers = {
       return parse(content).getElementsByTagName('img').map(o => o.attributes.src)
     } catch (e) {
       return []
+    }
+  },
+  imageUrlToBlob: async (imageUrl: string, asString?: Boolean) => {
+    try {
+      const data = await axios.get(imageUrl, {
+        responseType: 'arraybuffer',
+      })
+      if (asString) return Buffer.from(data as any, 'base64')
+      else return data
+    } catch (e) {
+      return Promise.reject(e)
     }
   },
   parseHref: (content: string) => (content.match(/<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1/) || [])[2],

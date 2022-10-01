@@ -10,7 +10,10 @@ let crawledUrls = {}
 
 let crawlingUrls = {}
 
-const removeCachedUrl = (url: string) => delete crawledUrls[url]
+const removeCachedUrl = (url: string) => {
+  delete crawledUrls[url]
+  delete crawlingUrls[url]
+}
 
 const helperService = {
   crawledWebsites: {
@@ -61,7 +64,7 @@ const helperService = {
     delete: async (url: string) => {
       removeCachedUrl(url)
       cache.set('crawled_urls', crawledUrls)
-      return await helperService.crawledWebsites.all()
+      return helperService.crawledWebsites.all
     },
   },
 }

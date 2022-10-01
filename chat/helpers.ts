@@ -55,23 +55,32 @@ const asIMessage = (message): IMessage => {
   return iMessage
 }
 
-const saveMessage = async (message, ip) => {
+const saveMessage = async ({
+  message,
+  ip,
+  softDelete,
+} : {
+  message,
+  ip: string,
+  softDelete?: Boolean, // softDelete된 상태로 insert하여 채팅창에 노출되지 않도록 함.
+}) => {
   if (['text', 'image'].indexOf(message.type) < 0) return
 
   if (!message.user || !message.user.token) return
 
   const iMessage = asIMessage(message)
-  store.getters.recentMessages().unshift(iMessage)
-
-  // 이 줄 실행 안하면 서버가 오래떠있을 경우 최근 메시지가 무한히 늘어남
-  store.actions.updateRecentMessages()
-
   const row = {
     ip,
     ts: iMessage.ts,
     numConnections: iMessage.numConnections,
     type: iMessage.type,
     text: trimmed(iMessage.text),
+  }
+
+  if (softDelete) row['deletedAt'] = dayjs().format()
+  else {
+    store.getters.recentMessages().unshift(iMessage)
+    store.actions.updateRecentMessages()
   }
 
   // 클라에서 stringify 해서 날아오긴 할건데, 아닐 경우 방어.
@@ -85,7 +94,7 @@ const saveMessage = async (message, ip) => {
   }
   try {
     const insert = await dataSource.createQueryBuilder().insert().into(Message).values([row]).execute()
-    store.actions.loadRecentMessages()
+    if (!softDelete) store.actions.loadRecentMessages()
     return insert.generatedMaps[0]
   } catch (e) {
     return Promise.reject(e)

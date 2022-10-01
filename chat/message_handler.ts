@@ -67,9 +67,21 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
       return
     }
 
+    if (await service.aws.rekognition.isTextIncludingGraphicImageUrl(message.text)) {
+      helpers.sendMessage({
+        message: {
+          type: 'alert',
+          text: '음란물을 업로드하는 경우 통신매체이용음란죄로 형사처벌될 수 있습니다.',
+        },
+        token,
+      })
+      helpers.saveMessage({ message, ip, softDelete: true })
+      return
+    }
+
     let savedMessage
     try {
-      savedMessage = await helpers.saveMessage(message, ip)
+      savedMessage = await helpers.saveMessage({ message, ip })
     } catch (e) {
       log.error('failed to save message:', e)
     }

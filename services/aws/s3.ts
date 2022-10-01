@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk')
-import helpers from '../core/helpers'
-import store from '../store'
+import helpers from '../../core/helpers'
+import store from '../../store'
 
 AWS.config.update({
   region: 'ap-northeast-2',
