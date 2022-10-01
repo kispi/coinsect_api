@@ -126,11 +126,9 @@ const actions = {
 
     // 도배방지로 자연스럽게 적용된 경우가 아닌 관리자가 채팅을 금지시킨 경우
     if (timeout > state.config.allowedChatFrequency) {
-      helpers.sendMessage({
-        message: {
-          type: 'alert',
-          text: `채팅이 금지되었습니다. (해제: ${helpers.formatWithAdd({ date })}`,
-        }, ip,
+      helpers.alertUser({
+        text: `채팅이 금지되었습니다. (해제: ${helpers.formatWithAdd({ date })}`,
+        ip,
       })
     }
 

@@ -7,17 +7,29 @@ import store from './store'
 
 const service = useService()
 
+// 부적절한 이미지가 포함된 경우 reject
+const challengeSoundnessOfMessage = async (text: string) => {
+  const url = coreHelpers.retrieveUrlFromString(text)
+  if (!url) return
+
+  if (!['.jpg', '.jpeg', '.png'].some(ext => url.endsWith(ext))) {
+    return Promise.reject({ message: 'jpg, jpeg, png 확장자의 이미지만 사용해주세요.' })
+  }
+
+  try {
+    if (await service.aws.rekognition.isGraphic(url)) {
+      return Promise.reject({ message: '타인에게 불쾌감을 주는 이미지를 업로드하면 채팅 이용이 제한됩니다.' })
+    }
+  } catch (e) {
+    // AWS Rekognition에서 reject된 경우인데, 일반적으로 이게 보일 일은 없을듯. (AWS Credential이 잘못됐다거나?)
+    return Promise.reject({ message: '이미지를 처리하는 과정에서 오류가 발생했습니다 😢' })
+  }
+}
+
 const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: string, token: string }) => ({
   image: () => {
     if (!store.getters.config().allowImageMessage) {
-      helpers.sendMessage({
-        message: {
-          type: 'alert',
-          text: '현재 이미지 업로드 기능을 사용할 수 없습니다 😢',
-        },
-        token,
-      })
-      return
+      return helpers.alertUser({ token, text: '현재 이미지 업로드 기능을 사용할 수 없습니다 😢' })
     }
 
     messageHandlers({ message, ip, token }).text()
@@ -25,57 +37,37 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
   text: async () => {
     const bannedUser = coreHelpers.useBannedUser({ ip, token })
     if (bannedUser) {
-      helpers.sendMessage({
-        message: {
-          type: 'alert',
-          text: `
-            채팅이 제한되었습니다
-            해제: ${helpers.formatWithAdd({ date: bannedUser.until })}
-            사유: ${bannedUser.reason}
-          `,
-        },
-        token,
+      return helpers.alertUser({
+        text: `
+          채팅이 제한되었습니다
+          해제: ${helpers.formatWithAdd({ date: bannedUser.until })}
+          사유: ${bannedUser.reason}
+        `, token
       })
-      return
     }
   
     const t = store.getters.bannedUntil(ip)
     if (t) {
-      helpers.sendMessage({
-        message: {
-          type: 'alert',
-          text: helpers.dayjs(t).diff(helpers.dayjs(), 'second') < store.getters.config().allowedChatFrequency ?
-            '너무 빠른 채팅은 타인에게 피해를 줄 수 있습니다 🙂' :
-            `채팅 제한 해제: ${helpers.formatWithAdd({ date: t })}`,
-          // 정확한 로직은 아니지만, 관리자에게 채금먹은 사람이 하필 남은 채금시간이 0.5초 미만일 때 채팅을 시도할 확률은 드물기 때문에 그냥 이렇게 간단히 처리해둠.
-        },
+      return helpers.alertUser({
+        text: helpers.dayjs(t).diff(helpers.dayjs(), 'second') < store.getters.config().allowedChatFrequency ?
+        '너무 빠른 채팅은 타인에게 피해를 줄 수 있습니다 🙂' :
+        `채팅 제한 해제: ${helpers.formatWithAdd({ date: t })}`,
+        // 정확한 로직은 아니지만, 관리자에게 채금먹은 사람이 하필 남은 채금시간이 0.5초 미만일 때 채팅을 시도할 확률은 드물기 때문에 그냥 이렇게 간단히 처리해둠.,
         token,
       })
-      return
     }
   
     // 마지막 메시지 이후 무조건 0.2초는 밴
     store.actions.banIP(ip, store.getters.config().allowedChatFrequency)
     if (!(message.text || '').trim() || message.text.length > store.getters.config().messageMaxLength) {
-      helpers.sendMessage({
-        message: {
-          type: 'alert',
-          text: '입력하신 메시지가 너무 깁니다. 만약 이미지를 업로드하신 경우라면 파일명을 짧게 해주세요.',
-        },
-        token,
-      })
-      return
+      return helpers.alertUser({ text: '입력하신 메시지가 너무 깁니다. 만약 이미지를 업로드하신 경우라면 파일명을 짧게 해주세요.', token })
     }
 
-    if (await service.aws.rekognition.isTextIncludingGraphicImageUrl(message.text)) {
-      helpers.sendMessage({
-        message: {
-          type: 'alert',
-          text: '음란물을 업로드하는 경우 통신매체이용음란죄로 형사처벌될 수 있습니다.',
-        },
-        token,
-      })
+    try {
+      await challengeSoundnessOfMessage(message.text)
+    } catch (e) {
       helpers.saveMessage({ message, ip, softDelete: true })
+      if (e.message) helpers.alertUser({ text: e.message, token })
       return
     }
 

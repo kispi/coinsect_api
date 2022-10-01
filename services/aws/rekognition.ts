@@ -1,5 +1,6 @@
 const AWS = require('aws-sdk')
 import { ModerationLabel } from 'aws-sdk/clients/rekognition'
+import { log } from '../../core/logger'
 import useCache from '../../core/cache'
 import helpers from '../../core/helpers'
 import store from '../../store'
@@ -57,6 +58,7 @@ const rekognitionService = {
         })
       })
     } catch (e) {
+      log.error('rekognition.imageModeration:', e)
       return Promise.reject(e)
     } finally {
       removeTestedUrls(url)
@@ -68,17 +70,11 @@ const rekognitionService = {
       return ModerationLabels.some(label => {
         if (label.Confidence < 50) return
 
-        return ['Nudity', 'Sexual'].some(word => (label.Name || label.ParentName || '').includes(word))
+        return ['Nudity', 'Sexual', 'Gore', 'Bodies', 'Corpses'].some(word => (label.Name || label.ParentName || '').includes(word))
       })
     } catch (e) {
       return Promise.reject(e)
     }
-  },
-  isTextIncludingGraphicImageUrl: async (text: string) => {
-    const url = helpers.retrieveUrlFromString(text)
-    if (!url || !['.jpg', '.jpeg', '.png'].some(ext => url.endsWith(ext))) return
-
-    return await rekognitionService.isGraphic(url)
   },
 }
 

@@ -125,6 +125,20 @@ const broadcast = message => {
   Object.values(o).forEach((conn: IConnection) => sendMessage({ message, token: conn.user.token }))
 }
 
+const alertUser = ({
+  text,
+  token,
+  ip,
+}: {
+  text: string,
+  token?: string,
+  ip?: string,
+}) => sendMessage({
+  message: { type: 'alert', text },
+  token,
+  ip,
+})
+
 // 디폴트는 한국시각 기준
 const formatWithAdd = ({
   date,
@@ -145,6 +159,7 @@ export default {
   dayjs,
   saveMessage,
   sendMessage,
+  alertUser,
   trimmed,
   broadcast,
   asIMessage,
