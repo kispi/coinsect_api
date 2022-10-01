@@ -68,7 +68,7 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
     } catch (e) {
       helpers.saveMessage({ message, ip, softDelete: true })
       if (e.code === 'ERR_GRAPHIC_IMAGE') {
-        const user = store.getters.user[token] || {}
+        const user = store.getters.user(token) || {}
         service.slack.postMessage(`
           부적절한 채팅 메시지 전송이 시도되었습니다.
           내용: ${message.text}
