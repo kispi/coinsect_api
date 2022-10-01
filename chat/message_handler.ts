@@ -7,7 +7,7 @@ import store from './store'
 
 const service = useService()
 
-// 부적절한 이미지가 포함된 경우 reject
+// broadcast하기 적절하지 않은 메시지인 경우 reject
 const challengeSoundnessOfMessage = async (text: string) => {
   const url = coreHelpers.retrieveUrlFromString(text)
   if (!url) return
@@ -18,7 +18,7 @@ const challengeSoundnessOfMessage = async (text: string) => {
 
   try {
     if (await service.aws.rekognition.isGraphic(url)) {
-      return Promise.reject({ message: '타인에게 불쾌감을 주는 이미지를 업로드하면 채팅 이용이 제한됩니다.' })
+      return Promise.reject({ message: '타인에게 불쾌감을 주는 이미지를 업로드하면 채팅 이용이 제한됩니다.', code: 'ERR_GRAPHIC_IMAGE' })
     }
   } catch (e) {
     // AWS Rekognition에서 reject된 경우인데, 일반적으로 이게 보일 일은 없을듯. (AWS Credential이 잘못됐다거나?)
@@ -67,6 +67,16 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
       await challengeSoundnessOfMessage(message.text)
     } catch (e) {
       helpers.saveMessage({ message, ip, softDelete: true })
+      if (e.code === 'ERR_GRAPHIC_IMAGE') {
+        const user = store.getters.user[token] || {}
+        service.slack.postMessage(`
+          부적절한 채팅 메시지 전송이 시도되었습니다.
+          내용: ${message.text}
+          닉네임: ${(user.profile || {}).nickname}
+          IP: ${ip}
+          TOKEN: ${token}
+        `)
+      }
       if (e.message) helpers.alertUser({ text: e.message, token })
       return
     }
