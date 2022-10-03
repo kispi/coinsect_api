@@ -7,7 +7,7 @@ import store from './store'
 
 const service = useService()
 
-// 부적절한 이미지가 포함된 경우 reject
+// broadcast하기 적절하지 않은 메시지인 경우 reject
 const challengeSoundnessOfMessage = async (text: string) => {
   const url = coreHelpers.retrieveUrlFromString(text)
   if (!url) return
@@ -65,6 +65,16 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
       await challengeSoundnessOfMessage(message.text)
     } catch (e) {
       helpers.saveMessage({ message, ip, softDelete: true })
+      if (e.code === 'ERR_GRAPHIC_IMAGE') {
+        const user = store.getters.user(token)
+        service.slack.postMessage(`
+          부적절한 채팅 메시지 전송이 시도되었습니다.
+
+          ${message.text}
+
+          ${user.profile.nickname} / ${ip} / ${token}
+        `)
+      }
       if (e.message) helpers.alertUser({ text: e.message, token })
       return
     }
