@@ -15,7 +15,7 @@ const challengeSoundnessOfMessage = async (text: string) => {
   if (['.jpg', '.jpeg', '.png'].some(ext => url.endsWith(ext))) {
     try {
       if (await service.aws.rekognition.isGraphic(url)) {
-        return Promise.reject({ message: '타인에게 불쾌감을 주는 이미지를 업로드하면 채팅 이용이 제한됩니다.' })
+        return Promise.reject({ message: '타인에게 불쾌감을 주는 이미지를 업로드하면 채팅 이용이 제한됩니다.', code: 'ERR_GRAPHIC_IMAGE' })
       }
     } catch (e) {
       // AWS Rekognition에서 reject된 경우인데, 일반적으로 이게 보일 일은 없을듯. (AWS Credential이 잘못됐다거나?)
