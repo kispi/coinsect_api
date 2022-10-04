@@ -11,6 +11,7 @@ const marketInfoController = {
   crypto: async (c: IContext) => c.res.asJSON(await service.marketInfo.crypto(c.req.query)),
   assetsIncludingMetal: async (c: IContext) => c.res.asJSON(await service.marketInfo.assetsIncludingMetal()),
   nasdaq: async (c: IContext) => c.res.asJSON(await service.marketInfo.nasdaq.markets()),
+  kospi: async (c: IContext) => c.res.asJSON(await service.marketInfo.kospi.markets(c.req.query['page'])),
 }
 
 export default marketInfoController

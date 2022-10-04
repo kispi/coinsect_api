@@ -8,6 +8,9 @@ const endpoints = {
     symbols: 'https://api.stock.naver.com/stock/exchange/NASDAQ/marketValue',
     markets: 'https://polling.finance.naver.com/api/realtime/worldstock/stock/',
   },
+  kospi: {
+    markets: 'https://m.stock.naver.com/api/index/KOSPI/enrollStocks',
+  },
 }
 
 const cache = useCache()
@@ -181,6 +184,17 @@ const marketInfoService = {
         const data = resp['datas']
         data.forEach((row, idx) => row.$$rank = idx + 1)
         cache.set('market_info:nasdaq.markets', data, 5)
+        return data
+      } catch (e) {
+        return Promise.reject(e)
+      }
+    },
+  },
+  kospi: {
+    markets: async (page: number) => {
+      try {
+        const data = await axios.get(endpoints.kospi.markets, { params: { page, pageSize: 50 } }) as any
+        data.forEach((row, idx) => row.$$rank = idx + 1)
         return data
       } catch (e) {
         return Promise.reject(e)
