@@ -22,7 +22,7 @@ const state = {
     },
     maxlength: {
       nickname: 10,
-      postTitle: 40,
+      postTitle: 100,
       profileImageUrl: 255, // varchar(255)
       replyContent: 1000,
     },
