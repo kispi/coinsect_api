@@ -1,14 +1,9 @@
 import axios from 'axios'
 import store from '../store'
 import { log } from '../core/logger'
+import helpers from '../core/helpers'
 
 const endpoint = store.state.serverConfig.SLACK
-
-const trimmed = (text: string) => {
-  if (!text) return
-
-  return text.split('\n').map(line => line.trim()).join('\n').trim()
-}
 
 const postMessage = async (text: string) => {
   if (!endpoint) {
@@ -17,7 +12,7 @@ const postMessage = async (text: string) => {
   }
 
   try {
-    await axios.post(endpoint, { text: trimmed(text) })
+    await axios.post(endpoint, { text: helpers.allNewlineTrimmed(text) })
   } catch (e) {
     return Promise.reject(e)
   }

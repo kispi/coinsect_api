@@ -150,7 +150,7 @@ export const chatCtrl = {
       const user = store.getters.user(token)
       if (!user) return c.res.failed({ message: 'user not found' })
 
-      const trimmedNickname = coreHelpers.sanitize.strict(profile.nickname)
+      const trimmedNickname = coreHelpers.allNewlineTrimmed(coreHelpers.sanitize.strict(profile.nickname))
       if (!trimmedNickname) return c.res.failed({ message: '닉네임은 빈 문자열로 설정할 수 없습니다' })
       user.profile.nickname = trimmedNickname
 

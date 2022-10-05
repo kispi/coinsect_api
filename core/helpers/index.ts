@@ -45,6 +45,11 @@ const helpers = {
     payload[field] = (payload[field] || '').trim()
     return payload[field]
   }),
+  allNewlineTrimmed: (text: string) => {
+    if (!text) return
+
+    return text.split('\n').map(line => line.trim()).join('\n').trim()
+  },
   hashed: (raw: string) => crypto.createHash('sha256').update(raw).digest('base64'),
   compare: (hashed: string, raw: string) =>
     hashed &&

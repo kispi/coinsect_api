@@ -20,12 +20,6 @@ const mustToken = () => {
   return nonExistNewToken
 }
 
-const trimmed = (text: string) => {
-  if (!text) return
-
-  return text.split('\n').map(line => line.trim()).join('\n').trim()
-}
-
 const asIMessage = (message): IMessage => {
   const s = store.getters.stats()
 
@@ -74,7 +68,7 @@ const saveMessage = async ({
     ts: iMessage.ts,
     numConnections: iMessage.numConnections,
     type: iMessage.type,
-    text: trimmed(iMessage.text),
+    text: coreHelpers.allNewlineTrimmed(iMessage.text),
   }
 
   if (softDelete) row['deletedAt'] = dayjs().format()
@@ -111,7 +105,7 @@ const sendMessage = ({ message, token, ip }: { message, token?: string, ip?: str
     message.user.profile = user.profile
   }
   const finalMessage = asIMessage(message)
-  if (finalMessage.text) finalMessage.text = trimmed(finalMessage.text)
+  if (finalMessage.text) finalMessage.text = coreHelpers.allNewlineTrimmed(finalMessage.text)
 
   targetConnections.forEach(connectionWrapper => connectionWrapper.connection.socket.send(JSON.stringify(finalMessage)))
 }
@@ -160,7 +154,6 @@ export default {
   saveMessage,
   sendMessage,
   alertUser,
-  trimmed,
   broadcast,
   asIMessage,
   formatWithAdd,
