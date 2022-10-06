@@ -5,6 +5,7 @@ import useChatRoutes from './routes'
 export const useChat = (app: FastifyInstance) => {
   store.actions.loadRecentMessages()
   store.actions.loadUsers()
+  store.actions.loadUserSettings()
   useChatRoutes(app)
 }
 

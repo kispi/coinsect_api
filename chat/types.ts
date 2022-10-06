@@ -15,6 +15,13 @@ export interface IUser {
   path?: string, // 프론트엔드에서 어떤 페이지를 이용중인지
 }
 
+export interface IUserSetting {
+  token: string,
+  deviceToken?: string,
+  pushChatNewMessage?: Boolean,
+  pushPositionChange?: Boolean,
+}
+
 export interface IMessage {
   type: 'auth' | 'text' | 'image' | 'alert' | 'users' | 'ping' | 'pong' | 'forceRefresh' | 'hideMessage' | 'enter' | 'leave' | 'update',
   user: IUser,

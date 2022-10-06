@@ -1,3 +1,4 @@
+import helpers from '../core/helpers'
 import IContext from '../core/interfaces/context'
 import useService from '../services'
 
@@ -10,7 +11,7 @@ const firebaseController = {
       webpush: {
         notification: {
           title: c.req.body['title'],
-          body: c.req.body['body'],
+          body: helpers.allNewlineTrimmed(c.req.body['body'] || ''),
           icon: c.req.body['icon'],
           image: c.req.body['image'],
         },

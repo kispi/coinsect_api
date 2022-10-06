@@ -26,6 +26,13 @@ const chatService = {
       return Promise.reject(e)
     }
   },
+  broadcastPushNotifications: async message => {
+    try {
+      await axios.post(endpoint + '/webchat/push_notifications', message)
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  },
   invalidate: async () => {
     try {
       await axios.post(endpoint + '/webchat/messages/invalidate', {})

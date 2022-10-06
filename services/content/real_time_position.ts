@@ -5,6 +5,7 @@ import IContext from '../../core/interfaces/context'
 import slack from '../slack'
 import store from '../../store'
 import chatService from '../chat'
+import firebaseService from '../firebase'
 
 const now = () => helpers.dayjs().format()
 
@@ -206,6 +207,14 @@ const realTimePositionService = {
             진입 / 청산: ${found.entryPrice || '-'} / ${found.liqPrice || '-'}
           `,
           meta: found,
+        })
+        chatService.broadcastPushNotifications({
+          title: `[${found.name}] 포지션이 업데이트되었습니다.`,
+          body: `
+            계약 / 규모: ${found.contract || '-'} / ${found.size || '-'}
+            진입 / 청산: ${found.entryPrice || '-'} / ${found.liqPrice || '-'}
+          `,
+          icon: found.image,
         })
       }
       setRealTimePositions(cachedPositions)

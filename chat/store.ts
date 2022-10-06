@@ -1,6 +1,6 @@
 import { dataSource } from '../database'
 import { Message } from '../entities/message'
-import { IConnection, IMessage, IUser } from './types'
+import { IConnection, IMessage, IUser, IUserSetting } from './types'
 import profileService from '../services/profile'
 import useCache from '../core/cache'
 import helpers from './helpers'
@@ -18,6 +18,7 @@ const state = {
   },
   bannedUntil: {} as { ip: string },
   users: {},
+  userSettings: {},
   connections: [] as IConnection[],
   recentMessages: [] as Array<IMessage>,
   stats: {
@@ -33,6 +34,8 @@ const getters = {
   recentMessages: () => state.recentMessages,
   user: (token: string): IUser => state.users[token],
   users: () => state.users,
+  userSetting: (token: string) => state.userSettings[token],
+  userSettings: () => state.userSettings,
   tokens: () => state.connections.map(conn => conn.user.token),
   connections: () => state.connections,
   targetConnections: ({ ip, token }: { ip?: string, token?: string }) => state.connections.filter(conn => {
@@ -47,7 +50,7 @@ const actions = {
     let numConnections = 0
     let numBulls = 0
     let numBears = 0
-  
+
     getters.connections().forEach(conn => {
       numConnections += 1
       if (!conn.user) return
@@ -68,6 +71,11 @@ const actions = {
     profile: {
       nickname: profileService.generate(),
     },
+  }),
+  createUserSetting: (token: string): IUserSetting => ({
+    token,
+    pushChatNewMessage: false,
+    pushPositionChange: false,
   }),
   deleteUser: (token: string) => {
     delete state.users[token]
@@ -96,8 +104,17 @@ const actions = {
     state.connections.push({ connection, user, ip })
     helpers.sendMessage({ message: { type: 'auth', user }, token })
   },
+  setUserSetting: (token: string) => {
+    const meta = getters.userSetting(token) || actions.createUserSetting(token)
+    state.userSettings[token] = meta
+    cache.set('chat:user_settings', state.userSettings)
+    helpers.sendMessage({ message: { type: 'userSetting', meta }, token })
+  },
   loadUsers: async () => {
     state.users = await cache.get('chat:users') || {}
+  },
+  loadUserSettings: async () => {
+    state.userSettings = await cache.get('chat:user_settings') || {}
   },
   loadRecentMessages: async () => {
     try {

@@ -3,9 +3,10 @@ import IContext from '../core/interfaces/context'
 import store from './store'
 import helpers from './helpers'
 import badWord from '../services/bad_word'
+import firebase from '../services/firebase'
 import messageHandlers from './message_handler'
 import { Message } from '../entities/message'
-import { IMessage, IUser } from './types'
+import { IMessage, IUser, IUserSetting } from './types'
 import { SocketStream } from '@fastify/websocket'
 import { FastifyRequest } from 'fastify'
 import { createHttpLog, log } from '../core/logger'
@@ -23,6 +24,7 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   const token = req.query['token'] || helpers.mustToken()
 
   store.actions.setUser({ token, connection, ip: req.ip })
+  store.actions.setUserSetting(token)
 
   // 유저 접속시 통계 업데이트
   debouncedBroadcast('enter')()
@@ -81,7 +83,29 @@ export const chatCtrl = {
       c.res.asJSON(store.getters.config())
     },
   },
-  users: {
+  sendPushNotification: async (c: IContext) => {
+    const notification = c.req.body
+    const tokens = Object.values(store.getters.userSettings() || {}).filter((s: IUserSetting) => {
+      return s.deviceToken && s.pushPositionChange
+    }).map((s: IUserSetting) => s.deviceToken) || []
+
+    if (tokens.length === 0) return c.res.success()
+
+    if (notification['body']) notification['body'] = coreHelpers.allNewlineTrimmed(notification['body'])
+
+    try {
+      await firebase.messaging.send({
+        tokens,
+        webpush: {
+          notification,
+        }
+      })
+      c.res.success()
+    } catch (e) {
+      c.res.failed(e)
+    }
+  },
+  user: {
     all: (c: IContext) => {
       try {
         const q = c.req.query
@@ -181,6 +205,23 @@ export const chatCtrl = {
 
       c.res.asJSON(user)
     },
+    updateSetting: (c: IContext) => {
+      const payload = c.req.body
+      const token = c.req.params['token']
+      if (!payload || !token) return c.res.failed({ message: 'invalid payload' })
+
+      const user = store.getters.user(token)
+      if (!user) return c.res.failed({ message: 'user not found' })
+
+      const userSetting = store.getters.userSetting(token) || store.actions.createUserSetting(token)
+      const updatableFields = ['deviceToken', 'pushChatNewMessage', 'pushPositionChange']
+      updatableFields.forEach(field => {
+        if (typeof payload[field] !== 'undefined') userSetting[field] = payload[field]
+      })
+
+      store.actions.setUserSetting(token)
+      c.res.asJSON(userSetting)
+    },
     delete: (c: IContext) => {
       const token = c.req.params['token']
       if (!token) return c.res.failed({ message: 'invalid request' })
@@ -193,7 +234,7 @@ export const chatCtrl = {
       c.res.success()
     },
   },
-  messages: {
+  message: {
     all: async (c: IContext) => {
       const limit = c.req.query['limit']
       if (parseInt(limit) >= 1000) {
