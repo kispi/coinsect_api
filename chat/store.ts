@@ -91,7 +91,10 @@ const actions = {
       ) targetTokens.push(user.token)
     })
 
-    targetTokens.forEach(token => delete state.users[token])
+    targetTokens.forEach(token => {
+      delete state.users[token]
+      delete state.userSettings[token]
+    })
     cache.set('chat:users', state.users)
   },
   setUser: ({ token, connection, ip }) => {

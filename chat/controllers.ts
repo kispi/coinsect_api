@@ -146,11 +146,13 @@ export const chatCtrl = {
           const sign = q['order'] === 'desc' ? -1 : 1
           const c = q['sort']
           filtered.sort((a, b) => {
-            if (a[c] && b[c]) return a[c] > b[c] ? sign : -sign
+            const v1 = c === 'setting.deviceToken' ? (a['setting'] || {}).deviceToken : a[c]
+            const v2 = c === 'setting.deviceToken' ? (b['setting'] || {}).deviceToken : b[c]
+            if (v1 && v2) return v1 > v2 ? sign : -sign
 
-            if (!a[c]) return -sign
+            if (!v1) return -sign
 
-            if (!b[c]) return sign
+            if (!v2) return sign
           })
         }
 
