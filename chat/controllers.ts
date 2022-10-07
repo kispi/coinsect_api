@@ -98,7 +98,10 @@ export const chatCtrl = {
         tokens,
         webpush: {
           notification,
-        }
+          fcmOptions: {
+            link: notification['link'],
+          },
+        },
       })
       c.res.success()
     } catch (e) {
@@ -111,6 +114,7 @@ export const chatCtrl = {
         const q = c.req.query
 
         const users = Object.values(store.getters.users()) as Array<IUser>
+        users.forEach(user => user['setting'] = store.getters.userSetting(user.token))
         let filtered = users
         if (q['where']) {
           const stmts = decodeURI(q['where']).split(' AND ')
@@ -128,6 +132,11 @@ export const chatCtrl = {
             if (pair.key === 'image') filtered = filtered.filter(u => (u.profile.image || '').includes(pair.value))
             if (pair.key === 'path') filtered = filtered.filter(u => (u.path || '').includes(pair.value))
             if (pair.key === 'token') filtered = filtered.filter(u => (u.token || '').includes(pair.value))
+            if (pair.key === 'deviceToken') filtered = filtered.filter(u => {
+              if (!u['setting']) return
+
+              return (u['setting']['deviceToken'] || '').includes(pair.value)
+            })
             if (pair.key === 'lastSeen') filtered = filtered.filter(u => (u.lastSeen.toString() || '').includes(pair.value))
             if (pair.key === 'lastIP') filtered = filtered.filter(u => (u.lastIP || '').includes(pair.value))
           })

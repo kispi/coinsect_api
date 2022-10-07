@@ -15,6 +15,9 @@ const firebaseController = {
           icon: c.req.body['icon'],
           image: c.req.body['image'],
         },
+        fcmOptions: {
+          link: c.req.body['link'],
+        },
       },
     }
 
