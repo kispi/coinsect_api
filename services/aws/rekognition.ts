@@ -68,7 +68,7 @@ const rekognitionService = {
     try {
       const { ModerationLabels } = await rekognitionService.imageModeration(url) as { ModerationLabels: Array<ModerationLabel> }
       return ModerationLabels.some(label => {
-        if (label.Confidence < 50) return
+        if (label.Confidence < 90) return
 
         return ['Nudity', 'Sexual', 'Gore', 'Bodies', 'Corpses'].some(word => (label.Name || label.ParentName || '').includes(word))
       })
