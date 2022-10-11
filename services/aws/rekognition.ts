@@ -35,6 +35,7 @@ const rekognitionService = {
   imageModeration: async (url: string) => {
     if (!url) return Promise.reject({ message: 'invalid url' })
 
+    rekognitionTestedUrls = await cache.get('rekognition_tested_urls') || {}
     const found = rekognitionTestedUrls[url]
     if (found) return found
 

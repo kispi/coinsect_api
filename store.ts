@@ -30,7 +30,6 @@ const state = {
       frontend: null,
       backend: null,
     },
-    allowDirectPositionEdit: null,
   },
   serverConfig: dotenv.config().parsed,
 }

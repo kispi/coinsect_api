@@ -5,7 +5,6 @@ import IContext from '../../core/interfaces/context'
 import slack from '../slack'
 import store from '../../store'
 import chatService from '../chat'
-import firebaseService from '../firebase'
 
 const now = () => helpers.dayjs().format()
 
@@ -69,14 +68,11 @@ const setRealTimePositions = o => {
   cache.set('content:realTimePositions', o)
 }
 
-const positionHasChanged = (a, b) => {
-  // 편의상 약한 비교
-  if (a.contract != b.contract) return true
-  if (a.entryPrice != b.entryPrice) return true
-  if (a.liqPrice != b.liqPrice) return true
-  if (a.size != b.size) return true
-  return false
-}
+const positionHasChanged = (a, b) => ['contract', 'entryPrice', 'liqPrice', 'size'].some(field =>
+  (a[field] && !b[field]) ||
+  (!a[field] && b[field]) ||
+  (a[field] && b[field] && a[field] != b[field])
+)
 
 const realTimePositionService = {
   presets: () => presets,
@@ -90,11 +86,7 @@ const realTimePositionService = {
       const found = cachedPositions.data.find(o => o.id === c.req.body['id'])
       if (found && !found.editable) return Promise.reject({ message: '수정이 불가능한 포지션입니다.' })
 
-      const bannedUser = helpers.useBannedUser({ ip: c.req.ip })
-      if (bannedUser) return Promise.reject({ message: `오기입으로 수정 요청이 제한되었습니다. (해제: ${helpers.dayjs(bannedUser.until).format('YYYY-MM-DD HH:mm:ss')}` })
-
       const payload = c.req.body
-      const keys = ['id', 'liqPrice', 'entryPrice', 'size', 'contract', 'name', 'image', 'link', 'onAir', 'token', 'tracking']
 
       if (!positionHasChanged(found, payload)) return Promise.reject({ message: '제출하신 포지션이 기존 포지션과 동일합니다.' })
 
@@ -104,14 +96,13 @@ const realTimePositionService = {
           ip: c.req.ip,
           requestedAt: now(),
         }
+        const keys = ['id', 'liqPrice', 'entryPrice', 'size', 'contract', 'name', 'image', 'link', 'onAir', 'token', 'tracking']
         keys.filter(key => payload[key]).forEach(key => acceptable[key] = payload[key])
-        acceptable['tracking'] = true // 누군가 보고 있기 때문에 이런 요청이 온 것이기 떄문
         notifiedPositionHistories.push(acceptable)
         notifiedPositionHistories = notifiedPositionHistories.slice(-5) // 최근 5개까지만 유지
         const u = await chatService.getUser(payload['token'])
-        const allowed = store.state.globalVariables.allowDirectPositionEdit
         slack.postMessage(`
-          ${allowed ? '포지션이 수정되었습니다' : '포지션 수정 요청이 들어왔습니다'}
+          포지션 수정 요청이 들어왔습니다
           요청자: ${u.profile.nickname} (${c.req.ip} / ${u.token})\n
           스트리머: *${payload['name']}*
           진입: ${payload['entryPrice']}
@@ -120,9 +111,6 @@ const realTimePositionService = {
           계약: ${payload['contract']}
           방송: ${payload['onAir']}
         `)
-        if (allowed) {
-          realTimePositionService.set(payload, true)
-        }
         return notifiedPositionHistories
       } catch (e) {
         return Promise.reject(e)
