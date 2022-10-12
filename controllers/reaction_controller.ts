@@ -14,6 +14,7 @@ const reactionController = {
         ip: c.req.ip,
         type: c.req.body['type'],
         post: { id: c.req.body['postId'] },
+        nickname: c.req.body['nickname'],
       })
       c.res.success()
     } catch (e) {
