@@ -61,7 +61,7 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
 
       handler()
     } catch (e) {
-      log.error(`Invalid request: ${req.ip} sent corrupted JSON string: ${rawMessage}`)
+      log.error(`websocket error: ${e}\nIP: ${req.ip}}\nrawMessage: ${rawMessage}`)
     }
   })
 }

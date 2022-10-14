@@ -55,7 +55,7 @@ const actions = {
       numConnections += 1
       if (!conn.user) return
   
-      const sentiment = ((getters.user(conn.user.token) || {}).profile).sentiment
+      const sentiment = (((getters.user(conn.user.token) || {}).profile) || {}).sentiment
       if (!sentiment) return
   
       if (sentiment.type === 'long') numBulls += 1
