@@ -103,12 +103,13 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
   },
   ping: () => {
     const user = store.getters.user(token)
-    if (user.profile.sentiment && helpers.dayjs(user.profile.sentiment.expireAt).isBefore(helpers.dayjs())) {
+    if (user && user.profile.sentiment && helpers.dayjs(user.profile.sentiment.expireAt).isBefore(helpers.dayjs())) {
       delete user.profile.sentiment
     }
 
     if (user && message.user) user.path = message.user.path
 
+    store.actions.refreshUserState({ user, ip })
     helpers.sendMessage({
       message: {
         type: 'pong'
