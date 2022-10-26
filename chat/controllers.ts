@@ -253,15 +253,20 @@ export const chatCtrl = {
         return
       }
 
-      const qb = c.orm.getRepository(Message).createQueryBuilder().limit(limit || store.getters.config().numLatestMessages).orderBy('id', 'DESC')
+      const qb = c.orm.getRepository(Message).createQueryBuilder()
+        .leftJoinAndSelect('Message.user', 'user')
+        .leftJoinAndSelect('user.profile', 'profile')
+        .limit(limit || store.getters.config().numLatestMessages)
+        .orderBy('Message.id', 'DESC')
       const cursor = c.req.query['firstMessageId']
-      if (cursor) qb.where(`id < ${cursor}`)
+      if (cursor) qb.where(`Message.id < ${cursor}`)
       else {
         return c.res.asJSON(filteredMessages(store.getters.recentMessages()))
       }
 
       try {
         const data = await qb.getMany()
+        data.forEach(message => message.filterSensitiveAuthUserInfo())
         const json = JSON.parse(JSON.stringify(data))
         c.res.asJSON(filteredMessages(json.map(helpers.asIMessage)))
       } catch (e) {

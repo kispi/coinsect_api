@@ -61,6 +61,11 @@ export class User extends BaseModel {
     await dataSource.getRepository(User).save(this)
   }
 
+  static async findWithJWT(jwt: string) {
+    const decoded = await helpers.jwt.decode(jwt)
+    return await dataSource.getRepository(User).findOne({ where: { id: decoded['id'] }, relations: ['profile'] })
+  }
+
   static jwt(user) {
     return helpers.jwt.sign({
       id: user.id,

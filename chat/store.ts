@@ -129,10 +129,13 @@ const actions = {
       const data = await dataSource
         .getRepository(Message)
         .createQueryBuilder()
+        .leftJoinAndSelect('Message.user', 'user')
+        .leftJoinAndSelect('user.profile', 'profile')
         .limit(state.config.numLatestMessages)
-        .orderBy('id', 'DESC')
+        .orderBy('Message.id', 'DESC')
         .getMany()
 
+      data.forEach(message => message.filterSensitiveAuthUserInfo())
       const json = JSON.parse(JSON.stringify(data))
       state.recentMessages = json.map(helpers.asIMessage)
     } catch (e) {

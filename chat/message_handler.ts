@@ -79,14 +79,13 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
       return
     }
 
-    let savedMessage
     try {
-      savedMessage = await helpers.saveMessage({ message, ip })
+      if (message.user.jwt) message.user.id = (await coreHelpers.jwt.decode(message.user.jwt))['id']
+      const savedMessage = await helpers.saveMessage({ message, ip })
+      if (savedMessage) message['id'] = savedMessage.id
     } catch (e) {
       log.error('failed to save message:', e)
     }
-
-    if (savedMessage) message['id'] = savedMessage.id
 
     if (message.type === 'text') message.text = service.badWord.filtered(message.text)
 

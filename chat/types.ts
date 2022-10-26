@@ -10,6 +10,8 @@ export interface IUser {
     },
   },
   token: string,
+  jwt?: string, // 로그인된 유저가 메시지를 보내는 경우 위의 token대신 jwt를 사용
+  id?: number, // jwt로 유저를 찾는데 성공한 경우 이 id가 할당되어 있음.
   lastSeen?: Date | string,
   lastIP?: string,
   path?: string, // 프론트엔드에서 어떤 페이지를 이용중인지
