@@ -50,7 +50,7 @@ const authController = {
       if (!user.profile) {
         await c.orm.getRepository(Profile).save({
           user,
-          nickname: await service.profile.useIfUnique(c.req.body['nickname']) || await service.profile.generateUnique(),
+          nickname: await service.profile.generateUnique(),
         })
       }
   

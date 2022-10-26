@@ -26,7 +26,6 @@ export class Profile extends BaseModel {
   @Column()
   nickname: string
 
-  @JoinColumn()
-  @OneToOne(() => Image, { onDelete: 'SET NULL' })
-  image: Image
+  @Column({ nullable: true })
+  image: string
 }

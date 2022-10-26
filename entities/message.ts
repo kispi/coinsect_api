@@ -1,4 +1,5 @@
-import { Entity, Column } from 'typeorm'
+import { Entity, Column, ManyToOne } from 'typeorm'
+import { User } from './user'
 import BaseModel from './base_model'
 
 @Entity({ name: 'messages' })
@@ -20,6 +21,9 @@ export class Message extends BaseModel {
   
   @Column()
   token: string
+
+  @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
+  user: User
 
   @Column()
   ts: Date
