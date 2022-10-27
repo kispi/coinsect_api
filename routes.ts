@@ -70,8 +70,10 @@ export const useRoutes = (app: FastifyInstance) => ({
     useRouteCRUD({ app, model: 'notification' })
     useRouteCRUD({ app, model: 'person' })
     useRouteCRUD({ app, model: 'post' })
+    useRouteCRUD({ app, model: 'profile' })
     useRouteCRUD({ app, model: 'reaction' })
     useRouteCRUD({ app, model: 'reply' })
+    useRouteCRUD({ app, model: 'user' })
     useRouteCRUD({ app, model: 'wallet' })
     useRouteCRUD({ app, model: 'whaleAlert' })
   },

@@ -7,8 +7,10 @@ import { Message } from '../entities/message'
 import { Notification } from '../entities/notification'
 import { Person } from '../entities/person'
 import { Post } from '../entities/post'
+import { Profile } from '../entities/profile'
 import { Reaction } from '../entities/reaction'
 import { Reply } from '../entities/reply'
+import { User } from '../entities/user'
 import { Wallet } from '../entities/wallet'
 import { WhaleAlert } from '../entities/whale_alert'
 import { useCRUD } from '../core/controller'
@@ -93,7 +95,6 @@ const routesStore = {
 }
 
 const routesPost = useCRUD({ model: Post, useSoftDelete: true, withDeleted: true })
-
 routesPost.detail = async (c: IContext) => {
   try {
     const data = await orm.querySetter(c, Post)
@@ -103,6 +104,16 @@ routesPost.detail = async (c: IContext) => {
       .leftJoinAndSelect('replies.parent', 'parent')
       .where(`Post.id = ${c.req.params['id']}`).getOneOrFail()
       c.res.asJSON(data)
+  } catch (e) {
+    c.res.failed(e)
+  }
+}
+
+const routesUser = useCRUD({ model: User, useSoftDelete: true, withDeleted: true })
+routesUser.all = async (c: IContext) => {
+  try {
+    const [data, total] = await orm.querySetter(c, User).leftJoinAndSelect('User.profile', 'profile').withDeleted().getManyAndCount()
+    c.res.asJSON({ data, total })
   } catch (e) {
     c.res.failed(e)
   }
@@ -123,8 +134,10 @@ const adminController = {
   notification: useCRUD({ model: Notification }),
   person: useCRUD({ model: Person, useSoftDelete: true }),
   post: routesPost,
+  profile: useCRUD({ model: Profile }),
   reaction: useCRUD({ model: Reaction }),
   reply: useCRUD({ model: Reply, useSoftDelete: true }),
+  user: routesUser,
   wallet: useCRUD({ model: Wallet }),
   whaleAlert: useCRUD({ model: WhaleAlert }),
 }
