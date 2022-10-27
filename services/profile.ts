@@ -21,12 +21,6 @@ const nicknameRecommendations = [
 ]
 
 const nicknameService = {
-  useIfUnique: async (nickname: string): Promise<string> => {
-    const existing = await dataSource.getRepository(Profile).findOne({ where: { nickname } })
-    if (existing) return Promise.reject({ message: 'existing nickname' })
-
-    return nickname
-  },
   generate: (): string => {
     const randIdx = Math.floor(Math.random() * nicknameRecommendations.length)
     const randNo = Math.floor(Math.random() * 100 + 1)

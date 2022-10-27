@@ -1,5 +1,6 @@
 import { dataSource } from '../database'
 import { Message } from '../entities/message'
+import { Profile } from '../entities/profile'
 import { User } from '../entities/user'
 import { IConnection, IMessage } from './types'
 import { ManipulateType } from 'dayjs'
@@ -20,6 +21,24 @@ const mustToken = () => {
   }
 
   return nonExistNewToken
+}
+
+const updateProfile = async ({ jwt, nickname, image }: { jwt: string, nickname: string, image: string }) => {
+  const user = await User.findWithJWT(jwt)
+  if (!user) return
+
+  if (user.profile.nickname !== nickname) {
+    try {
+      const existing = await dataSource.getRepository(Profile).findOne({ where: { nickname } })
+      if (existing) return Promise.reject({ message: 'EXISTING_NICKNAME' })
+
+      user.profile.nickname = nickname
+    } catch (e) {}
+  }
+
+  if (user.profile.image !== image) user.profile.image = image
+
+  await dataSource.getRepository(Profile).save(user.profile)
 }
 
 // 로그인 된 유저는 jwt, 비로그인 유저는 token을 통해 profile을 가져온다.
@@ -179,6 +198,7 @@ export default {
   alertUser,
   broadcast,
   asIMessage,
+  updateProfile,
   formatWithAdd,
   mustToken,
 }

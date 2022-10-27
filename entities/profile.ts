@@ -1,6 +1,5 @@
 import { Entity, Column, JoinColumn, OneToOne } from 'typeorm'
 import { User } from './user'
-import { Image } from './image'
 import BaseModel from './base_model'
 
 enum TypeProfileGender {

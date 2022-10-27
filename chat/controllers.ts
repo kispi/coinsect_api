@@ -176,10 +176,19 @@ export const chatCtrl = {
       else c.res.failed({ message: 'user not found' })
     },
     ban: (c: IContext) => c.res.asJSON(store.actions.banIP(c.req.body['ip'], c.req.body['timeout'])),
-    update: (c: IContext) => {
+    update: async (c: IContext) => {
       const profile = c.req.body['profile']
       const token = c.req.params['token']
       if (!profile || !token) return c.res.failed({ message: 'invalid payload' })
+
+      const jwt = coreHelpers.jwt.getTokenFromHTTPHeader(c.req.headers)
+      if (jwt) {
+        try {
+          await helpers.updateProfile({ jwt, nickname: profile.nickname, image: profile.image })
+        } catch (e) {
+          return c.res.failed(e)
+        }
+      }
 
       // 토큰을 변조해서 날린 경우 차단
       const user = store.getters.user(token)

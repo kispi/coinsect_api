@@ -67,6 +67,8 @@ export class User extends BaseModel {
   }
 
   static jwt(user) {
+    if (!user) return
+
     return helpers.jwt.sign({
       id: user.id,
       email: user.email,
