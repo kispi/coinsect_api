@@ -32,6 +32,19 @@ const rekognitionService = {
     cache.set('rekognition_tested_urls', rekognitionTestedUrls)
     return rekognitionService.all()
   },
+  deleteBulk: async (deleteAll: Boolean) => {
+    if (deleteAll) {
+      rekognitionTestedUrls = {}
+    } else {
+      Object.keys(rekognitionTestedUrls).forEach(url => {
+        const o = rekognitionTestedUrls[url]
+        if ((o.ModerationLabels || []).length === 0) delete rekognitionTestedUrls[url]
+      })
+    }
+
+    cache.set('rekognition_tested_urls', rekognitionTestedUrls)
+    return rekognitionService.all()
+  },
   imageModeration: async (url: string) => {
     if (!url) return Promise.reject({ message: 'invalid url' })
 

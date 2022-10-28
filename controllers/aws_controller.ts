@@ -23,7 +23,7 @@ const awsController = {
             data,
           })
         } catch (e) {
-          c.res.error()
+          c.res.failed(e)
         }
       },
       delete: async (c: IContext) => {
@@ -34,7 +34,18 @@ const awsController = {
             data,
           })
         } catch (e) {
-          c.res.error()
+          c.res.failed(e)
+        }
+      },
+      deleteBulk: async (c: IContext) => {
+        try {
+          const data = await service.aws.rekognition.deleteBulk(c.req.body['deleteAll'])
+          c.res.asJSON({
+            total: Object.keys(data || {}).length,
+            data,
+          })
+        } catch (e) {
+          c.res.failed(e)
         }
       },
     },

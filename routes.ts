@@ -60,6 +60,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.post('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.create, auth.admin.super)
     router.get('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.all, auth.admin.super)
     router.put('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.delete, auth.admin.super) // DELETE 메소드는 request body를 가질 수 없어서 put으로
+    router.put('/admin/aws/rekognition/delete_bulk', ctrls.aws.rekognition.imageModeration.deleteBulk, auth.admin.super)
 
     useRouteCRUD({ app, model: 'badWord' })
     useRouteCRUD({ app, model: 'bannedUser', middleware: auth.admin.manager })
