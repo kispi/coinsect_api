@@ -113,6 +113,8 @@ const postController = {
         .leftJoinAndSelect('Post.board', 'board')
         .leftJoinAndSelect('Post.reactions', 'reactions')
         .leftJoinAndSelect('Post.replies', 'replies')
+        .leftJoinAndSelect('replies.user', 'rUser')
+        .leftJoinAndSelect('rUser.profile', 'rProfile')
         .leftJoinAndSelect('Post.user', 'user')
         .leftJoinAndSelect('user.profile', 'profile')
         .leftJoinAndSelect('replies.parent', 'parent')
