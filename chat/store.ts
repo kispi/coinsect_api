@@ -1,5 +1,6 @@
 import { dataSource } from '../database'
 import { Message } from '../entities/message'
+import { User } from '../entities/user'
 import { IConnection, IMessage, IUser, IUserSetting } from './types'
 import profileService from '../services/profile'
 import useCache from '../core/cache'
@@ -135,7 +136,7 @@ const actions = {
         .orderBy('Message.id', 'DESC')
         .getMany()
 
-      data.forEach(message => message.filterSensitiveAuthUserInfo())
+      data.forEach(message => message.user = User.sensitiveAuthInfoFilteredUser(message.user) as any)
       const json = JSON.parse(JSON.stringify(data))
       state.recentMessages = json.map(helpers.asIMessage)
     } catch (e) {

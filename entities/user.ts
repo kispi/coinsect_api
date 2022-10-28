@@ -66,6 +66,21 @@ export class User extends BaseModel {
     return await dataSource.getRepository(User).findOne({ where: { id: decoded['id'] }, relations: ['profile'] })
   }
 
+  // 채팅창에 보여질 정보를 제외한 모든 DB의 항목은 제외해준다.
+  static sensitiveAuthInfoFilteredUser(user) {
+    if (!(user || {}).profile) return
+
+    const newUser = {
+      id: user.id,
+      profile: {
+        image: user.profile.image,
+        nickname: user.profile.nickname,
+      },
+    }
+
+    return newUser
+  }
+
   static jwt(user) {
     if (!user) return
 

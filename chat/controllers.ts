@@ -5,6 +5,7 @@ import helpers from './helpers'
 import badWord from '../services/bad_word'
 import firebase from '../services/firebase'
 import messageHandlers from './message_handler'
+import { User } from '../entities/user'
 import { Message } from '../entities/message'
 import { IMessage, IUser, IUserSetting } from './types'
 import { SocketStream } from '@fastify/websocket'
@@ -275,7 +276,7 @@ export const chatCtrl = {
 
       try {
         const data = await qb.getMany()
-        data.forEach(message => message.filterSensitiveAuthUserInfo())
+        data.forEach(message => message.user = User.sensitiveAuthInfoFilteredUser(message.user) as any)
         const json = JSON.parse(JSON.stringify(data))
         c.res.asJSON(filteredMessages(json.map(helpers.asIMessage)))
       } catch (e) {

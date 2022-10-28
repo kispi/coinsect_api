@@ -1,10 +1,10 @@
 import { Entity, Column, OneToOne, JoinColumn, OneToMany, ManyToOne } from 'typeorm'
-import helpers from '../core/helpers'
-import store from '../store'
-import BaseModel from './base_model'
 import { Post } from './post'
 import { Reaction } from './reaction'
 import { User } from './user'
+import helpers from '../core/helpers'
+import store from '../store'
+import BaseModel from './base_model'
 
 @Entity({ name: 'replies' })
 export class Reply extends BaseModel {
@@ -56,6 +56,9 @@ export class Reply extends BaseModel {
 
   toJSON() {
     delete this.password
+
+    // 어드민에서 Reply 모델을 직접 볼 일이 없기 때문에, 모델 단에서 이 처리를 해도 괜찮음.
+    this.user = User.sensitiveAuthInfoFilteredUser(this.user) as any
     return this
   }
 }

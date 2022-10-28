@@ -16,6 +16,11 @@ const jwtHelper = {
       return resolve(decoded)
     })
   }),
+  mustUser: async (c: IContext) => {
+    try {
+      return await jwtHelper.getPayload(c)
+    } catch (e) {}
+  },
   getPayload: async (c: IContext) => {
     const token = jwtHelper.getTokenFromHTTPHeader(c.req.headers)
     if (!token) {

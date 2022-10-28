@@ -6,6 +6,7 @@ import { dataSource } from '../database'
 import IContext from '../core/interfaces/context'
 import orm from '../core/orm'
 import helpers from '../core/helpers'
+import { User } from '../entities/user'
 
 // 자유게시판 id
 const freeBoardId = 1
@@ -33,6 +34,9 @@ const postController = {
     payload['password'] = helpers.hashed(payload['password'])
     payload['title'] = helpers.sanitize.strict(payload['title'])
     payload['content'] = helpers.sanitize.html(payload['content'])
+
+    const user = await helpers.jwt.mustUser(c)
+    if (user) payload['user'] = user
 
     try {
       payload['sharingKey'] = helpers.generateUUID(true)
@@ -79,6 +83,8 @@ const postController = {
   all: async (c: IContext) => {
     try {
       const qb = orm.querySetter(c, Post)
+        .leftJoinAndSelect('Post.user', 'user')
+        .leftJoinAndSelect('user.profile', 'profile')
         .andWhere(`board_id = ${freeBoardId}`)
 
       // LIKE 검색이 너무 많아서 나중에 규모가 커지면 ES등 튜닝 필요함
@@ -95,6 +101,7 @@ const postController = {
         loadChildren({ c, model: Post, childModel: Reply, items: data }),
         loadChildren({ c, model: Post, childModel: Reaction, items: data }),
       ])
+      data.forEach((post: Post) => post.user = User.sensitiveAuthInfoFilteredUser(post.user) as any)
       c.res.asJSON({ data, total })
     } catch (e) {
       c.res.failed(e)
@@ -106,9 +113,11 @@ const postController = {
         .leftJoinAndSelect('Post.board', 'board')
         .leftJoinAndSelect('Post.reactions', 'reactions')
         .leftJoinAndSelect('Post.replies', 'replies')
+        .leftJoinAndSelect('Post.user', 'user')
+        .leftJoinAndSelect('user.profile', 'profile')
         .leftJoinAndSelect('replies.parent', 'parent')
         .where(`Post.sharing_key = '${c.req.params['sharingKey']}'`)
-        .getOneOrFail()
+        .getOneOrFail() as Post
 
       post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
       post.replies = helpers.organizeReplies(post.replies)
@@ -125,6 +134,7 @@ const postController = {
           post['$$reactions']['down'].activated = reaction.ip === c.req.ip
         }
       })
+      post.user = User.sensitiveAuthInfoFilteredUser(post.user) as any
       delete post.reactions
       await post.increaseViews(c)
       c.res.asJSON(post)
