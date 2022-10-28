@@ -30,6 +30,9 @@ const replyController = {
     payload['password'] = helpers.hashed(payload['password'])
     payload['content'] = helpers.sanitize.html(payload['content'])
 
+    const user = await helpers.jwt.mustUser(c)
+    if (user) payload['user'] = user
+
     try {
       await orm.querySetter(c, Reply).insert().into(Reply).values(payload).execute()
       c.res.success()
