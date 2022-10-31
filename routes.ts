@@ -90,6 +90,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.post('/users/sign_in_kakao', ctrls.auth.signInKakao)
 
     router.get('/users/me', ctrls.user.me)
+    router.get('/users/me/stats', ctrls.user.myStats)
 
     router.get('/persons', ctrls.person.all)
 
