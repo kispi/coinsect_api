@@ -84,6 +84,8 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/config', ctrls.config.get)
     router.post('/config', ctrls.config.post)
 
+    router.get('/dashboard/activities', ctrls.dashboard.activities)
+
     router.get('/wallets', ctrls.wallet.all)
 
     router.post('/users/sign_in', ctrls.auth.signIn)

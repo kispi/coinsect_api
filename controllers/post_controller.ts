@@ -2,11 +2,11 @@ import { loadChildren } from '../core/controller'
 import { Post } from '../entities/post'
 import { Reply } from '../entities/reply'
 import { Reaction } from '../entities/reaction'
+import { User } from '../entities/user'
 import { dataSource } from '../database'
 import IContext from '../core/interfaces/context'
 import orm from '../core/orm'
 import helpers from '../core/helpers'
-import { User } from '../entities/user'
 
 // 자유게시판 id
 const freeBoardId = 1
