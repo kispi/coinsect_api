@@ -27,8 +27,7 @@ export class Reply extends BaseModel {
   @Column({ type: 'text' })
   content: string
 
-  @JoinColumn()
-  @OneToOne(() => User, { onDelete: 'SET NULL' })
+  @ManyToOne(() => User, { onDelete: 'SET NULL', createForeignKeyConstraints: false })
   user: User
 
   @Column()
