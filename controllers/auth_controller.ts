@@ -63,6 +63,11 @@ const authController = {
       c.res.success({ token: User.jwt(user) })
     } catch (e) {
       log.error('signInKakako:', e)
+      service.slack.postMessage(`
+        실패한 카카오 계정 생성 시도가 있습니다.
+        email: ${c.req.body['email']}
+        kakaoId: ${c.req.body['kakaoId']}
+      `)
       c.res.failed(e)
     }
   },
