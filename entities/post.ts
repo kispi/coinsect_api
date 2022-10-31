@@ -88,6 +88,8 @@ export class Post extends BaseModel {
   }
 
   static async checkPassword(sharingKey: string, password: string) {
+    if (!password) Promise.reject({ message: 'INCORRECT_PASSWORD' })
+
     try {
       const target = await dataSource.getRepository(Post).findOneOrFail({ where: { sharingKey }})
       if (!helpers.compare(target.password, password)) {

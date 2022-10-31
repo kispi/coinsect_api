@@ -61,20 +61,32 @@ const postController = {
       return c.res.failed(e)
     }
 
-    if (!payload['$$originalPassword']) return c.res.failed({ message: 'BAD_REQUEST' })
-
+    const user = await helpers.jwt.mustUser(c)
+    let target: Post
     try {
-      await Post.checkPassword(c.req.params['sharingKey'], payload['$$originalPassword'])
+      const postRepository = dataSource.getRepository(Post)
+      target = await postRepository.findOneOrFail({ where: { sharingKey: c.req.params['sharingKey'] } })
+      if (target.userId) {
+        // 자기 자신의 글을 수정하기 때문에 비밀번호가 필요 없는 경우
+        if (user['id'] !== target.userId) return c.res.failed()
+      } else {
+        // 익명 글을 수정하기 때문에 비밀번호가 필요한 경우
+        await Post.checkPassword(c.req.params['sharingKey'], payload['$$originalPassword'])
+      }
     } catch (e) {
       return c.res.failed(e)
     }
 
-    payload['ip'] = c.req.ip
-    payload['password'] = helpers.hashed(payload['password'])
-    payload['content'] = helpers.sanitize.html(payload['content'])
+    if (!target) return c.res.failed({ message: 'NOT_FOUND' })
+
+    target.ip = c.req.ip
+    target.nickname = helpers.sanitize.html(payload['nickname'])
+    target.password = helpers.hashed(payload['password'])
+    target.title = helpers.sanitize.html(payload['title'])
+    target.content = helpers.sanitize.html(payload['content'])
 
     try {
-      await dataSource.getRepository(Post).save(payload)
+      await dataSource.getRepository(Post).save(target)
       c.res.success()
     } catch (e) {
       c.res.failed(e)
