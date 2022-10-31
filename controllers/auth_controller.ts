@@ -1,6 +1,7 @@
 import IContext from '../core/interfaces/context'
 import helpers from '../core/helpers'
 import useService from '../services'
+import { log } from '../core/logger'
 import { AuthToken, TypeProvider } from '../entities/auth_token'
 import { TypeUserRole, User,  } from '../entities/user'
 import { Profile } from '../entities/profile'
@@ -61,6 +62,7 @@ const authController = {
       })
       c.res.success({ token: User.jwt(user) })
     } catch (e) {
+      log.error('signInKakako:', e)
       c.res.failed(e)
     }
   },
