@@ -46,15 +46,21 @@ const userController = {
       c.res.failed(e)
     }
   },
+  stats: async (c: IContext) => {
+    try {
+      const stats = await getStats(c.req.params['id'])
+      c.res.success({ stats })
+    } catch (e) {
+      c.res.failed(e)
+    }
+  },
   myStats: async (c: IContext) => {
     const user = await helpers.jwt.mustUser(c)
     if (!user) return c.res.failed()
 
     try {
       const stats = await getStats(user['id'])
-      c.res.success({
-        stats,
-      })
+      c.res.success({ stats })
     } catch (e) {
       c.res.failed(e)
     }

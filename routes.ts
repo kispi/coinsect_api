@@ -91,6 +91,7 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/users/me', ctrls.user.me)
     router.get('/users/me/stats', ctrls.user.myStats)
+    router.get('/users/:id/stats', ctrls.user.stats)
 
     router.get('/persons', ctrls.person.all)
 
