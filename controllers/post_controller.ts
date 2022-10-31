@@ -102,9 +102,10 @@ const postController = {
       // LIKE 검색이 너무 많아서 나중에 규모가 커지면 ES등 튜닝 필요함
       const keyword = (c.req.query['query'] || '').split('=')[1]
       if (keyword) {
-        qb.andWhere(`nickname LIKE "%${keyword}%"`)
-        qb.orWhere(`title LIKE "%${keyword}%"`)
-        qb.orWhere(`content LIKE "%${keyword}%"`)
+        qb.andWhere(`Post.nickname LIKE "%${keyword}%"`)
+        qb.orWhere(`profile.nickname LIKE "%${keyword}%"`)
+        qb.orWhere(`Post.title LIKE "%${keyword}%"`)
+        qb.orWhere(`Post.content LIKE "%${keyword}%"`)
       }
 
       const [data, total] = await qb.getManyAndCount()
