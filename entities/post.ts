@@ -1,4 +1,4 @@
-import { Entity, Column, JoinColumn, OneToMany, ManyToOne, Index } from 'typeorm'
+import { Entity, Column, OneToMany, ManyToOne, Index } from 'typeorm'
 import { Board } from './board'
 import { Reaction } from './reaction'
 import { Reply } from './reply'
@@ -38,6 +38,9 @@ export class Post extends BaseModel {
 
   @ManyToOne(() => User, { onDelete: 'SET NULL', createForeignKeyConstraints: false })
   user: User
+
+  @Column({ nullable: true })
+  userId: number
 
   @Column()
   nickname: string

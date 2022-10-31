@@ -145,19 +145,20 @@ const postController = {
     }
   },
   delete: async (c: IContext) => {
-    if (!c.req.body['password']) {
-      c.res.failed()
-      return
-    }
-  
+    const user = await helpers.jwt.mustUser(c)
+    if (!user && !c.req.body['password']) return c.res.failed()
+
     try {
       const postRepository = dataSource.getRepository(Post)
       const target = await postRepository.findOneOrFail({ where: { sharingKey: c.req.params['sharingKey'] } })
-      if (!helpers.compare(target.password, c.req.body['password'])) {
-        c.res.failed({ message: 'INCORRECT_PASSWORD' })
-        return
+      if (target.userId) {
+        // 자기 자신의 게시글을 삭제하기 때문에 비밀번호가 필요 없는 경우
+        if (user['id'] !== target.userId) return c.res.failed()
+      } else {
+        // 익명 게시글을 삭제하기 때문에 비밀번호가 필요한 경우
+        if (!helpers.compare(target.password, c.req.body['password'])) return c.res.failed({ message: 'INCORRECT_PASSWORD' })
       }
-  
+
       await postRepository.softRemove(target)
       c.res.success()
     } catch (e) {
