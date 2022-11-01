@@ -8,11 +8,51 @@ import { Profile } from '../entities/profile'
 
 const service = useService()
 
-const getUser = (c: IContext, email: string) => c.orm.getRepository(User)
-  .createQueryBuilder()
-  .where(`email = '${email}'`)
-  .leftJoinAndSelect('User.profile', 'profile')
-  .getOne()
+const afterSignIn = (c: IContext, user: User) => {
+  user.lastSignIn = new Date()
+  user.lastSignInIp = c.req.ip
+  user.signInCount += 1
+  c.orm.getRepository(User).save(user)
+  c.res.success({ token: User.jwt(user) })
+}
+
+const mustAuthToken = async (c: IContext) => {
+  const existingToken = await c.orm.getRepository(AuthToken).findOne({
+    where: { token: c.req.body['kakaoId'] },
+    relations: ['user', 'user.profile'],
+  })
+  if (existingToken) return existingToken
+
+  const newToken = await c.orm.getRepository(AuthToken).save({
+    token: c.req.body['kakaoId'],
+    provider: TypeProvider.TypeKakao,
+  })
+  if (newToken) return newToken
+
+  return Promise.reject({ message: 'ERR_TOKEN_NOT_CREATED' })
+}
+
+const mustUser = async (c: IContext, email: string) => {
+  const existingUser = await c.orm.getRepository(User)
+    .createQueryBuilder()
+    .where(`email = '${email}'`)
+    .leftJoinAndSelect('User.profile', 'profile')
+    .getOne()
+  if (existingUser) return existingUser
+
+  const newUser = await c.orm.getRepository(User).save({
+    email: c.req.body['email'],
+    role: TypeUserRole.TypeUser,
+  })
+  if (newUser) return newUser
+
+  return Promise.reject({ message: 'ERR_USER_NOT_CREATED' })
+}
+
+const mustProfile = async (c: IContext, user: User) => await c.orm.getRepository(Profile).save({
+  user,
+  nickname: await service.profile.generateUnique(),
+})
 
 const authController = {
   signIn: async (c: IContext) => {
@@ -30,37 +70,13 @@ const authController = {
     if (!c.validate.requiredFields(['kakaoId', 'email'])) return c.res.failed({ message: 'invalid payload' })
 
     try {
-      let authToken = await c.orm.getRepository(AuthToken).findOne(
-        { where: { token: c.req.body['kakaoId'] } },
-      )
+      let authToken = await mustAuthToken(c)
+      if (authToken?.user?.profile) return afterSignIn(c, authToken.user)
 
-      if (authToken) {
-        authToken.user = await getUser(c, c.req.body['email'])
-        return c.res.success({ token: User.jwt(authToken.user) })
-      }
-
-      // 토큰이 없는 경우 계정도 없음 => 해당 이메일의 유저가 있나 찾아보고 없으면 생성
-      let user = await getUser(c, c.req.body['email'])
-      if (!user) {
-        user = await c.orm.getRepository(User).save({
-          email: c.req.body['email'],
-          role: TypeUserRole.TypeUser,
-        })
-      }
-
-      if (!user.profile) {
-        await c.orm.getRepository(Profile).save({
-          user,
-          nickname: await service.profile.generateUnique(),
-        })
-      }
-  
-      authToken = await c.orm.getRepository(AuthToken).save({
-        user,
-        provider: TypeProvider.TypeKakao,
-        token: c.req.body['kakaoId'],
-      })
-      c.res.success({ token: User.jwt(user) })
+      authToken.user = await mustUser(c, c.req.body['email'])
+      authToken.user.profile = await mustProfile(c, authToken.user)
+      c.orm.getRepository(AuthToken).save(authToken)
+      return afterSignIn(c, authToken.user)
     } catch (e) {
       log.error('signInKakako:', e)
       service.slack.postMessage(`
