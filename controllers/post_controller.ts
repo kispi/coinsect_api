@@ -77,7 +77,7 @@ const postController = {
       return c.res.failed(e)
     }
 
-    if (!target) return c.res.failed({ message: 'NOT_FOUND' })
+    if (!target) return c.res.failed({ message: 'NOT_FOUND' }, 404)
 
     target.ip = c.req.ip
     target.nickname = helpers.sanitize.html(payload['nickname'])
@@ -154,7 +154,7 @@ const postController = {
       await post.increaseViews(c)
       c.res.asJSON(post)
     } catch (e) {
-      c.res.failed({ message: 'invalid request' }, 404)
+      c.res.failed({ message: 'NOT_FOUND' }, 404)
     }
   },
   delete: async (c: IContext) => {
