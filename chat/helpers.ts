@@ -90,6 +90,7 @@ const asIMessage = (message): IMessage => {
     ts: message.ts || new Date(),
   }
 
+  if (message.token) iMessage.user.token = message.token
   return iMessage
 }
 
