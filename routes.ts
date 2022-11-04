@@ -6,12 +6,7 @@ import useControllers from './controllers'
 
 const ctrls = useControllers()
 
-// 최소 권한을 정의하는 미들웨어들
-const auth = {
-  admin: middlewares.adminAuth,
-}
-
-const useRouteCRUD = ({ app, model, middleware = auth.admin.super }) => {
+const useRouteCRUD = ({ app, model, middleware = middlewares.auth.admin.super }) => {
   const router = useRouter(app)
 
   const sp = helpers.case.pluralize(helpers.case.toSnake(model))
@@ -36,38 +31,37 @@ export const useRoutes = (app: FastifyInstance) => ({
   admin: () => {
     const router = useRouter(app)
 
-    router.post('/admin/chat/ban_ip', ctrls.admin.chat.banIP, auth.admin.manager) // 단순 채금
-    router.post('/admin/chat/create_banned_user', ctrls.admin.chat.createBannedUser, auth.admin.manager) // 광고, 도배충들 용도 (메시지도 다 지움)
-    router.post('/admin/chat/send_message', ctrls.admin.chat.sendMessage, auth.admin.manager)
+    router.post('/admin/chat/ban_ip', ctrls.admin.chat.banIP, middlewares.auth.admin.manager) // 단순 채금
+    router.post('/admin/chat/create_banned_user', ctrls.admin.chat.createBannedUser, middlewares.auth.admin.manager) // 광고, 도배충들 용도 (메시지도 다 지움)
+    router.post('/admin/chat/send_message', ctrls.admin.chat.sendMessage, middlewares.auth.admin.manager)
 
-    router.get('/admin/store/bad_words', ctrls.admin.store.badWord.all, auth.admin.super)
-    router.get('/admin/store/banned_users', ctrls.admin.store.bannedUser.all, auth.admin.manager)
-    router.post('/admin/store/bad_words/invalidate', ctrls.admin.store.badWord.invalidate, auth.admin.super)
-    router.post('/admin/store/banned_users/invalidate', ctrls.admin.store.bannedUser.invalidate, auth.admin.manager)
-    router.post('/admin/store/messages/invalidate', ctrls.admin.store.message.invalidate, auth.admin.manager)
-    router.post('/admin/store/admin_token', ctrls.admin.store.setAdminToken, auth.admin.super)
+    router.get('/admin/store/bad_words', ctrls.admin.store.badWord.all, middlewares.auth.admin.super)
+    router.get('/admin/store/banned_users', ctrls.admin.store.bannedUser.all, middlewares.auth.admin.manager)
+    router.post('/admin/store/bad_words/invalidate', ctrls.admin.store.badWord.invalidate, middlewares.auth.admin.super)
+    router.post('/admin/store/banned_users/invalidate', ctrls.admin.store.bannedUser.invalidate, middlewares.auth.admin.manager)
+    router.post('/admin/store/messages/invalidate', ctrls.admin.store.message.invalidate, middlewares.auth.admin.manager)
+    router.post('/admin/store/admin_token', ctrls.admin.store.setAdminToken, middlewares.auth.admin.super)
 
-    router.get('/admin/crons', ctrls.admin.cron.all, auth.admin.super)
+    router.get('/admin/crons', ctrls.admin.cron.all, middlewares.auth.admin.super)
 
-    router.get('/admin/contents/real_time_positions/change_notifications', ctrls.content.realTimePositions.changeNotification.all, auth.admin.position)
-    router.get('/admin/contents/real_time_positions/presets', ctrls.content.realTimePositions.presets, auth.admin.position)
-    router.post('/admin/contents/real_time_positions', ctrls.content.realTimePositions.set, auth.admin.position)
-    router.delete('/admin/contents/real_time_positions/:id', ctrls.content.realTimePositions.delete, auth.admin.position)
+    router.get('/admin/contents/real_time_positions/change_notifications', ctrls.content.realTimePositions.changeNotification.all, middlewares.auth.admin.position)
+    router.get('/admin/contents/real_time_positions/presets', ctrls.content.realTimePositions.presets, middlewares.auth.admin.position)
+    router.post('/admin/contents/real_time_positions', ctrls.content.realTimePositions.set, middlewares.auth.admin.position)
+    router.delete('/admin/contents/real_time_positions/:id', ctrls.content.realTimePositions.delete, middlewares.auth.admin.position)
 
-    router.put('/admin/helpers/crawled_websites', ctrls.helper.crawledWebsites.delete, auth.admin.super) // DELETE 메소드는 request body를 가질 수 없어서 put으로
-    router.get('/admin/helpers/crawled_websites', ctrls.helper.crawledWebsites.all, auth.admin.super)
+    router.put('/admin/helpers/crawled_websites', ctrls.helper.crawledWebsites.delete, middlewares.auth.admin.super) // DELETE 메소드는 request body를 가질 수 없어서 put으로
+    router.get('/admin/helpers/crawled_websites', ctrls.helper.crawledWebsites.all, middlewares.auth.admin.super)
 
-    router.post('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.create, auth.admin.super)
-    router.get('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.all, auth.admin.super)
-    router.put('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.delete, auth.admin.super) // DELETE 메소드는 request body를 가질 수 없어서 put으로
-    router.put('/admin/aws/rekognition/delete_bulk', ctrls.aws.rekognition.imageModeration.deleteBulk, auth.admin.super)
+    router.get('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.all, middlewares.auth.admin.super)
+    router.put('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.delete, middlewares.auth.admin.super) // DELETE 메소드는 request body를 가질 수 없어서 put으로
+    router.put('/admin/aws/rekognition/delete_bulk', ctrls.aws.rekognition.imageModeration.deleteBulk, middlewares.auth.admin.super)
 
     useRouteCRUD({ app, model: 'badWord' })
-    useRouteCRUD({ app, model: 'bannedUser', middleware: auth.admin.manager })
+    useRouteCRUD({ app, model: 'bannedUser', middleware: middlewares.auth.admin.manager })
     useRouteCRUD({ app, model: 'blockchain' })
     useRouteCRUD({ app, model: 'board' })
     useRouteCRUD({ app, model: 'image' })
-    useRouteCRUD({ app, model: 'message', middleware: auth.admin.manager })
+    useRouteCRUD({ app, model: 'message', middleware: middlewares.auth.admin.manager })
     useRouteCRUD({ app, model: 'notification' })
     useRouteCRUD({ app, model: 'person' })
     useRouteCRUD({ app, model: 'post' })
@@ -142,6 +136,8 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/aws/s3/upload_url', ctrls.aws.s3.getSignedUrl)
     router.delete('/aws/s3/object', ctrls.aws.s3.deleteObject)
+
+    router.post('/aws/rekognition', ctrls.aws.rekognition.imageModeration.create)
   },
 })
 

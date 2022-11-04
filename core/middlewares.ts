@@ -22,10 +22,13 @@ const foo = async (
 }
 
 const middlewares = {
-  adminAuth: {
-    super: async (c: IContext) => foo(c, [TypeUserAuth.TypeSuper]),
-    manager: async (c: IContext) => foo(c, [TypeUserAuth.TypeSuper, TypeUserAuth.TypeManager]),
-    position: async (c: IContext) => foo(c, [TypeUserAuth.TypeSuper, TypeUserAuth.TypeManager, TypeUserAuth.TypePosition]),
+  auth: {
+    admin: {
+      super: async (c: IContext) => foo(c, [TypeUserAuth.TypeSuper]),
+      manager: async (c: IContext) => foo(c, [TypeUserAuth.TypeSuper, TypeUserAuth.TypeManager]),
+      position: async (c: IContext) => foo(c, [TypeUserAuth.TypeSuper, TypeUserAuth.TypeManager, TypeUserAuth.TypePosition]),
+    },
+    user: (c: IContext) => helpers.jwt.getPayload(c),
   },
 }
 

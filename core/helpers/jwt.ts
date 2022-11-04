@@ -22,15 +22,14 @@ const jwtHelper = {
     } catch (e) {}
   },
   getPayload: async (c: IContext) => {
-    const token = jwtHelper.getTokenFromHTTPHeader(c.req.headers)
-    if (!token) {
-      return Promise.reject({
-        message: 'unauthorized',
-        status: 401,
-      })
-    }
+    try {
+      return await jwtHelper.decode(jwtHelper.getTokenFromHTTPHeader(c.req.headers))
+    } catch (e) {}
 
-    return jwtHelper.decode(token)
+    return Promise.reject({
+      message: 'unauthorized',
+      status: 401,
+    })
   },
 }
 

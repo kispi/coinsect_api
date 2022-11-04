@@ -50,7 +50,10 @@ const rekognitionService = {
 
     rekognitionTestedUrls = await cache.get('rekognition_tested_urls') || {}
     const found = rekognitionTestedUrls[url]
-    if (found) return found
+    if (found) return {
+      cached: true,
+      ...found,
+    }
 
     if (rekognitionTestingUrls[url]) return Promise.reject({ message: 'AWS Rekognition still in process... try it again after a while.'})
 

@@ -19,7 +19,7 @@ const useChatRoutes = (app: FastifyInstance) => {
   routes.put('/webchat/users/:token', chatCtrl.user.update)
   routes.put('/webchat/user_settings/:token', chatCtrl.user.updateSetting)
   routes.delete('/webchat/users/:token', chatCtrl.user.delete)
-  routes.get('/webchat/users', chatCtrl.user.all, middlewares.adminAuth.super)
+  routes.get('/webchat/users', chatCtrl.user.all, middlewares.auth.admin.super)
   routes.get('/webchat/messages', chatCtrl.message.all)
 
   // API 서버에서 찌르는 API들 (인증 필요))
