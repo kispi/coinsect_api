@@ -38,7 +38,7 @@ const rekognitionService = {
     } else {
       Object.keys(rekognitionTestedUrls).forEach(url => {
         const o = rekognitionTestedUrls[url]
-        if ((o.ModerationLabels || []).length === 0) delete rekognitionTestedUrls[url]
+        if (!o || (o.ModerationLabels || []).length === 0) delete rekognitionTestedUrls[url]
       })
     }
 
