@@ -57,6 +57,7 @@ export class Reply extends BaseModel {
   }
 
   toJSON() {
+    delete this.ip
     delete this.password
 
     // 어드민에서 Reply 모델을 직접 볼 일이 없기 때문에, 모델 단에서 이 처리를 해도 괜찮음.

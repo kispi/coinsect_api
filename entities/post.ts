@@ -103,6 +103,7 @@ export class Post extends BaseModel {
 
   toJSON() {
     delete this.password
+    delete this.ip
     return this
   }
 }
