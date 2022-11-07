@@ -97,22 +97,22 @@ const postController = {
       const qb = orm.querySetter(c, Post)
         .leftJoinAndSelect('Post.user', 'user')
         .leftJoinAndSelect('user.profile', 'profile')
-        .leftJoinAndSelect('Post.replies', 'replies')
-        .leftJoinAndSelect('Post.reactions', 'reactions')
         .andWhere(`board_id = ${freeBoardId}`)
 
       // LIKE 검색이 너무 많아서 나중에 규모가 커지면 ES등 튜닝 필요함
       const keyword = (c.req.query['query'] || '').split('=')[1]
       if (keyword) {
         qb.andWhere(`Post.nickname LIKE "%${keyword}%"`)
-        qb.orWhere(`replies.nickname LIKE "%${keyword}%"`)
-        qb.orWhere(`replies.content LIKE "%${keyword}%"`)
         qb.orWhere(`profile.nickname LIKE "%${keyword}%"`)
         qb.orWhere(`Post.title LIKE "%${keyword}%"`)
         qb.orWhere(`Post.content LIKE "%${keyword}%"`)
       }
 
       const [data, total] = await qb.getManyAndCount()
+      await Promise.all([
+        loadChildren({ c, model: Post, childModel: Reply, items: data }),
+        loadChildren({ c, model: Post, childModel: Reaction, items: data }),
+      ])
       data.forEach((post: Post) => post.user = User.sensitiveAuthInfoFilteredUser(post.user) as any)
       c.res.asJSON({ data, total })
     } catch (e) {
