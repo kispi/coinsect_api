@@ -22,7 +22,7 @@ const postController = {
     if (bannedUser) return c.res.failed({ message: 'BANNED_USER', extra: { bannedUser } })
 
     const payload = c.req.body
-    payload['board'] = { id : freeBoardId }
+    if (!payload['board']) payload['board'] = { id : freeBoardId }
 
     try {
       await Post.validate(payload)
@@ -53,7 +53,6 @@ const postController = {
     }
 
     const payload = c.req.body
-    payload['board'] = { id : freeBoardId }
 
     try {
       await Post.validate(payload)
@@ -80,6 +79,7 @@ const postController = {
     if (!target) return c.res.failed({ message: 'NOT_FOUND' }, 404)
 
     target.ip = c.req.ip
+    target.board = payload['board']
     target.nickname = helpers.sanitize.html(payload['nickname'])
     target.password = helpers.hashed(payload['password'])
     target.title = helpers.sanitize.html(payload['title'])
@@ -97,7 +97,6 @@ const postController = {
       const qb = orm.querySetter(c, Post)
         .leftJoinAndSelect('Post.user', 'user')
         .leftJoinAndSelect('user.profile', 'profile')
-        .andWhere(`board_id = ${freeBoardId}`)
 
       // LIKE 검색이 너무 많아서 나중에 규모가 커지면 ES등 튜닝 필요함
       const keyword = (c.req.query['query'] || '').split('=')[1]

@@ -1,6 +1,7 @@
 import admin from './admin_controller'
 import auth from './auth_controller'
 import aws from './aws_controller'
+import board from './board_controller'
 import config from './config_controller'
 import content from './content_controller'
 import dashboard from './dashboard_controller'
@@ -21,6 +22,7 @@ const useControllers = () => ({
   admin,
   auth,
   aws,
+  board,
   config,
   content,
   dashboard,
