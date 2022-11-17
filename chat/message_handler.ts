@@ -93,10 +93,15 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
     return
   },
   users: () => {
+    const o = {}
+    const users = store.getters.connections().map(conn => conn.user)
+    users.forEach(user => o[user.token] = user)
+    const meta = Object.values(o)
+
     helpers.sendMessage({
       message: {
         type: 'users',
-        meta: store.getters.connections().map(conn => conn.user),
+        meta,
       }, token,
     })
   },
