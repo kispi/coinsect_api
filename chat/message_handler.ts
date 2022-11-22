@@ -81,6 +81,11 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
 
     try {
       if (message.user.jwt) message.user.id = (await coreHelpers.jwt.decode(message.user.jwt))['id']
+    } catch (e) {
+      return helpers.sendMessage({ message: { type: 'sessionExpired' }, token })
+    }
+
+    try {
       const savedMessage = await helpers.saveMessage({ message, ip })
       if (savedMessage) message['id'] = savedMessage.id
     } catch (e) {
@@ -90,7 +95,6 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
     if (message.type === 'text') message.text = service.badWord.filtered(message.text)
 
     helpers.broadcast(message)
-    return
   },
   users: () => {
     const o = {}
