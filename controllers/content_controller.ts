@@ -48,6 +48,14 @@ const contentController = {
     },
   },
   news: {
+    upbit: async (c: IContext) => {
+      try {
+        const data = await service.content.news.upbit()
+        c.res.success(data)
+      } catch (e) {
+        c.res.failed({ message: '업비트 뉴스를 가져오는 중 문제가 발생했습니다' })
+      }
+    },
     cobak: {
       articles: async (c: IContext) => {
         try {

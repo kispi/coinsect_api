@@ -4,6 +4,7 @@ import helpers from '../../core/helpers'
 const endpoint = 'https://cobak.co.kr/api/media'
 
 const newsService = {
+  upbit: () => axios.get('https://api-manager.upbit.com/api/v1/coin_news'),
   cobak: {
     articles: ({
       page = 0,
