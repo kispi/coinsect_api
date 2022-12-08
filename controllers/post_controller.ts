@@ -117,8 +117,8 @@ const postController = {
         .leftJoinAndSelect('Post.user', 'user')
         .leftJoinAndSelect('user.profile', 'profile')
         .leftJoinAndSelect('Post.board', 'board')
-        .leftJoinAndMapMany('Post.replies', Reply, 'reply', 'reply.postId = post.id')
-        .leftJoinAndMapMany('Post.reactions', Reaction, 'reaction', 'reaction.postId = post.id')
+        .leftJoinAndMapMany('Post.replies', Reply, 'reply', 'reply.postId = Post.id')
+        .leftJoinAndMapMany('Post.reactions', Reaction, 'reaction', 'reaction.postId = Post.id')
 
       // LIKE 검색이 너무 많아서 나중에 규모가 커지면 ES등 튜닝 필요함
       const keyword = (c.req.query['query'] || '').split('=')[1]
