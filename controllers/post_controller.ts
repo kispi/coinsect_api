@@ -1,4 +1,3 @@
-import { loadChildren } from '../core/controller'
 import { Post } from '../entities/post'
 import { Reply } from '../entities/reply'
 import { Reaction } from '../entities/reaction'
@@ -10,6 +9,26 @@ import helpers from '../core/helpers'
 
 // 자유게시판 id
 const freeBoardId = 1
+
+const mutatePostToBeSecure = (c: IContext, post: Post) => {
+  post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
+  post.replies = helpers.organizeReplies(post.replies)
+
+  // post.reactions 삭제 (추천한 사람들 ip 노출 방지)
+  post['$$reactions'] = { up: { count: 0 }, down: { count: 0 } }
+  post.reactions.forEach(reaction => {
+    if (reaction.type === 'up') {
+      post['$$reactions']['up'].count++
+      post['$$reactions']['up'].activated = reaction.ip === c.req.ip
+    }
+    if (reaction.type === 'down') {
+      post['$$reactions']['down'].count++
+      post['$$reactions']['down'].activated = reaction.ip === c.req.ip
+    }
+  })
+  post.user = User.sensitiveAuthInfoFilteredUser(post.user) as any
+  delete post.reactions
+}
 
 const postController = {
   create: async (c: IContext) => {
@@ -97,6 +116,9 @@ const postController = {
       const qb = orm.querySetter(c, Post)
         .leftJoinAndSelect('Post.user', 'user')
         .leftJoinAndSelect('user.profile', 'profile')
+        .leftJoinAndSelect('Post.board', 'board')
+        .leftJoinAndMapMany('Post.replies', Reply, 'reply', 'reply.postId = post.id')
+        .leftJoinAndMapMany('Post.reactions', Reaction, 'reaction', 'reaction.postId = post.id')
 
       // LIKE 검색이 너무 많아서 나중에 규모가 커지면 ES등 튜닝 필요함
       const keyword = (c.req.query['query'] || '').split('=')[1]
@@ -105,14 +127,12 @@ const postController = {
         qb.orWhere(`profile.nickname LIKE "%${keyword}%"`)
         qb.orWhere(`Post.title LIKE "%${keyword}%"`)
         qb.orWhere(`Post.content LIKE "%${keyword}%"`)
+        qb.orWhere(`reply.nickname LIKE "%${keyword}%"`)
+        qb.orWhere(`reply.content LIKE "%${keyword}%"`)
       }
 
       const [data, total] = await qb.getManyAndCount()
-      await Promise.all([
-        loadChildren({ c, model: Post, childModel: Reply, items: data }),
-        loadChildren({ c, model: Post, childModel: Reaction, items: data }),
-      ])
-      data.forEach((post: Post) => post.user = User.sensitiveAuthInfoFilteredUser(post.user) as any)
+      data.forEach((post: Post) => mutatePostToBeSecure(c, post))
       c.res.asJSON({ data, total })
     } catch (e) {
       c.res.failed(e)
@@ -132,23 +152,7 @@ const postController = {
         .where(`Post.sharing_key = '${c.req.params['sharingKey']}'`)
         .getOneOrFail() as Post
 
-      post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
-      post.replies = helpers.organizeReplies(post.replies)
-
-      // post.reactions 삭제 (추천한 사람들 ip 노출 방지)
-      post['$$reactions'] = { up: { count: 0 }, down: { count: 0 } }
-      post.reactions.forEach(reaction => {
-        if (reaction.type === 'up') {
-          post['$$reactions']['up'].count++
-          post['$$reactions']['up'].activated = reaction.ip === c.req.ip
-        }
-        if (reaction.type === 'down') {
-          post['$$reactions']['down'].count++
-          post['$$reactions']['down'].activated = reaction.ip === c.req.ip
-        }
-      })
-      post.user = User.sensitiveAuthInfoFilteredUser(post.user) as any
-      delete post.reactions
+      mutatePostToBeSecure(c, post)
       await post.increaseViews(c)
       c.res.asJSON(post)
     } catch (e) {
