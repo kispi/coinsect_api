@@ -12,23 +12,28 @@ import helpers from '../core/helpers'
 const freeBoardId = 1
 
 const mutatePostToBeSecure = (c: IContext, post: Post) => {
-  post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
+  post.user = User.sensitiveAuthInfoFilteredUser(post.user) as any
+
   post.replies = helpers.organizeReplies(post.replies)
+  if ((post.replies || []).length > 0) {
+    post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
+  }
 
   // post.reactions 삭제 (추천한 사람들 ip 노출 방지)
   post['$$reactions'] = { up: { count: 0 }, down: { count: 0 } }
-  post.reactions.forEach(reaction => {
-    if (reaction.type === 'up') {
-      post['$$reactions']['up'].count++
-      post['$$reactions']['up'].activated = reaction.ip === c.req.ip
-    }
-    if (reaction.type === 'down') {
-      post['$$reactions']['down'].count++
-      post['$$reactions']['down'].activated = reaction.ip === c.req.ip
-    }
-  })
-  post.user = User.sensitiveAuthInfoFilteredUser(post.user) as any
-  delete post.reactions
+  if ((post.reactions || []).length > 0) {
+    post.reactions.forEach(reaction => {
+      if (reaction.type === 'up') {
+        post['$$reactions']['up'].count++
+        post['$$reactions']['up'].activated = reaction.ip === c.req.ip
+      }
+      if (reaction.type === 'down') {
+        post['$$reactions']['down'].count++
+        post['$$reactions']['down'].activated = reaction.ip === c.req.ip
+      }
+    })
+    delete post.reactions
+  }
 }
 
 const postController = {
