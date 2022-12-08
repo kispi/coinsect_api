@@ -61,3 +61,32 @@ export const useCRUD = ({
     }
   },
 })
+
+/**
+ * load child models into parent models using WHERE IN query and map them into parent without join, like `includes` in rails.
+ * NOTE: In order to use this, you should define foreign key with number as plain number column also.
+ * EX:) Say, you have reply.post, you should also define reply.postId.
+ * @param model
+ * @param childModel
+ */
+ export const loadChildren = async ({ c, model, childModel, items, withDeleted }: { c: IContext, model, childModel, items: unknown[], withDeleted?: Boolean }) => {
+  const modelIds = items.map(item => item['id']) || []
+  if (modelIds.length === 0) return
+
+  try {
+    const modelName = c.orm.getRepository(model).metadata.name
+    const childModelName = c.orm.getRepository(childModel).metadata.name
+    const qs = c.orm.getRepository(childModel).createQueryBuilder()
+    if (withDeleted) qs.withDeleted()
+
+    const children = await qs.where(`${childModelName}.${modelName.toLowerCase()}.id IN (:id)`, { id: modelIds }).getMany()
+    const childrenMap = {}
+    children.forEach(child => {
+      const arr = child[`${modelName.toLowerCase()}Id`]
+      childrenMap[arr] ? childrenMap[arr].push(child) : childrenMap[arr] = [child]
+    })
+    items.forEach((item, idx) => items[idx][helpers.case.pluralize(childModelName.toLowerCase())] = childrenMap[item['id']])
+  } catch (e) {
+    return Promise.reject(e)
+  }
+}

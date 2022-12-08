@@ -1,3 +1,4 @@
+import { loadChildren } from '../core/controller'
 import { Post } from '../entities/post'
 import { Reply } from '../entities/reply'
 import { Reaction } from '../entities/reaction'
@@ -117,8 +118,6 @@ const postController = {
         .leftJoinAndSelect('Post.user', 'user')
         .leftJoinAndSelect('user.profile', 'profile')
         .leftJoinAndSelect('Post.board', 'board')
-        .leftJoinAndMapMany('Post.replies', Reply, 'reply', 'reply.postId = Post.id')
-        .leftJoinAndMapMany('Post.reactions', Reaction, 'reaction', 'reaction.postId = Post.id')
 
       // LIKE 검색이 너무 많아서 나중에 규모가 커지면 ES등 튜닝 필요함
       const keyword = (c.req.query['query'] || '').split('=')[1]
@@ -127,11 +126,13 @@ const postController = {
         qb.orWhere(`profile.nickname LIKE "%${keyword}%"`)
         qb.orWhere(`Post.title LIKE "%${keyword}%"`)
         qb.orWhere(`Post.content LIKE "%${keyword}%"`)
-        qb.orWhere(`reply.nickname LIKE "%${keyword}%"`)
-        qb.orWhere(`reply.content LIKE "%${keyword}%"`)
       }
 
       const [data, total] = await qb.getManyAndCount()
+      await Promise.all([
+        loadChildren({ c, model: Post, childModel: Reply, items: data }),
+        loadChildren({ c, model: Post, childModel: Reaction, items: data }),
+      ])
       data.forEach((post: Post) => mutatePostToBeSecure(c, post))
       c.res.asJSON({ data, total })
     } catch (e) {
