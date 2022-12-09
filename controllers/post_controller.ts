@@ -15,9 +15,7 @@ const mutatePostToBeSecure = (c: IContext, post: Post) => {
   post.user = User.sensitiveAuthInfoFilteredUser(post.user) as any
 
   post.replies = helpers.organizeReplies(post.replies)
-  if ((post.replies || []).length > 0) {
-    post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
-  }
+  post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
 
   // post.reactions 삭제 (추천한 사람들 ip 노출 방지)
   post['$$reactions'] = { up: { count: 0 }, down: { count: 0 } }
