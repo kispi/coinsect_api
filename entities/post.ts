@@ -24,6 +24,9 @@ export class Post extends BaseModel {
   @ManyToOne(() => Board, board => board.posts, { onDelete: 'SET NULL' })
   board: Board
 
+  @Column({ nullable: true })
+  boardId: number
+
   @Column({ length: 255, nullable: true })
   title: string
 
