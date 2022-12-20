@@ -109,7 +109,7 @@ const postController = {
     target.content = helpers.sanitize.html(payload['content'])
 
     try {
-      await dataSource.getRepository(Post).save(target)
+      await target.save()
       c.res.success()
     } catch (e) {
       c.res.failed(e)

@@ -108,6 +108,15 @@ routesPost.detail = async (c: IContext) => {
     c.res.failed(e)
   }
 }
+routesPost.update = async (c: IContext) => {
+  try {
+    const p = c.req.body as Post
+    await p.save()
+    c.res.success()
+  } catch (e) {
+    c.res.failed(e)
+  }
+}
 
 const routesUser = useCRUD({ model: User, useSoftDelete: true, withDeleted: true })
 routesUser.all = async (c: IContext) => {

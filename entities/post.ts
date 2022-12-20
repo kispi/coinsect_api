@@ -104,6 +104,15 @@ export class Post extends BaseModel {
     }
   }
 
+  async save() {
+    delete this.views // Post.views는 저장하지 않는다.
+    try {
+      return await dataSource.getRepository(Post).save(this)
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  }
+
   toJSON() {
     delete this.password
     delete this.ip
