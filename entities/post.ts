@@ -104,10 +104,10 @@ export class Post extends BaseModel {
     }
   }
 
-  async save() {
-    delete this.views // Post.views는 저장하지 않는다.
+  static async save(post: Post) {
+    delete post.views // Post.views는 저장하지 않는다.
     try {
-      return await dataSource.getRepository(Post).save(this)
+      return await dataSource.getRepository(Post).save(post)
     } catch (e) {
       return Promise.reject(e)
     }

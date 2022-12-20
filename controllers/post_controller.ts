@@ -109,7 +109,7 @@ const postController = {
     target.content = helpers.sanitize.html(payload['content'])
 
     try {
-      await target.save()
+      await Post.save(target)
       c.res.success()
     } catch (e) {
       c.res.failed(e)

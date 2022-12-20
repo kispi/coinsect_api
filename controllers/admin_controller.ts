@@ -110,8 +110,7 @@ routesPost.detail = async (c: IContext) => {
 }
 routesPost.update = async (c: IContext) => {
   try {
-    const p = c.req.body as Post
-    await p.save()
+    await Post.save(c.req.body as Post)
     c.res.success()
   } catch (e) {
     c.res.failed(e)
