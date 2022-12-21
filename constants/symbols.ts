@@ -92,6 +92,11 @@ const arr = [
   { symbol: 'HIBS', kr: '하이블럭스', en: 'Hiblocks' },
   { symbol: 'FIT', kr: '300피트 네트워크', en: '300FIT NETWORK' },
   { symbol: 'NFT', kr: '에이피이앤에프티', en: 'APENFT' },
+  { symbol: 'ALT', kr: '아치루트', en: 'Archloot' },
+  { symbol: 'AZIT', kr: '아지트', en: 'Azit' },
+  { symbol: 'FITFI', kr: '스텝앱', en: 'Step App' },
+  { symbol: 'XCN', kr: '체인', en: 'Chain' },
+  { symbol: 'GXA', kr: '갤럭시아', en: 'Galaxia' },
 ]
 
 const o = {}
