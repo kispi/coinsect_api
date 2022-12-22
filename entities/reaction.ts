@@ -22,6 +22,9 @@ export class Reaction extends BaseModel {
   @Column()
   type: TypeReactionType
 
+  @Column({ nullable: true })
+  userId: number
+
   @JoinColumn()
   @OneToOne(() => User, { onDelete: 'CASCADE' })
   user: User
