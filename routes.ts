@@ -132,6 +132,7 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.post('/helpers/crawled_websites', ctrls.helper.crawledWebsites.create)
     router.get('/helpers/crawled_websites/examples', ctrls.helper.crawledWebsites.examples)
+    router.post('/helpers/proxy', ctrls.helper.proxy)
 
     router.get('/notifications', ctrls.notification.all)
 

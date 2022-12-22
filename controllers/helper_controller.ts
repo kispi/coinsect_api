@@ -1,3 +1,4 @@
+import axios from 'axios'
 import IContext from '../core/interfaces/context'
 import useService from '../services'
 
@@ -37,6 +38,13 @@ const helperController = {
       }
     },
     examples: (c: IContext) => c.res.asJSON(service.helper.crawledWebsites.examples()),
+  },
+  proxy: async (c: IContext) => {
+    try {
+      c.res.asJSON(await axios.get(c.req.body['url']))
+    } catch (e) {
+      c.res.failed(e)
+    }
   },
 }
 
