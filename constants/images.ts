@@ -1,0 +1,23 @@
+export default {
+  chatBg: [
+    'https://preview.redd.it/f881q05m1nz51.png?width=640&crop=smart&auto=webp&s=f42e002b796fe338a9eac1ff1f6c09969d78d305',
+    'https://preview.redd.it/gk73irr9ckg11.gif?format=png8&s=095d8d5c8283f794c723393318dc09d8df3c40c6',
+    'https://preview.redd.it/ffez9f7lzx591.png?width=640&crop=smart&auto=webp&s=1d966ab3d1a5aea6a2327e39ad40b03d78afe94d',
+    'https://i.ebayimg.com/images/g/BVgAAOSwT~hirIra/s-l500.jpg',
+    'https://d2u3dcdbebyaiu.cloudfront.net/uploads/atch_img/99/fe24c46a7ea11df3d95095cdacdc7d83_crop.jpeg',
+    'https://i.ytimg.com/vi/J9hClX7WENM/maxresdefault.jpg',
+    'https://pbs.twimg.com/profile_images/1485632175932383235/8t0DGo6V_400x400.jpg',
+    'https://pbs.twimg.com/media/FU8j04FUUAI4q2g.jpg',
+    'https://memepedia.ru/wp-content/uploads/2020/10/dump-it-bogdanov-s-telefonom.jpg',
+    'https://dailycoin.com/wp-content/uploads/2022/10/image7.jpg',
+    'https://preview.redd.it/kgiyfisdeoa51.jpg?auto=webp&s=d072ea6e0bd371f3c7cacf2558638c04235e42a7',
+    'https://pbs.twimg.com/media/Dwj-5dQXgAANqWu.jpg:large',
+    'https://i.ytimg.com/vi/4L4BYWWO_pg/maxresdefault.jpg',
+    'https://pbs.twimg.com/profile_images/1216329134323879936/vIASr46D_400x400.jpg',
+    'https://i0.wp.com/asiatimes.com/wp-content/uploads/2021/02/Screen-Shot-2021-02-15-at-12.07.50.png?fit=671%2C475&ssl=1',
+    'https://images.wsj.net/im-689945?width=860&height=573',
+    'https://i.ytimg.com/vi/6wa8xuEtkZ4/mqdefault.jpg',
+    'https://davidgerard.co.uk/blockchain/wp-content/uploads/2021/06/bukele-laser-eyes.jpg',
+    'https://pbs.twimg.com/ext_tw_video_thumb/1549851102597844992/pu/img/Y5jcjzwlqE2i8vZ6.jpg',
+  ],
+}
