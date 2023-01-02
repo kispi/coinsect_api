@@ -51,9 +51,7 @@ const whaleAlertService = {
         timestamp: t.timestamp,
       }))
       dataSource.createQueryBuilder().insert().orIgnore().into(WhaleAlert).values(whaleAlerts).execute()
-      log.info(`whaleAlert.crawl: crawling with minValue = ${minValue} success`)
     } catch (e) {
-      log.error(`whaleAlert.crawl: crawling with minValue = ${minValue} failed`, e.data)
       return Promise.reject(e)
     }
   },
