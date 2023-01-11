@@ -14,42 +14,40 @@ const publicTreasuryService = {
 
     try {
       const result = []
-      const data = await axios.get('https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vQHcNgqvu0l1S-aBE12KEooSK9CQlw7LrKA2M9ZToRMw4f5DM31TOvexQOIPu32lf0TLhVSpHJMCxdT/pubhtml/sheet?headers=false&gid=0') as string
+      const data = await axios.get('https://bitcointreasuries.net') as string
       const html = parse(data)
       const rows = html.getElementsByTagName('tr')
-      rows.forEach(row => {
-        const cols = row.getElementsByTagName('td')
-        if (cols.length < 12) return
 
-        let source = helpers.parseHref(cols[6].innerHTML)
-        if (source) {
-          source = source.split('https://www.google.com/url?q=')[1]
-          source = source.split('&amp;sa=D')[0]
+      let type = 'Public Company'
+      // 첫줄은 각 열에 대한 설명이라 생략
+      rows.slice(1).forEach(row => {
+        const th = row.getElementsByTagName('th')
+        if (th[0]) {
+          type = th[0].innerHTML
+          return
         }
 
+        const cols = row.getElementsByTagName('td')
+        if (cols.length !== 10) return
+
+        const spansInNameCell = cols[0].querySelectorAll('span')
         const item = {
-          name: helpers.sanitize.strict(cols[1].innerHTML),
-          country: helpers.sanitize.strict(cols[2].innerHTML),
-          symbol: helpers.sanitize.strict(cols[3].innerHTML),
-          source,
-          costBasis: foo(cols[7].innerHTML),
-          valuation: foo(cols[8].innerHTML),
-          holdings: foo(cols[10].innerHTML),
-          type: 'etc',
+          name: helpers.sanitize.strict(spansInNameCell[spansInNameCell.length - 1].innerText.trim()),
+          symbol: helpers.sanitize.strict(cols[1].innerHTML),
+          costBasis: foo(cols[5].innerText) * Math.pow(10, 6),
+          valuation: foo(cols[6].innerText) * Math.pow(10, 6),
+          holdings: foo(cols[4].innerText),
+          type,
         }
         item['dominance'] = Math.round(10000 * item.holdings / 210000) / 10000
+        if (item.symbol === 'TSLA') item.name = 'Tesla, Inc.'
 
         if (item.costBasis && item.valuation && item.holdings) {
           item['profit'] = Math.round(10000 * (item.valuation - item.costBasis) / item.costBasis) / 100
           item['avgPrice'] = Math.round(item.costBasis / item.holdings)
-          if (item['profit'] === 0) item['type'] = 'etf'
-          else item['type'] = 'public_company'
         }
-        if ((item['symbol'] === 'gov')) item['type'] = 'gov'
-        if ((item['symbol'] === 'private')) item['type'] = 'private_company'
         result.push(item)
       })
-      result.sort((a, b) => b.holdings - a.holdings)
       cache.set('content:publicTreasuries', result, 3600)
       return result
     } catch (e) {
