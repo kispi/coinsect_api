@@ -16,7 +16,7 @@ export class Reaction extends BaseModel {
   @Column({ nullable: true })
   postId: number
 
-  @ManyToOne(() => Post, post => post.reactions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Post, post => post.reactions, { onDelete: 'SET NULL' })
   post: Post
 
   @Column()
@@ -25,8 +25,7 @@ export class Reaction extends BaseModel {
   @Column({ nullable: true })
   userId: number
 
-  @JoinColumn()
-  @OneToOne(() => User, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { onDelete: 'SET NULL', createForeignKeyConstraints: false })
   user: User
 
   @Column({ nullable: true })
