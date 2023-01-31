@@ -8,7 +8,7 @@ const jwtHelper = {
 
     return (httpHeader.authorization || '').split('Bearer ')[1]
   },
-  sign: (payload: object) => jwt.sign(payload, store.state.serverConfig.JWT_SECRET, { expiresIn: 60 * 60 * 24 * 7 }),
+  sign: (payload: object) => jwt.sign(payload, store.state.serverConfig.JWT_SECRET, { expiresIn: 60 * 60 * 24 * 28 }),
   decode: (token: string) => new Promise((resolve, reject) => {
     jwt.verify(token, store.state.serverConfig.JWT_SECRET, (err, decoded) => {
       if (err) return reject(err)
