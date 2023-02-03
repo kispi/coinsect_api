@@ -4,6 +4,7 @@ import useService from '../services'
 const service = useService()
 
 const contentController = {
+  orangePill: (c: IContext) => c.res.asJSON(service.content.orangePill),
   publicTreasuries: async (c: IContext) => {
     try {
       c.res.asJSON(await service.content.publicTreasury.all())
