@@ -9,10 +9,10 @@ type Repo = {
 }
 
 const repos: Array<Repo> = [{
-  key: 'coinsect_web',
+  key: 'coinsect_frontend',
   deploying: false,
   lastDeployLog: null,
-  command: 'cd /home/ec2-user/web/coinsect_web && ./deploy.sh',
+  command: 'cd /home/ec2-user/web/coinsect_frontend && ./deploy.sh',
 }, {
   key: 'coinsect_api',
   deploying: false,
