@@ -77,7 +77,7 @@ export class Post extends BaseModel {
   }
 
   static async validate(post) {
-    const requiredFields = ['title', 'content', 'nickname', 'password']
+    const requiredFields = ['title', 'content', 'nickname']
     if (!helpers.trimAndValidateRequiredFields(post, requiredFields)) {
       return Promise.reject()
     }

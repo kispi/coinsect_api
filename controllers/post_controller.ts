@@ -54,12 +54,15 @@ const postController = {
     }
 
     payload['ip'] = c.req.ip
-    payload['password'] = helpers.hashed(payload['password'])
     payload['title'] = helpers.sanitize.strict(payload['title'])
     payload['content'] = helpers.sanitize.html(payload['content'])
 
     const user = await helpers.jwt.mustUser(c)
     if (user) payload['user'] = user
+    else {
+      payload['password'] = helpers.hashed(payload['password'])
+      if (!payload['password']) return c.res.failed({ message: 'password is required' })
+    }
 
     try {
       payload['sharingKey'] = helpers.generateUUID(true)
@@ -104,9 +107,15 @@ const postController = {
     target.ip = c.req.ip
     target.board = payload['board']
     target.nickname = helpers.sanitize.html(payload['nickname'])
-    target.password = helpers.hashed(payload['password'])
     target.title = helpers.sanitize.html(payload['title'])
     target.content = helpers.sanitize.html(payload['content'])
+
+    if (user) {
+      target.userId = user['id']
+      target.password = null
+    } else {
+      target.password = helpers.hashed(payload['password'])
+    }
 
     try {
       await Post.save(target)

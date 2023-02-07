@@ -21,11 +21,14 @@ const replyController = {
     }
 
     payload['ip'] = c.req.ip
-    payload['password'] = helpers.hashed(payload['password'])
     payload['content'] = helpers.sanitize.html(payload['content'])
 
     const user = await helpers.jwt.mustUser(c)
     if (user) payload['user'] = user
+    else {
+      payload['password'] = helpers.hashed(payload['password'])
+      if (!payload['password']) return c.res.failed({ message: 'password is required' })
+    }
 
     try {
       await orm.querySetter(c, Reply).insert().into(Reply).values(payload).execute()

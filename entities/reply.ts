@@ -43,7 +43,7 @@ export class Reply extends BaseModel {
   password: string
 
   static async validate(reply) {
-    const requiredFields = ['content', 'nickname', 'password']
+    const requiredFields = ['content', 'nickname']
     if (!helpers.trimAndValidateRequiredFields(reply, requiredFields)) {
       return Promise.reject()
     }
