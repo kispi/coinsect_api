@@ -52,9 +52,9 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.put('/admin/helpers/crawled_websites', ctrls.helper.crawledWebsites.delete, middlewares.auth.admin.super) // DELETE 메소드는 request body를 가질 수 없어서 put으로
     router.get('/admin/helpers/crawled_websites', ctrls.helper.crawledWebsites.all, middlewares.auth.admin.super)
 
-    router.get('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.all, middlewares.auth.admin.super)
-    router.put('/admin/aws/rekognition', ctrls.aws.rekognition.imageModeration.delete, middlewares.auth.admin.super) // DELETE 메소드는 request body를 가질 수 없어서 put으로
-    router.put('/admin/aws/rekognition/delete_bulk', ctrls.aws.rekognition.imageModeration.deleteBulk, middlewares.auth.admin.super)
+    router.get('/admin/aws/rekognition/image_moderation', ctrls.aws.rekognition.imageModeration.all, middlewares.auth.admin.super)
+    router.put('/admin/aws/rekognition/image_moderation', ctrls.aws.rekognition.imageModeration.delete, middlewares.auth.admin.super) // DELETE 메소드는 request body를 가질 수 없어서 put으로
+    router.put('/admin/aws/rekognition/image_moderation/delete_bulk', ctrls.aws.rekognition.imageModeration.deleteBulk, middlewares.auth.admin.super)
 
     useRouteCRUD({ app, model: 'badWord' })
     useRouteCRUD({ app, model: 'bannedUser', middleware: middlewares.auth.admin.manager })
@@ -142,7 +142,8 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/aws/s3/upload_url', ctrls.aws.s3.getSignedUrl)
     router.delete('/aws/s3/object', ctrls.aws.s3.deleteObject)
 
-    router.post('/aws/rekognition', ctrls.aws.rekognition.imageModeration.create)
+    router.post('/aws/rekognition/image_moderation', ctrls.aws.rekognition.imageModeration.create)
+    router.post('/aws/rekognition/detect_text', ctrls.aws.rekognition.detectText.create)
   },
 })
 

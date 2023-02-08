@@ -5,11 +5,22 @@ const service = useService()
 
 const awsController = {
   rekognition: {
+    detectText: {
+      create: async (c: IContext) => {
+        const url = c.req.query['url']//c.req.body['url']
+        try {
+          const result = await service.aws.rekognition.detectText.create(url)
+          c.res.success(result)
+        } catch (e) {
+          c.res.failed(e)
+        }
+      },
+    },
     imageModeration: {
       create: async (c: IContext) => {
         const url = c.req.body['url']
         try {
-          const result = await service.aws.rekognition.imageModeration(url)
+          const result = await service.aws.rekognition.imageModeration.create(url)
           c.res.success(result)
         } catch (e) {
           c.res.failed(e)
@@ -17,7 +28,7 @@ const awsController = {
       },
       all: async (c: IContext) => {
         try {
-          const data = await service.aws.rekognition.all()
+          const data = await service.aws.rekognition.imageModeration.all()
           c.res.asJSON({
             total: Object.keys(data || {}).length,
             data,
@@ -28,7 +39,7 @@ const awsController = {
       },
       delete: async (c: IContext) => {
         try {
-          const data = await service.aws.rekognition.delete(c.req.body['url'])
+          const data = await service.aws.rekognition.imageModeration.delete(c.req.body['url'])
           c.res.asJSON({
             total: Object.keys(data || {}).length,
             data,
@@ -39,7 +50,7 @@ const awsController = {
       },
       deleteBulk: async (c: IContext) => {
         try {
-          const data = await service.aws.rekognition.deleteBulk(c.req.body['deleteAll'])
+          const data = await service.aws.rekognition.imageModeration.deleteBulk(c.req.body['deleteAll'])
           c.res.asJSON({
             total: Object.keys(data || {}).length,
             data,
