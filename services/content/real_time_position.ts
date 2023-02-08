@@ -2,8 +2,7 @@ import helpers from '../../core/helpers'
 import useCache from '../../core/cache'
 import presets from '../../constants/position_presets'
 import IContext from '../../core/interfaces/context'
-import slack from '../slack'
-import store from '../../store'
+import slackService from '../slack'
 import chatService from '../chat'
 
 const now = () => helpers.dayjs().format()
@@ -101,7 +100,7 @@ const realTimePositionService = {
         notifiedPositionHistories.push(acceptable)
         notifiedPositionHistories = notifiedPositionHistories.slice(-5) // 최근 5개까지만 유지
         const u = await chatService.getUser(payload['token'])
-        slack.postMessage(`
+        slackService.postMessage(`
           포지션 수정 요청이 들어왔습니다
           요청자: ${u.profile.nickname} (${c.req.ip} / ${u.token})\n
           스트리머: *${payload['name']}*

@@ -5,11 +5,11 @@ const service = useService()
 
 const awsController = {
   rekognition: {
-    detectText: {
+    realTimePosition: {
       create: async (c: IContext) => {
-        const url = c.req.query['url']//c.req.body['url']
+        const url = c.req.query['url']
         try {
-          const result = await service.aws.rekognition.detectText.create(url)
+          const result = await service.aws.rekognition.realTimePosition.create(url)
           c.res.success(result)
         } catch (e) {
           c.res.failed(e)

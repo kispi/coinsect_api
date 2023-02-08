@@ -4,6 +4,7 @@ import { log } from '../../core/logger'
 import useCache from '../../core/cache'
 import helpers from '../../core/helpers'
 import store from '../../store'
+import realTimePosition from './real_time_position'
 
 const cache = useCache()
 
@@ -20,6 +21,7 @@ const rekognition = new AWS.Rekognition({
 })
 
 const rekognitionService = {
+  realTimePosition,
   imageModeration: {
     all: async () => {
       moderationTestedUrls = await cache.get('moderation_tested_urls')
