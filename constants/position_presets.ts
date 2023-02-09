@@ -24,16 +24,4 @@ export default [{
   'image': 'https://profile.img.afreecatv.com/LOGO/cy/cyber91/cyber91.jpg',
   'name': '리듬타타',
   'link': 'https://bj.afreecatv.com/cyber91',
-}, {
-  'image': helpers.useCdn('images/influencers/gunchim.png'),
-  'name': '군침코인',
-  'link': 'https://play.afreecatv.com/anwhrjsqorqo',
-}, {
-  'image': helpers.useCdn('images/influencers/lala.png'),
-  'name': '랄라',
-  'link': 'https://bj.afreecatv.com/lsbm0317',
-}, {
-  'image': 'https://profile.img.afreecatv.com/LOGO/sk/skgus197/skgus197.jpg',
-  'name': '티미',
-  'link': 'https://bj.afreecatv.com/skgus197',
 }]

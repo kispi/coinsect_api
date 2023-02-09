@@ -43,6 +43,7 @@ const exchangeAnalyzer = {
   },
   bitget: (json: TextDetectionList): ISimplePosition => {
     const o = {} as ISimplePosition
+    let direction
     json.forEach(word => {
       const s = word.DetectedText || ''
       if (s.startsWith('Open Price')) {
@@ -61,8 +62,11 @@ const exchangeAnalyzer = {
       ) {
         const tokens = s.split(' ')
         o.contract = tokens[tokens.length - 1]
+        if (s.startsWith('Long')) direction = 'long'
+        if (s.startsWith('Short')) direction = 'short'
       }
     })
+    if (direction === 'short' && o.size) o.size = o.size * -1
     return o
   },
 }
