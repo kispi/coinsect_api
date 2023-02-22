@@ -3,6 +3,7 @@ import { exec } from 'child_process'
 
 type Repo = {
   key: string,
+  description: string,
   deploying: boolean,
   lastDeployLog: string | Error,
   command: string,
@@ -10,11 +11,19 @@ type Repo = {
 
 const repos: Array<Repo> = [{
   key: 'coinsect_frontend',
+  description: 'coinsect.io',
   deploying: false,
   lastDeployLog: null,
   command: 'cd /home/ec2-user/web/coinsect_frontend && ./deploy.sh',
 }, {
+  key: 'coinsect_web',
+  description: 'btc.coinsect.io',
+  deploying: false,
+  lastDeployLog: null,
+  command: 'cd /home/ec2-user/web/coinsect_web && ./deploy.sh',
+}, {
   key: 'coinsect_api',
+  description: 'api.coinsect.io',
   deploying: false,
   lastDeployLog: null,
   command: 'cd /home/ec2-user/web/coinsect_api && ./deploy.sh',
