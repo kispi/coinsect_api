@@ -1,3 +1,4 @@
+import { Brackets } from 'typeorm'
 import { loadChildren } from '../core/controller'
 import { Post } from '../entities/post'
 import { Reply } from '../entities/reply'
@@ -134,10 +135,12 @@ const postController = {
       // LIKE 검색이 너무 많아서 나중에 규모가 커지면 ES등 튜닝 필요함
       const keyword = (c.req.query['query'] || '').split('=')[1]
       if (keyword) {
-        qb.andWhere(`Post.nickname LIKE "%${keyword}%"`)
-        qb.orWhere(`profile.nickname LIKE "%${keyword}%"`)
-        qb.orWhere(`Post.title LIKE "%${keyword}%"`)
-        qb.orWhere(`Post.content LIKE "%${keyword}%"`)
+        qb.andWhere(new Brackets(subQb => subQb
+          .where(`Post.nickname LIKE "%${keyword}%"`)
+          .orWhere(`profile.nickname LIKE "%${keyword}%"`)
+          .orWhere(`Post.title LIKE "%${keyword}%"`)
+          .orWhere(`Post.content LIKE "%${keyword}%"`)
+        ))
       }
 
       const [data, total] = await qb.getManyAndCount()
