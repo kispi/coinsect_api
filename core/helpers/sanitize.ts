@@ -10,6 +10,7 @@ const sanitize = {
       allowedIframeHostnames: ['www.youtube.com'],
       allowedAttributes: {
         'a': ['href', 'target', 'rel'],
+        'iframe': ['*'],
         'img': ['src'],
         '*': ['style', 'class'],
       },
