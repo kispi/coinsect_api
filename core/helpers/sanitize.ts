@@ -6,7 +6,8 @@ const sanitize = {
     const d = sanitizeHtml.defaults
 
     return sanitizeHtml(text, {
-      allowedTags: d.allowedTags.concat(['img']),
+      allowedTags: d.allowedTags.concat(['img', 'iframe']),
+      allowedIframeHostnames: ['www.youtube.com'],
       allowedAttributes: {
         'a': ['href', 'target', 'rel'],
         'img': ['src'],
