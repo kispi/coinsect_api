@@ -55,7 +55,7 @@ const postController = {
     }
 
     payload['ip'] = c.req.ip
-    payload['title'] = helpers.sanitize.strict(payload['title'])
+    payload['title'] = payload['title']
     payload['content'] = helpers.sanitize.html(payload['content'])
 
     const user = await helpers.jwt.mustUser(c)
@@ -107,8 +107,8 @@ const postController = {
 
     target.ip = c.req.ip
     target.board = payload['board']
-    target.nickname = helpers.sanitize.html(payload['nickname'])
-    target.title = helpers.sanitize.html(payload['title'])
+    target.nickname = helpers.sanitize.strict(payload['nickname'])
+    target.title = payload['title']
     target.content = helpers.sanitize.html(payload['content'])
 
     if (user) {
@@ -159,6 +159,7 @@ const postController = {
       const post = await orm.querySetter(c, Post)
         .leftJoinAndSelect('Post.board', 'board')
         .leftJoinAndSelect('Post.reactions', 'reactions')
+        .withDeleted()
         .leftJoinAndSelect('Post.replies', 'replies')
         .leftJoinAndSelect('replies.user', 'rUser')
         .leftJoinAndSelect('rUser.profile', 'rProfile')
