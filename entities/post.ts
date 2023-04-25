@@ -113,6 +113,29 @@ export class Post extends BaseModel {
     }
   }
 
+  mutatePostToBeSecure(ip: string) {
+    this.user = User.sensitiveAuthInfoFilteredUser(this.user) as any
+  
+    this['$$numReplies'] = (this.replies || []).filter(reply => !reply.deletedAt).length
+    this.replies = helpers.organizeReplies(this.replies)
+  
+    // post.reactions 삭제 (추천한 사람들 ip 노출 방지)
+    this['$$reactions'] = { up: { count: 0 }, down: { count: 0 } }
+    if ((this.reactions || []).length > 0) {
+      this.reactions.forEach(reaction => {
+        if (reaction.type === 'up') {
+          this['$$reactions']['up'].count++
+          this['$$reactions']['up'].activated = reaction.ip === ip
+        }
+        if (reaction.type === 'down') {
+          this['$$reactions']['down'].count++
+          this['$$reactions']['down'].activated = reaction.ip === ip
+        }
+      })
+      delete this.reactions
+    }
+  }
+
   toJSON() {
     delete this.password
     delete this.ip

@@ -1,39 +1,12 @@
-import { Brackets } from 'typeorm'
-import { loadChildren } from '../core/controller'
 import { Post } from '../entities/post'
-import { Reply } from '../entities/reply'
-import { Reaction } from '../entities/reaction'
-import { User } from '../entities/user'
 import { dataSource } from '../database'
 import IContext from '../core/interfaces/context'
 import orm from '../core/orm'
 import helpers from '../core/helpers'
+import postService from '../services/post'
 
 // 자유게시판 id
 const freeBoardId = 1
-
-const mutatePostToBeSecure = (c: IContext, post: Post) => {
-  post.user = User.sensitiveAuthInfoFilteredUser(post.user) as any
-
-  post['$$numReplies'] = (post.replies || []).filter(reply => !reply.deletedAt).length
-  post.replies = helpers.organizeReplies(post.replies)
-
-  // post.reactions 삭제 (추천한 사람들 ip 노출 방지)
-  post['$$reactions'] = { up: { count: 0 }, down: { count: 0 } }
-  if ((post.reactions || []).length > 0) {
-    post.reactions.forEach(reaction => {
-      if (reaction.type === 'up') {
-        post['$$reactions']['up'].count++
-        post['$$reactions']['up'].activated = reaction.ip === c.req.ip
-      }
-      if (reaction.type === 'down') {
-        post['$$reactions']['down'].count++
-        post['$$reactions']['down'].activated = reaction.ip === c.req.ip
-      }
-    })
-    delete post.reactions
-  }
-}
 
 const postController = {
   create: async (c: IContext) => {
@@ -127,28 +100,7 @@ const postController = {
   },
   all: async (c: IContext) => {
     try {
-      const qb = orm.querySetter(c, Post)
-        .leftJoinAndSelect('Post.user', 'user')
-        .leftJoinAndSelect('user.profile', 'profile')
-        .leftJoinAndSelect('Post.board', 'board')
-
-      // LIKE 검색이 너무 많아서 나중에 규모가 커지면 ES등 튜닝 필요함
-      const keyword = (c.req.query['query'] || '').split('=')[1]
-      if (keyword) {
-        qb.andWhere(new Brackets(subQb => subQb
-          .where(`Post.nickname LIKE "%${keyword}%"`)
-          .orWhere(`profile.nickname LIKE "%${keyword}%"`)
-          .orWhere(`Post.title LIKE "%${keyword}%"`)
-          .orWhere(`Post.content LIKE "%${keyword}%"`)
-        ))
-      }
-
-      const [data, total] = await qb.getManyAndCount()
-      await Promise.all([
-        loadChildren({ c, model: Post, childModel: Reply, items: data }),
-        loadChildren({ c, model: Post, childModel: Reaction, items: data }),
-      ])
-      data.forEach((post: Post) => mutatePostToBeSecure(c, post))
+      const { data, total } = await postService.all(c)
       c.res.asJSON({ data, total })
     } catch (e) {
       c.res.failed(e)
@@ -169,7 +121,7 @@ const postController = {
         .where(`Post.sharing_key = '${c.req.params['sharingKey']}'`)
         .getOneOrFail() as Post
 
-      mutatePostToBeSecure(c, post)
+      post.mutatePostToBeSecure(c.req.ip)
       await post.increaseViews(c)
       c.res.asJSON(post)
     } catch (e) {

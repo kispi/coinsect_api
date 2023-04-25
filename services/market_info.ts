@@ -35,7 +35,7 @@ const marketInfoService = {
         basePrice: resp[1][0]['basePrice'],
         signedChangeRate: resp[1][0]['signedChangeRate'],
       }
-      cache.set('market_info:indices', indices, 60 * 10)
+      cache.set('market_info:indices', indices, 60)
       return indices
     } catch (e) {
       return Promise.reject(e)

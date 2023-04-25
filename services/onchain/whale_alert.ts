@@ -1,10 +1,10 @@
-import axios from 'axios'
-import store from '../../store'
-import IContext from '../../core/interfaces/context'
-import orm from '../../core/orm'
 import { log } from '../../core/logger'
 import { WhaleAlert } from '../../entities/whale_alert'
 import { dataSource } from '../../database'
+import axios from 'axios'
+import store from '../../store'
+import orm from '../../core/orm'
+import IContext from '../../core/interfaces/context'
 
 const apiKey = store.state.serverConfig.WHALE_ALERT
 
@@ -12,12 +12,8 @@ const apiKey = store.state.serverConfig.WHALE_ALERT
 // Rate Limit for Free Plan: 10 per minute.
 
 const whaleAlertService = {
-  transactions: async (c: IContext) => {
-    const limit = parseInt(c.req.query['limit']) || 100
-    if (limit > 100) {
-      c.res.failed({ message: 'limit exceeded 100' })
-      return
-    }
+  transactions: async (c: IContext, limit: number) => {
+    if (limit > 100) return Promise.reject({ message: 'limit exceeded 100' })
 
     const qb = orm.querySetter(c, WhaleAlert).orderBy('timestamp', 'DESC').limit(limit)
     const [data, total] = await qb.getManyAndCount()

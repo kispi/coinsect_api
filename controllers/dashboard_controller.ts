@@ -1,6 +1,10 @@
+import { dataSource } from '../database'
 import helpers from '../core/helpers'
 import IContext from '../core/interfaces/context'
-import { dataSource } from '../database'
+import whaleAlertService from '../services/onchain/whale_alert'
+import postService from '../services/post'
+import contentService from '../services/content'
+import marketInfoService from '../services/market_info'
 
 const activityQuery = ({ tablename, start, end }: { tablename: string, start?: string, end?: string }) => {
   if (start && !helpers.dayjs(start).isValid()) return Promise.reject({ message: 'INVALID_DATE' })
@@ -39,6 +43,25 @@ const dashboardController = {
       }))))
       const aggregated = keys.map((key, idx) => ({ key, data: data[idx] }))
       c.res.success(aggregated)
+    } catch (e) {
+      c.res.failed(e)
+    }
+  },
+  main: async (c: IContext) => {
+    // 고래알림, 자유게시판, 리더보드, 실시간 포지션
+    try {
+      const o = await Promise.all([
+        whaleAlertService.transactions(c, 10),
+        postService.all(c, { limit: 10, sort: 'created_at', order: 'DESC' }),
+        contentService.realTimePosition.all(),
+        marketInfoService.leaderboard(),
+      ])
+      c.res.asJSON({
+        whaleAlert: o[0],
+        posts: o[1],
+        realTimePosition: o[2],
+        leaderboard: o[3],
+      })
     } catch (e) {
       c.res.failed(e)
     }

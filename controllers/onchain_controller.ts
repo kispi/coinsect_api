@@ -40,7 +40,7 @@ const onchainController = {
   },
   whaleAlert: async (c: IContext) => {
     try {
-      c.res.asJSON(await service.onchain.whaleAlert.transactions(c))
+      c.res.asJSON(await service.onchain.whaleAlert.transactions(c, c.req.query['limit']))
     } catch (e) {
       c.res.failed(e)
     }
