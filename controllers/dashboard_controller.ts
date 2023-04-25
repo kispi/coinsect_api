@@ -52,8 +52,8 @@ const dashboardController = {
   },
   main: async (c: IContext) => {
     // 고래알림, 자유게시판, 리더보드, 실시간 포지션
-    const stored = await cache.get('dashboards:main')
-    if (stored) return stored
+    const storedResp = await cache.get('dashboards:main')
+    if (storedResp) return c.res.asJSON(storedResp)
 
     try {
       const o = await Promise.all([
