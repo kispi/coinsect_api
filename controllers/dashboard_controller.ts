@@ -5,6 +5,9 @@ import whaleAlertService from '../services/onchain/whale_alert'
 import postService from '../services/post'
 import contentService from '../services/content'
 import marketInfoService from '../services/market_info'
+import useCache from '../core/cache'
+
+const cache = useCache()
 
 const activityQuery = ({ tablename, start, end }: { tablename: string, start?: string, end?: string }) => {
   if (start && !helpers.dayjs(start).isValid()) return Promise.reject({ message: 'INVALID_DATE' })
@@ -49,6 +52,9 @@ const dashboardController = {
   },
   main: async (c: IContext) => {
     // 고래알림, 자유게시판, 리더보드, 실시간 포지션
+    const stored = await cache.get('dashboards:main')
+    if (stored) return stored
+
     try {
       const o = await Promise.all([
         whaleAlertService.transactions(c, { limit: 10, where: 'amount_usd >= 4000000 AND (from_owner_type != "unknown" XOR to_owner_type != "unknown")' }),
@@ -56,12 +62,14 @@ const dashboardController = {
         contentService.realTimePosition.all(),
         marketInfoService.leaderboard(),
       ])
-      c.res.asJSON({
+      const resp = {
         whaleAlerts: o[0],
         posts: o[1],
         realTimePositions: o[2],
         leaderboards: o[3],
-      })
+      }
+      cache.set('dashboards:main', resp, 60)
+      c.res.asJSON(resp)
     } catch (e) {
       c.res.failed(e)
     }
