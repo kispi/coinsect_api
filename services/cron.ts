@@ -3,6 +3,7 @@ import walletService from './wallet'
 import chatService from './chat'
 import whaleAlertService from './onchain/whale_alert'
 import marketInfoService from './market_info'
+import dashboardService from './dashboard'
 
 const failableCrawl = (minValue: number) => {
   whaleAlertService.crawl(minValue).then().catch(() => {})
@@ -35,6 +36,7 @@ const cronService = {
       runnable: () => {
         marketInfoService.symbols(true)
         marketInfoService.markets(true)
+        dashboardService.main(true)
       },
       interval: 1000 * 60,
     })
