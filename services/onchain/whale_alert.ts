@@ -12,10 +12,12 @@ const apiKey = store.state.serverConfig.WHALE_ALERT
 // Rate Limit for Free Plan: 10 per minute.
 
 const whaleAlertService = {
-  transactions: async (c: IContext, limit: number) => {
-    if (limit > 100) return Promise.reject({ message: 'limit exceeded 100' })
+  transactions: async (c: IContext, overridableQuery?: unknown) => {
+    if (overridableQuery) c.req.query = overridableQuery
 
-    const qb = orm.querySetter(c, WhaleAlert).orderBy('timestamp', 'DESC').limit(limit)
+    if (c.req.query['limit'] > 20) return Promise.reject({ message: 'limit exceeded 20' })
+
+    const qb = orm.querySetter(c, WhaleAlert).orderBy('timestamp', 'DESC')
     const [data, total] = await qb.getManyAndCount()
     return {
       data,

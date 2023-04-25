@@ -51,16 +51,16 @@ const dashboardController = {
     // 고래알림, 자유게시판, 리더보드, 실시간 포지션
     try {
       const o = await Promise.all([
-        whaleAlertService.transactions(c, 10),
-        postService.all(c, { limit: 10, sort: 'created_at', order: 'DESC' }),
+        whaleAlertService.transactions(c, { limit: 10, where: 'amount_usd >= 4000000 AND (from_owner_type != "unknown" XOR to_owner_type != "unknown")' }),
+        postService.all(c, { limit: 10, sort: 'created_at', order: 'DESC', where: 'board_id != 3' }),
         contentService.realTimePosition.all(),
         marketInfoService.leaderboard(),
       ])
       c.res.asJSON({
-        whaleAlert: o[0],
+        whaleAlerts: o[0],
         posts: o[1],
-        realTimePosition: o[2],
-        leaderboard: o[3],
+        realTimePositions: o[2],
+        leaderboards: o[3],
       })
     } catch (e) {
       c.res.failed(e)
