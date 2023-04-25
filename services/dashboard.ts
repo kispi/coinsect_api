@@ -17,7 +17,7 @@ const dashboardService = {
     const c = { orm: dataSource, req: {} } as IContext
     try {
       const o = await Promise.all([
-        whaleAlertService.transactions(c, { limit: 10, where: 'amount_usd >= 4000000 AND (from_owner_type != "unknown" XOR to_owner_type != "unknown")' }),
+        whaleAlertService.transactions(c, { limit: 20, where: 'amount_usd >= 3000000 AND (from_owner_type != "unknown" XOR to_owner_type != "unknown")' }),
         postService.all(c, { limit: 10, sort: 'created_at', order: 'DESC', where: 'board_id != 3' }),
         contentService.realTimePosition.all(),
         marketInfoService.leaderboard(),
