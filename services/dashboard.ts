@@ -25,7 +25,7 @@ const dashboardService = {
       const resp = {
         whaleAlerts: o[0],
         posts: o[1],
-        realTimePositions: o[2],
+        realTimePositions: { data: o[2].data.filter(o => o.editable), lastUpdate: o[2].lastUpdate },
         leaderboards: o[3],
       }
       cache.set('dashboards:main', resp, 60)
