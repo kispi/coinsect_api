@@ -62,9 +62,18 @@ const removeNotifiedPositionHistoriesOf = id => {
   removeNotifiedPositionHistoriesOf(id)
 }
 
-const setRealTimePositions = o => {
+const setRealTimePositions = async o => {
   o.lastUpdate = now()
   cache.set('content:realTimePositions', o)
+
+  const dashboards = await cache.get('dashboards:main')
+  if (dashboards.realTimePositions) {
+    dashboards.realTimePositions = {
+      data: (o.data || []).filter(o => o.editable),
+      lastUpdate: o.lastUpdate,
+    }
+    cache.set('dashboards:main', dashboards, 60)
+  }
 }
 
 const positionHasChanged = (a, b) => ['contract', 'entryPrice', 'liqPrice', 'size'].some(field =>
