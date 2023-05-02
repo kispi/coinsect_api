@@ -119,6 +119,7 @@ const postController = {
         .leftJoinAndSelect('user.profile', 'profile')
         .leftJoinAndSelect('replies.parent', 'parent')
         .where(`Post.sharing_key = '${c.req.params['sharingKey']}'`)
+        .andWhere('Post.deleted_at IS NULL')
         .getOneOrFail() as Post
 
       post.mutatePostToBeSecure(c.req.ip)
