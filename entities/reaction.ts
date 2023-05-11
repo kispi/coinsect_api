@@ -20,6 +20,9 @@ export class Reaction extends BaseModel {
   @ManyToOne(() => Post, post => post.reactions, { onDelete: 'SET NULL' })
   post: Post
 
+  @Column({ nullable: true })
+  replyId: number
+
   @ManyToOne(() => Reply, reply => reply.reactions, { onDelete: 'SET NULL' })
   reply: Reply
 
