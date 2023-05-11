@@ -1,7 +1,8 @@
-import { Entity, Column, JoinColumn, OneToOne, ManyToOne } from 'typeorm'
-import BaseModel from './base_model'
+import { Entity, Column, ManyToOne } from 'typeorm'
 import { Post } from './post'
 import { User } from './user'
+import { Reply } from './reply'
+import BaseModel from './base_model'
 
 enum TypeReactionType {
   TypeReactionTypeHeart = 'heart',
@@ -18,6 +19,9 @@ export class Reaction extends BaseModel {
 
   @ManyToOne(() => Post, post => post.reactions, { onDelete: 'SET NULL' })
   post: Post
+
+  @ManyToOne(() => Reply, reply => reply.reactions, { onDelete: 'SET NULL' })
+  reply: Reply
 
   @Column()
   type: TypeReactionType

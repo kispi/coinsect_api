@@ -8,7 +8,7 @@ import BaseModel from './base_model'
 
 @Entity({ name: 'replies' })
 export class Reply extends BaseModel {
-  @OneToMany(() => Reaction, reaction => reaction.post)
+  @OneToMany(() => Reaction, reaction => reaction.reply)
   reactions: Reaction[]
 
   // 조인없이 id만 사용할 수 있게 하려면 따로 이렇게 필드를 넣어줘야 함.

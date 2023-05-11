@@ -118,6 +118,7 @@ const postController = {
         .leftJoinAndSelect('Post.user', 'user')
         .leftJoinAndSelect('user.profile', 'profile')
         .leftJoinAndSelect('replies.parent', 'parent')
+        .leftJoinAndSelect('replies.reactions', 'rReactions')
         .where(`Post.sharing_key = '${c.req.params['sharingKey']}'`)
         .andWhere('Post.deleted_at IS NULL')
         .getOneOrFail() as Post
