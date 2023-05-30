@@ -1,4 +1,5 @@
 import { SocketStream } from '@fastify/websocket'
+import { Reaction } from '../entities/reaction'
 
 export interface IUser {
   profile?: {
@@ -29,6 +30,7 @@ export interface IMessage {
   user: IUser,
   text?: string,
   meta?: string | Object,
+  reactions: Array<Reaction>,
   numConnections: number, // 나중에 deprecate
   stats: {
     numConnections: number,

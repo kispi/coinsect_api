@@ -1,6 +1,6 @@
 import { Entity, Column, OneToMany, ManyToOne, Index } from 'typeorm'
 import { Board } from './board'
-import { Reaction } from './reaction'
+import { summarizedReactions, Reaction } from './reaction'
 import { Reply } from './reply'
 import { User } from './user'
 import { dataSource } from '../database'
@@ -11,27 +11,6 @@ import BaseModel from './base_model'
 
 enum TypePostType {
   Normal = 'normal',
-}
-
-const summarizeNumReactions = (writing: Post | Reply, requestIP: string) => {
-  // reactions이 없더라도, 클라이언트 null check를 위해 summary 객체는 생성
-  if (!writing['summary']) writing['summary'] = { reactions: { thumbs_up: {}, thumbs_down: {} } }
-
-  if ((writing.reactions || []).length === 0) return
-
-  // [Post | Reply].reactions 삭제 (추천한 사람들 ip 노출 방지)
-  writing['summary'].reactions = { thumbs_up: { count: 0 }, thumbs_down: { count: 0 } }
-  writing.reactions.forEach(reaction => {
-    if (reaction.type === 'thumbs_up') {
-      writing['summary'].reactions['thumbs_up'].count++
-      writing['summary'].reactions['thumbs_up'].activated = reaction.ip === requestIP
-    }
-    if (reaction.type === 'thumbs_down') {
-      writing['summary'].reactions['thumbs_down'].count++
-      writing['summary'].reactions['thumbs_down'].activated = reaction.ip === requestIP
-    }
-  })
-  delete writing.reactions
 }
 
 @Entity({ name: 'posts' })
@@ -136,13 +115,16 @@ export class Post extends BaseModel {
 
   mutatePostToBeSecure(ip: string) {
     this.user = User.sensitiveAuthInfoFilteredUser(this.user) as any
-    const numReplies = (this.replies || []).filter(reply => !reply.deletedAt).length
-  
-    if ((this.replies || []).length > 0) this.replies.forEach(reply => summarizeNumReactions(reply, ip))
+    if ((this.replies || []).length > 0) this.replies.forEach(reply => {
+      reply['summary'] = { reactions: summarizedReactions(reply.reactions, ip) }
+      delete reply.reactions
+    })
     this.replies = helpers.organizeReplies(this.replies)
-    summarizeNumReactions(this, ip)
-    if (this['summary']) this['summary'].numReplies = numReplies
-    else this['summary'] = { numReplies }
+    this['summary'] = {
+      reactions: summarizedReactions(this.reactions, ip),
+      numReplies: (this.replies || []).filter(reply => !reply.deletedAt).length
+    }
+    delete this.reactions
   }
 
   toJSON() {

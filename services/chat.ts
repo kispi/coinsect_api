@@ -1,6 +1,6 @@
+import { IUser } from '../chat/types'
 import store from '../store'
 import axios from 'axios'
-import { IUser } from '../chat/types'
 
 const endpoint = store.state.serverConfig.COINSECT_CHAT
 
@@ -36,6 +36,14 @@ const chatService = {
   invalidate: async () => {
     try {
       await axios.post(endpoint + '/webchat/messages/invalidate', {})
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  },
+  // 주고 받는 reactions가 크지 않을 것으로 생각됨.
+  updateReactions: async ({ messageId, reactions }) => {
+    try {
+      await axios.post(endpoint + `/webchat/messages/${messageId}/update_reactions`, { reactions })
     } catch (e) {
       return Promise.reject(e)
     }

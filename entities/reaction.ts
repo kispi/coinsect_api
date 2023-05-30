@@ -5,6 +5,21 @@ import { Reply } from './reply'
 import { User } from './user'
 import BaseModel from './base_model'
 
+export const summarizedReactions = (reactions: Reaction[], requestIP?: string) => {
+  if ((reactions || []).length === 0) return
+
+  const $$reactions = {}
+  reactions.forEach(reaction => {
+    if ($$reactions[reaction.type as string]) {
+      $$reactions[reaction.type as string].count++
+      $$reactions[reaction.type as string].activated = reaction.ip === requestIP
+    } else {
+      $$reactions[reaction.type as string] = { count: 1, activated: reaction.ip === requestIP }
+    }
+  })
+  return Object.keys($$reactions).length > 0 ? $$reactions : null
+}
+
 @Entity({ name: 'reactions' })
 export class Reaction extends BaseModel {
   @Column({ nullable: true })

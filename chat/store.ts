@@ -1,6 +1,7 @@
 import { dataSource } from '../database'
-import { Message } from '../entities/message'
+import { Message, populateReactions } from '../entities/message'
 import { User } from '../entities/user'
+import { summarizedReactions } from '../entities/reaction'
 import { IConnection, IMessage, IUser, IUserSetting } from './types'
 import profileService from '../services/profile'
 import useCache from '../core/cache'
@@ -11,7 +12,7 @@ const cache = useCache()
 const state = {
   config: {
     allowImageMessage: true,
-    numLatestMessages: 100,
+    numLatestMessages: 50,
     allowedChatFrequency: 500, // ms. determine how frequently users can chat
     messageMaxLength: 255,
     nicknameMaxLength: 10,
@@ -20,7 +21,7 @@ const state = {
   bannedUntil: {} as { ip: string },
   users: {},
   userSettings: {},
-  connections: [] as IConnection[],
+  connections: [] as Array<IConnection>,
   recentMessages: [] as Array<IMessage>,
   stats: {
     numConnections: 0,
@@ -136,6 +137,8 @@ const actions = {
         .orderBy('Message.id', 'DESC')
         .getMany()
 
+      // .leftJoinAndSelect('Message.reactions', 'reactions')를 하면 느림.
+      await populateReactions(data)
       data.forEach(message => message.user = User.sensitiveAuthInfoFilteredUser(message.user) as any)
       const json = JSON.parse(JSON.stringify(data))
       state.recentMessages = json.map(helpers.asIMessage)

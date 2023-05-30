@@ -5,12 +5,12 @@ import helpers from './helpers'
 import badWord from '../services/bad_word'
 import firebase from '../services/firebase'
 import messageHandlers from './message_handler'
-import { User } from '../entities/user'
-import { Message } from '../entities/message'
+import { Message, populateReactions } from '../entities/message'
 import { IMessage, IUser, IUserSetting } from './types'
 import { SocketStream } from '@fastify/websocket'
 import { FastifyRequest } from 'fastify'
 import { createHttpLog, log } from '../core/logger'
+import { summarizedReactions } from '../entities/reaction'
 
 const connections = store.getters.connections()
 
@@ -67,10 +67,20 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   })
 }
 
-const filteredMessages = (messages: Array<IMessage>) => messages.map(m => ({
-  ...m,
-  text: (m.type === 'text') ? badWord.filtered(m.text) : m.text,
-}))
+/*
+  messages 원본을 변형하면 안되므로 복사본을 사용한다.(메모리에 올라간 recentMessages[].reactions를 삭제하면 안됨)
+  state.recentMessages는 100개로 제한되어 있으므로 잦은 복사가 문제가 되진 않을 듯?
+*/
+const processedMessages = (messages: Array<IMessage>, ip: string) => {
+  return JSON.parse(JSON.stringify(messages)).map(message => {
+    message['summary'] = { reactions: summarizedReactions(message.reactions, ip) }
+    delete message.reactions
+    return {
+      ...message,
+      text: (message.type === 'text') ? badWord.filtered(message.text) : message.text,
+    }
+  })
+}
 
 export const chatCtrl = {
   authApiServer: (c: IContext) => {
@@ -271,14 +281,15 @@ export const chatCtrl = {
       const cursor = c.req.query['firstMessageId']
       if (cursor) qb.where(`Message.id < ${cursor}`)
       else {
-        return c.res.asJSON(filteredMessages(store.getters.recentMessages()))
+        return c.res.asJSON(processedMessages(store.getters.recentMessages(), c.req.ip))
       }
 
       try {
         const data = await qb.getMany()
-        data.forEach(message => message.user = User.sensitiveAuthInfoFilteredUser(message.user) as any)
+        // .leftJoinAndSelect('Message.reactions', 'reactions')로 하면 너무 느려서 걍 쿼리를 한 번 더 함
+        await populateReactions(data)
         const json = JSON.parse(JSON.stringify(data))
-        c.res.asJSON(filteredMessages(json.map(helpers.asIMessage)))
+        c.res.asJSON(processedMessages(json.map(helpers.asIMessage), c.req.ip))
       } catch (e) {
         log.error('chatCtrl.messages.all:', e)
         c.res.error()
@@ -303,8 +314,23 @@ export const chatCtrl = {
       helpers.broadcast(message)
       c.res.success()
     },
-    invalidate: (c: IContext) => {
-      store.actions.loadRecentMessages().then(() => c.res.success())
+    invalidate: async (c: IContext) => {
+      try {
+        await store.actions.loadRecentMessages()
+        c.res.success()
+      } catch (e) {
+        c.res.failed(e)
+      }
+    },
+    updateReactions: (c: IContext) => {
+      const messageId = parseInt(c.req.params['id'])
+      const updatedReactions = c.req.body['reactions']
+      if (!messageId || !updatedReactions) return
+
+      helpers.broadcast({
+        type: 'updateReaction',
+        meta: { messageId, updatedReactions },
+      })
     },
     hideMessage: (c: IContext) => {
       const messageId = parseInt(c.req.params['id'])

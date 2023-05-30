@@ -81,6 +81,7 @@ const asIMessage = (message): IMessage => {
     user: message.user || dbStoredUser,
     text: message.text,
     meta: message.meta,
+    reactions: message.reactions,
     numConnections: s.numConnections,
     stats: {
       numConnections: s.numConnections,

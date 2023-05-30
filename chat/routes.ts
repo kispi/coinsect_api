@@ -26,6 +26,7 @@ const useChatRoutes = (app: FastifyInstance) => {
   routes.get('/webchat/users/:token', chatCtrl.user.one, chatCtrl.authApiServer)
   routes.delete('/webchat/users/old', chatCtrl.user.deleteOld, chatCtrl.authApiServer)
   routes.post('/webchat/messages/:id/hide', chatCtrl.message.hideMessage, chatCtrl.authApiServer)
+  routes.post('/webchat/messages/:id/update_reactions', chatCtrl.message.updateReactions, chatCtrl.authApiServer)
   routes.post('/webchat/messages', chatCtrl.message.send, chatCtrl.authApiServer)
   routes.post('/webchat/messages/broadcast', chatCtrl.message.broadcast, chatCtrl.authApiServer)
   routes.post('/webchat/messages/invalidate', chatCtrl.message.invalidate, chatCtrl.authApiServer)
