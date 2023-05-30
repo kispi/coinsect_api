@@ -15,20 +15,20 @@ enum TypePostType {
 
 const summarizeNumReactions = (writing: Post | Reply, requestIP: string) => {
   // reactions이 없더라도, 클라이언트 null check를 위해 summary 객체는 생성
-  if (!writing['summary']) writing['summary'] = { reactions: { up: {}, down: {} } }
+  if (!writing['summary']) writing['summary'] = { reactions: { thumbs_up: {}, thumbs_down: {} } }
 
   if ((writing.reactions || []).length === 0) return
 
   // [Post | Reply].reactions 삭제 (추천한 사람들 ip 노출 방지)
-  writing['summary'].reactions = { up: { count: 0 }, down: { count: 0 } }
+  writing['summary'].reactions = { thumbs_up: { count: 0 }, thumbs_down: { count: 0 } }
   writing.reactions.forEach(reaction => {
-    if (reaction.type === 'up') {
-      writing['summary'].reactions['up'].count++
-      writing['summary'].reactions['up'].activated = reaction.ip === requestIP
+    if (reaction.type === 'thumbs_up') {
+      writing['summary'].reactions['thumbs_up'].count++
+      writing['summary'].reactions['thumbs_up'].activated = reaction.ip === requestIP
     }
-    if (reaction.type === 'down') {
-      writing['summary'].reactions['down'].count++
-      writing['summary'].reactions['down'].activated = reaction.ip === requestIP
+    if (reaction.type === 'thumbs_down') {
+      writing['summary'].reactions['thumbs_down'].count++
+      writing['summary'].reactions['thumbs_down'].activated = reaction.ip === requestIP
     }
   })
   delete writing.reactions

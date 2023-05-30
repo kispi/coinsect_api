@@ -1,16 +1,9 @@
 import { Entity, Column, ManyToOne } from 'typeorm'
+import { Message } from './message'
 import { Post } from './post'
-import { User } from './user'
 import { Reply } from './reply'
+import { User } from './user'
 import BaseModel from './base_model'
-
-enum TypeReactionType {
-  TypeReactionTypeHeart = 'heart',
-  TypeReactionTypeLike = 'like',
-  TypeReactionTypeDislike = 'dislike',
-  TypeReactionTypeUp = 'up',
-  TypeReactionTypeDown = 'down',
-}
 
 @Entity({ name: 'reactions' })
 export class Reaction extends BaseModel {
@@ -26,8 +19,14 @@ export class Reaction extends BaseModel {
   @ManyToOne(() => Reply, reply => reply.reactions, { onDelete: 'SET NULL' })
   reply: Reply
 
+  @Column({ nullable: true })
+  messageId: number
+
+  @ManyToOne(() => Message, message => message.reactions, { onDelete: 'SET NULL' })
+  message: Message
+
   @Column()
-  type: TypeReactionType
+  type: String
 
   @Column({ nullable: true })
   userId: number

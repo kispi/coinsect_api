@@ -1,9 +1,13 @@
-import { Entity, Column, ManyToOne } from 'typeorm'
+import { Entity, Column, ManyToOne, OneToMany } from 'typeorm'
+import { Reaction } from './reaction'
 import { User } from './user'
 import BaseModel from './base_model'
 
 @Entity({ name: 'messages' })
 export class Message extends BaseModel {
+  @OneToMany(() => Reaction, reaction => reaction.reply)
+  reactions: Reaction[]
+
   @Column()
   ip: string
 

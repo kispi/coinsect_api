@@ -107,7 +107,9 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.post('/replies', ctrls.reply.create)
     router.delete('/replies/:id', ctrls.reply.delete)
     router.post('/replies/:id/check_password', ctrls.reply.checkPassword)
-    router.post('/reactions', ctrls.reaction.toggle)
+    router.post('/reactions/posts', ctrls.reaction.toggle.post)
+    router.post('/reactions/replies', ctrls.reaction.toggle.reply)
+    router.post('/reactions/messages', ctrls.reaction.toggle.message)
 
     router.get('/market_info/leaderboard', ctrls.marketInfo.leaderboard)
     router.get('/market_info/indices', ctrls.marketInfo.indices)
