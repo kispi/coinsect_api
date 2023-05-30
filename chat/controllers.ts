@@ -325,7 +325,7 @@ export const chatCtrl = {
     updateReactions: (c: IContext) => {
       const messageId = parseInt(c.req.params['id'])
       const updatedReactions = c.req.body['reactions']
-      if (!messageId || !updatedReactions) return
+      if (!messageId) return
 
       helpers.broadcast({
         type: 'updateReaction',
