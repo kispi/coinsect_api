@@ -88,10 +88,6 @@ const routesStore = {
       }
     }
   },
-  setAdminToken: (c: IContext) => {
-    store.state.adminToken = c.req.body['token']
-    c.res.success()
-  },
 }
 
 const routesPost = useCRUD({ model: Post, useSoftDelete: true, withDeleted: true })

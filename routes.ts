@@ -43,7 +43,6 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.post('/admin/store/bad_words/invalidate', ctrls.admin.store.badWord.invalidate, middlewares.auth.admin.super)
     router.post('/admin/store/banned_users/invalidate', ctrls.admin.store.bannedUser.invalidate, middlewares.auth.admin.manager)
     router.post('/admin/store/messages/invalidate', ctrls.admin.store.message.invalidate, middlewares.auth.admin.manager)
-    router.post('/admin/store/admin_token', ctrls.admin.store.setAdminToken, middlewares.auth.admin.super)
 
     router.get('/admin/crons', ctrls.admin.cron.all, middlewares.auth.admin.super)
 
