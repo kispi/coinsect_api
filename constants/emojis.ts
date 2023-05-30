@@ -25,5 +25,5 @@ export default {
   'rocket': { emoji: '🚀' },
   'chart_with_upwards_trend': { emoji: '📈' },
   'chart_with_downwards_trend': { emoji: '📉' },
-  'eyes': '👀'
+  'eyes': { emoji: '👀' },
 }
