@@ -5,6 +5,7 @@ import { Reply } from './reply'
 import { User } from './user'
 import BaseModel from './base_model'
 
+// for Post and Reply
 export const summarizedReactions = (reactions: Reaction[], requestIP?: string) => {
   if ((reactions || []).length === 0) return
 
@@ -19,6 +20,14 @@ export const summarizedReactions = (reactions: Reaction[], requestIP?: string) =
   })
   return Object.keys($$reactions).length > 0 ? $$reactions : null
 }
+
+// for Message
+export const simplifiedReaction = (reaction: Reaction) => ({
+  type: reaction.type,
+  nickname: reaction.nickname,
+  ip: reaction.ip,
+  userId: reaction.user ? reaction.user.id : null,
+})
 
 @Entity({ name: 'reactions' })
 export class Reaction extends BaseModel {

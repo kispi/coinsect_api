@@ -26,7 +26,7 @@ const replyController = {
     const user = await helpers.jwt.mustUser(c)
     if (user) payload['user'] = user
     else {
-      payload['password'] = helpers.hashed(payload['password'])
+      payload['password'] = helpers.crypto.hashed(payload['password'])
       if (!payload['password']) return c.res.failed({ message: 'password is required' })
     }
 
@@ -49,7 +49,7 @@ const replyController = {
         if (user['id'] !== target.userId) return c.res.failed()
       } else {
         // 익명 댓글을 삭제하기 때문에 비밀번호가 필요한 경우
-        if (!helpers.compare(target.password, c.req.body['password'])) return c.res.failed({ message: 'INCORRECT_PASSWORD' })
+        if (!helpers.crypto.compare(target.password, c.req.body['password'])) return c.res.failed({ message: 'INCORRECT_PASSWORD' })
       }
 
       await replyRepository.softRemove(target)
@@ -63,7 +63,7 @@ const replyController = {
 
     try {
       const target = await dataSource.getRepository(Reply).findOneOrFail({ where: { id: c.req.params['id'] } })
-      if (!helpers.compare(target.password, c.req.body['password'])) {
+      if (!helpers.crypto.compare(target.password, c.req.body['password'])) {
         c.res.failed({ message: 'INCORRECT_PASSWORD' })
         return
       }

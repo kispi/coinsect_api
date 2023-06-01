@@ -33,7 +33,7 @@ const createPosition = ({
   name: string,
   link?: string,
 }): IRealTimePosition => ({
-  id: helpers.generateUUID(true),
+  id: helpers.crypto.generateUUID(true),
   image,
   name,
   entryPrice: null,
@@ -152,7 +152,7 @@ const realTimePositionService = {
   set: async (payload, submittedByUser?) => {
     if (!payload.id) {
       cachedPositions.data.push({
-        id: helpers.generateUUID(true),
+        id: helpers.crypto.generateUUID(true),
         image: payload.image,
         link: payload.link,
         name: payload.name,
@@ -172,7 +172,7 @@ const realTimePositionService = {
     try {
       await realTimePositionService.validate(payload)
 
-      if (!payload.id) payload.id = helpers.generateUUID(true)
+      if (!payload.id) payload.id = helpers.crypto.generateUUID(true)
 
       const found = cachedPositions.data.find(o => o.id === payload.id)
       const changed = positionHasChanged(found, payload)

@@ -36,7 +36,7 @@ const s3Service = {
     // ADMIN의 경우는 uuid를 생성하지 않고 그냥 어드민에서 입력한 키를 그대로 사용한다.
     const Key = nouuid ?
       key :
-      key.split('/').filter(frag => frag).slice(0, -1).join('/') + '/' + helpers.generateUUID() + '_' + fileName
+      key.split('/').filter(frag => frag).slice(0, -1).join('/') + '/' + helpers.crypto.generateUUID() + '_' + fileName
 
     try {
       const url = await s3.getSignedUrl('putObject', {

@@ -95,7 +95,7 @@ export class Post extends BaseModel {
 
     try {
       const target = await dataSource.getRepository(Post).findOneOrFail({ where: { sharingKey }})
-      if (!helpers.compare(target.password, password)) {
+      if (!helpers.crypto.compare(target.password, password)) {
         return Promise.reject({ message: 'INCORRECT_PASSWORD' })
       }
       return Promise.resolve()

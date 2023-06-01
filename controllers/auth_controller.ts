@@ -60,7 +60,7 @@ const authController = {
       const user = await c.orm.getRepository(User).findOne({ where: { email: c.req.body['email'] } })
       if (!user) return c.res.failed({ message: 'user not found' })
 
-      if (!helpers.compare(user.password, c.req.body['password'])) return c.res.failed({ message: 'password not match' })
+      if (!helpers.crypto.compare(user.password, c.req.body['password'])) return c.res.failed({ message: 'password not match' })
       c.res.success({ token: User.jwt(user) })
     } catch (e) {
       c.res.failed(e)

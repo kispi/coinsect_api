@@ -1,4 +1,4 @@
-import { Reaction, summarizedReactions } from '../entities/reaction'
+import { Reaction, simplifiedReaction } from '../entities/reaction'
 import IContext from '../core/interfaces/context'
 import helpers from '../core/helpers/'
 import emojis from '../constants/emojis'
@@ -10,17 +10,17 @@ const afterReact = async (c: IContext) => {
   try {
     const reactions = await c.orm.getRepository(Reaction).createQueryBuilder().where(`message_id = ${c.req.body['messageId']}`).getMany()
 
-    /*
-    변경된 리액션을 모든 유저에게 전파하는 부분인데, 여기에 summarizedReactions를 쓰지 않고
-    ip를 포함한 실제 reactions 배열을 써야, 프론트엔드에서 유저가 리액션을 했는지 여부를 알 수 있을 듯 ㅜㅜ
-    */
-    chatService.updateReactions({ messageId: c.req.body['messageId'], reactions: summarizedReactions(reactions) })
+    chatService.updateReactions({
+      messageId: c.req.body['messageId'],
+      reactions: reactions.map(simplifiedReaction),
+    })
   } catch (e) {
     return Promise.reject(e)
   }
 }
 
 const reactionController = {
+  // 현재는 ip를 기준으로 중복방지를 하고 있지만, 추후에는 userId, token, ip 순으로 중복방지를 해야 할 듯?
   toggle: {
     post: async (c: IContext) => {
       if (

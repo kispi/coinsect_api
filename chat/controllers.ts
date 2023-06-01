@@ -10,7 +10,7 @@ import { IMessage, IUser, IUserSetting } from './types'
 import { SocketStream } from '@fastify/websocket'
 import { FastifyRequest } from 'fastify'
 import { createHttpLog, log } from '../core/logger'
-import { summarizedReactions } from '../entities/reaction'
+import { simplifiedReaction } from '../entities/reaction'
 
 const connections = store.getters.connections()
 
@@ -73,8 +73,7 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
 */
 const processedMessages = (messages: Array<IMessage>, ip: string) => {
   return JSON.parse(JSON.stringify(messages)).map(message => {
-    message['summary'] = { reactions: summarizedReactions(message.reactions, ip) }
-    delete message.reactions
+    message.reactions = (message.reactions || []).map(simplifiedReaction)
     return {
       ...message,
       text: (message.type === 'text') ? badWord.filtered(message.text) : message.text,

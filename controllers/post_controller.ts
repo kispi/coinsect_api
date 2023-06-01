@@ -34,12 +34,12 @@ const postController = {
     const user = await helpers.jwt.mustUser(c)
     if (user) payload['user'] = user
     else {
-      payload['password'] = helpers.hashed(payload['password'])
+      payload['password'] = helpers.crypto.hashed(payload['password'])
       if (!payload['password']) return c.res.failed({ message: 'password is required' })
     }
 
     try {
-      payload['sharingKey'] = helpers.generateUUID(true)
+      payload['sharingKey'] = helpers.crypto.generateUUID(true)
       await orm.querySetter(c, Post).insert().into(Post).values(payload).execute()
       c.res.success()
     } catch (e) {
@@ -88,7 +88,7 @@ const postController = {
       target.userId = user['id']
       target.password = null
     } else {
-      target.password = helpers.hashed(payload['password'])
+      target.password = helpers.crypto.hashed(payload['password'])
     }
 
     try {
@@ -142,7 +142,7 @@ const postController = {
         if (user['id'] !== target.userId) return c.res.failed()
       } else {
         // 익명 게시글을 삭제하기 때문에 비밀번호가 필요한 경우
-        if (!helpers.compare(target.password, c.req.body['password'])) return c.res.failed({ message: 'INCORRECT_PASSWORD' })
+        if (!helpers.crypto.compare(target.password, c.req.body['password'])) return c.res.failed({ message: 'INCORRECT_PASSWORD' })
       }
 
       await postRepository.softRemove(target)

@@ -36,7 +36,7 @@ const cron = {
     }
 
     jobs.push({
-      id: id || helpers.generateUUID(true),
+      id: id || helpers.crypto.generateUUID(true),
       runnable,
       interval,
       interv: null,

@@ -1,5 +1,5 @@
-import { Entity, Column, ManyToOne, OneToMany, DataSource } from 'typeorm'
-import { Reaction } from './reaction'
+import { Entity, Column, ManyToOne, OneToMany } from 'typeorm'
+import { Reaction, simplifiedReaction } from './reaction'
 import { User } from './user'
 import { dataSource } from '../database'
 import BaseModel from './base_model'
@@ -7,8 +7,13 @@ import BaseModel from './base_model'
 export const populateReactions = async (messages: Array<Message>) => {
   const messageIds = messages.map(message => message.id)
   const reactions = await dataSource.getRepository(Reaction).createQueryBuilder().where(`message_id IN (${messageIds.join(',')})`).getMany()
+  const reactionsMap = {}
+  reactions.forEach(reaction => {
+    if (!reactionsMap[reaction.messageId]) reactionsMap[reaction.messageId] = [reaction]
+    else reactionsMap[reaction.messageId].push(reaction)
+  })
   messages.forEach(message => {
-    message.reactions = reactions.filter(reaction => reaction.messageId === message.id)
+    message.reactions = (reactionsMap[message.id] || []).map(simplifiedReaction)
     message.user = User.sensitiveAuthInfoFilteredUser(message.user) as any
   })
 }

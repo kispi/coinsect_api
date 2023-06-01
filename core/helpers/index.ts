@@ -1,19 +1,19 @@
-const crypto = require('crypto')
-const slugid = require('slugid')
+import { BannedUser } from '../../entities/banned_user'
+import { Reply } from '../../entities/reply'
+import { parse } from 'node-html-parser'
 import dayjs = require('dayjs')
+import crypto from './crypto'
 import store from '../../store'
 import sanitize from './sanitize'
 import jwt from './jwt'
 import axios from 'axios'
-import { BannedUser } from '../../entities/banned_user'
-import { Reply } from '../../entities/reply'
-import { parse } from 'node-html-parser'
 
 const helpers = {
   // 나중에 구현
   sanitize,
   jwt,
   dayjs,
+  crypto,
   regex: {
     url: /\b(?:https?|ftp):\/\/[a-z0-9-+&@#/%?=~_|!:,.;]*[a-z0-9-+&@#/%=~_|]/gim,
     pseudoUrl: /(^|[^/])(www\.[\S]+(\b|$))/gim,
@@ -50,20 +50,6 @@ const helpers = {
 
     return text.split('\n').map(line => line.trim()).join('\n').trim()
   },
-  hashed: (raw: string) => crypto.createHash('sha256').update(raw).digest('base64'),
-  compare: (hashed: string, raw: string) =>
-    hashed &&
-    raw &&
-    crypto.createHash('sha256').update(raw).digest('base64') === hashed
-  ,
-  generateUUID: (asBase64?: boolean) => {
-    const slug = slugid.v4()
-
-    if (asBase64) return slug
-
-    const uuid = slugid.decode(slug)
-    return uuid
-  },
   includesBadWords: (message: string) => store.state.badWords.map(o => o.word).some(badWord => message.includes(badWord)),
   useBannedUser: ({ ip, token }: { ip?: string, token?: string }): BannedUser => {
     if (!ip && !token) return
@@ -96,10 +82,10 @@ const helpers = {
       if (item.deletedAt) item.content = ''
 
       if (!item.parent) return
-  
+
       const parent = replies.find(possibleParent => possibleParent.id === (item.parent || {}).id) as Reply
       if (!parent) return
-  
+
       parent.replies ? parent.replies.push(item) : parent.replies = [item]
     })
 
