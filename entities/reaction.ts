@@ -26,7 +26,7 @@ export const simplifiedReaction = (reaction: Reaction) => ({
   type: reaction.type,
   nickname: reaction.nickname,
   ip: reaction.ip,
-  userId: reaction.user ? reaction.user.id : null,
+  userId: reaction.userId,
 })
 
 @Entity({ name: 'reactions' })
