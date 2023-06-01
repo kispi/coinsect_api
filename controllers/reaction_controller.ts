@@ -20,7 +20,7 @@ const afterReact = async (c: IContext) => {
 }
 
 const reactionController = {
-  // 현재는 ip를 기준으로 중복방지를 하고 있지만, 추후에는 userId, token, ip 순으로 중복방지를 해야 할 듯?
+  // user_id가 null이면 ip를 기준으로 중복방지를 하고, user_id가 있으면 user_id를 기준으로 중복방지를 한다.
   toggle: {
     post: async (c: IContext) => {
       if (
@@ -31,11 +31,13 @@ const reactionController = {
 
       const user = await helpers.jwt.mustUser(c)
       try {
-        const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(`
-          ip = '${c.req.ip}' AND
+        const query = `
+          ${user ? `user_id = ${user['id']}` : `ip = '${c.req.ip}'`} AND
           type = '${c.req.body['type']}' AND
           post_id = '${c.req.body['postId']}'
-        `).getOne()
+        `
+
+        const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(query).getOne()
         if (result) await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
         else await c.orm.getRepository(Reaction).insert({
           ip: c.req.ip,
@@ -58,11 +60,13 @@ const reactionController = {
 
       const user = await helpers.jwt.mustUser(c)
       try {
-        const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(`
-          ip = '${c.req.ip}' AND
+        const query = `
+          ${user ? `user_id = ${user['id']}` : `ip = '${c.req.ip}'`} AND
           type = '${c.req.body['type']}' AND
           reply_id = '${c.req.body['replyId']}'
-        `).getOne()
+        `
+
+        const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(query).getOne()
         if (result) await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
         else await c.orm.getRepository(Reaction).insert({
           ip: c.req.ip,
@@ -85,7 +89,6 @@ const reactionController = {
 
       const user = await helpers.jwt.mustUser(c)
       try {
-        // user_id가 null이면 ip를 기준으로 중복방지를 하고, user_id가 있으면 user_id를 기준으로 중복방지를 한다.
         const query = `
           ${user ? `user_id = ${user['id']}` : `ip = '${c.req.ip}'`} AND
           type = '${c.req.body['type']}' AND
