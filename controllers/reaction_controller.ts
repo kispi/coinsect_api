@@ -85,11 +85,14 @@ const reactionController = {
 
       const user = await helpers.jwt.mustUser(c)
       try {
-        const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(`
-          ip = '${c.req.ip}' AND
+        // user_id가 null이면 ip를 기준으로 중복방지를 하고, user_id가 있으면 user_id를 기준으로 중복방지를 한다.
+        const query = `
+          ${user ? `user_id = ${user['id']}` : `ip = '${c.req.ip}'`} AND
           type = '${c.req.body['type']}' AND
           message_id = '${c.req.body['messageId']}'
-        `).getOne()
+        `
+
+        const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(query).getOne()
         if (result) await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
         else await c.orm.getRepository(Reaction).insert({
           ip: c.req.ip,
