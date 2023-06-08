@@ -119,11 +119,11 @@ export class Post extends BaseModel {
       reply['summary'] = { reactions: summarizedReactions(reply.reactions, ip) }
       delete reply.reactions
     })
-    this.replies = helpers.organizeReplies(this.replies)
     this['summary'] = {
       reactions: summarizedReactions(this.reactions, ip),
       numReplies: (this.replies || []).filter(reply => !reply.deletedAt).length
     }
+    this.replies = helpers.organizeReplies(this.replies)
     delete this.reactions
   }
 
