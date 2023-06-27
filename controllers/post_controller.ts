@@ -92,7 +92,7 @@ const postController = {
     }
 
     try {
-      target.isEdited = true
+      target.lastEdit = new Date()
       await Post.save(target)
       c.res.success()
     } catch (e) {
