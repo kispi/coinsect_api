@@ -51,6 +51,9 @@ export class Post extends BaseModel {
   @Column({ nullable: true })
   ip: string
 
+  @Column({ default: false })
+  isEdited: boolean
+
   @Column({ nullable: true })
   @Index()
   sharingKey: string

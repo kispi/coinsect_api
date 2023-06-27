@@ -39,6 +39,9 @@ export class Reply extends BaseModel {
   @Column({ nullable: true })
   ip: string
 
+  @Column({ default: false })
+  isEdited: boolean
+
   @Column({ nullable: true })
   password: string
 

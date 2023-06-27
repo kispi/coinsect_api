@@ -92,6 +92,7 @@ const postController = {
     }
 
     try {
+      target.isEdited = true
       await Post.save(target)
       c.res.success()
     } catch (e) {
