@@ -11,6 +11,7 @@ import { SocketStream } from '@fastify/websocket'
 import { FastifyRequest } from 'fastify'
 import { createHttpLog, log } from '../core/logger'
 import { simplifiedReaction } from '../entities/reaction'
+import { TypeUserAuth, TypeUserRole, User } from '../entities/user'
 
 const connections = store.getters.connections()
 
@@ -191,16 +192,23 @@ export const chatCtrl = {
       const token = c.req.params['token']
       if (!profile || !token) return c.res.failed({ message: 'invalid payload' })
 
+      /*
+        헤더에 JWT가 있는 경우는
+        1. 코인충에 로그인해서 사용중인 유저의 요청
+        2. 어드민이 타인의 닉네임을 수정하는 요청
+        인데, 2의 경우 어드민 본인의 닉네임이 업데이트되면 안되기 때문에 조건을 추가해준다.
+      */
       const jwt = coreHelpers.jwt.getTokenFromHTTPHeader(c.req.headers)
-      if (jwt) {
+      const userFromJWT = await User.findWithJWT(jwt)
+      if (userFromJWT && userFromJWT.role !== TypeUserRole.TypeAdmin) {
         try {
-          await helpers.updateProfile({ jwt, nickname: profile.nickname, image: profile.image })
+          await helpers.updateProfile({ user: userFromJWT, nickname: profile.nickname, image: profile.image })
         } catch (e) {
           return c.res.failed(e)
         }
       }
 
-      // 토큰을 변조해서 날린 경우 차단
+      // 그게 아닌 경우(비로그인 유저) 토큰으로 찾아서 업데이트한다. 토큰을 변조해서 날린 경우 차단.
       const user = store.getters.user(token)
       if (!user) return c.res.failed({ message: 'user not found' })
 
