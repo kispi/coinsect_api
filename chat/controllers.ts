@@ -192,6 +192,8 @@ export const chatCtrl = {
       const token = c.req.params['token']
       if (!profile || !token) return c.res.failed({ message: 'invalid payload' })
 
+      console.log(profile, token, '아니 씨부랄')
+
       /*
         헤더에 JWT가 있는 경우는
         1. 코인충에 로그인해서 사용중인 유저의 요청
@@ -199,12 +201,14 @@ export const chatCtrl = {
         인데, 2의 경우 어드민 본인의 닉네임이 업데이트되면 안되기 때문에 조건을 추가해준다.
       */
       const jwt = coreHelpers.jwt.getTokenFromHTTPHeader(c.req.headers)
-      const userFromJWT = await User.findWithJWT(jwt)
-      if (userFromJWT && userFromJWT.role !== TypeUserRole.TypeAdmin) {
-        try {
-          await helpers.updateProfile({ user: userFromJWT, nickname: profile.nickname, image: profile.image })
-        } catch (e) {
-          return c.res.failed(e)
+      if (jwt) {
+        const userFromJWT = await User.findWithJWT(jwt)
+        if (userFromJWT && userFromJWT.role !== TypeUserRole.TypeAdmin) {
+          try {
+            await helpers.updateProfile({ user: userFromJWT, nickname: profile.nickname, image: profile.image })
+          } catch (e) {
+            return c.res.failed(e)
+          }
         }
       }
 
