@@ -17,6 +17,10 @@ export default [{
   'name': '웨돔',
   'link': 'https://www.youtube.com/@wedomnbro',
 }, {
+  'image': 'https://yt3.googleusercontent.com/ytc/AGIKgqPM3UH1lvXdN5Pxns3lBcNX1l3WhXJNZH-ncETfQA=s176-c-k-c0x00ffffff-no-rj',
+  'name': '용느',
+  'link': 'https://www.youtube.com/@stockking_YN',
+}, {
   'image': 'https://static-cdn.jtvnw.net/jtv_user_pictures/e85f1e19-e793-4a07-bbc5-5135981dc4f8-profile_image-70x70.png',
   'name': '랄로',
   'link': 'https://www.twitch.tv/aba4647',
