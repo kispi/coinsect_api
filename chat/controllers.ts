@@ -192,8 +192,6 @@ export const chatCtrl = {
       const token = c.req.params['token']
       if (!profile || !token) return c.res.failed({ message: 'invalid payload' })
 
-      console.log(profile, token, '아니 씨부랄')
-
       /*
         헤더에 JWT가 있는 경우는
         1. 코인충에 로그인해서 사용중인 유저의 요청
