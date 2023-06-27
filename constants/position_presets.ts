@@ -13,6 +13,10 @@ export default [{
   'name': '사또',
   'link': 'https://www.youtube.com/channel/UCnXe6v0-5vmMMRU2qx0XwUw',
 }, {
+  'image': 'https://yt3.googleusercontent.com/HDg4jeTmw2gLIGbJ_kLk2ArDYP97H2gnDe3XrGeAyawGViuF-plxwR6TuuEMm6giWlJYCkB_nQ=s176-c-k-c0x00ffffff-no-rj',
+  'name': '웨돔',
+  'link': 'https://www.youtube.com/@wedomnbro',
+}, {
   'image': 'https://static-cdn.jtvnw.net/jtv_user_pictures/e85f1e19-e793-4a07-bbc5-5135981dc4f8-profile_image-70x70.png',
   'name': '랄로',
   'link': 'https://www.twitch.tv/aba4647',
