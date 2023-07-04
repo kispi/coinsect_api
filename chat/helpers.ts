@@ -23,8 +23,7 @@ const mustToken = () => {
   return nonExistNewToken
 }
 
-const updateProfile = async ({ jwt, nickname, image }: { jwt: string, nickname: string, image: string }) => {
-  const user = await User.findWithJWT(jwt)
+const updateProfile = async ({ user, nickname, image }: { user: User, nickname: string, image: string }) => {
   if (!user) return
 
   if (user.profile.nickname !== nickname) {
