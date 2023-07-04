@@ -11,7 +11,7 @@ import { SocketStream } from '@fastify/websocket'
 import { FastifyRequest } from 'fastify'
 import { createHttpLog, log } from '../core/logger'
 import { simplifiedReaction } from '../entities/reaction'
-import { TypeUserAuth, TypeUserRole, User } from '../entities/user'
+import { TypeUserRole, User } from '../entities/user'
 
 const connections = store.getters.connections()
 
