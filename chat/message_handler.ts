@@ -9,12 +9,12 @@ const service = useService()
 
 // broadcast하기 적절하지 않은 메시지인 경우 reject
 const challengeSoundnessOfMessage = async (text: string) => {
-  const url = (coreHelpers.retrieveUrlFromString(text) || '').toLowerCase()
+  const url = coreHelpers.retrieveUrlFromString(text)
   if (!url) return
 
-  if (url.endsWith('.gif')) return Promise.reject({ message: 'GIF 파일은 업로드할 수 없습니다 😢' })
+  if (url.toLowerCase().endsWith('.gif')) return Promise.reject({ message: 'GIF 파일은 업로드할 수 없습니다 😢' })
 
-  if (['.jpg', '.jpeg', '.png'].some(ext => url.endsWith(ext))) {
+  if (['.jpg', '.jpeg', '.png'].some(ext => url.toLowerCase().endsWith(ext))) {
     try {
       if (await service.aws.rekognition.imageModeration.isGraphic(url)) {
         return Promise.reject({ message: '타인에게 불쾌감을 주는 이미지를 업로드하면 채팅 이용이 제한됩니다.', code: 'ERR_GRAPHIC_IMAGE' })
