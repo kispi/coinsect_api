@@ -9,7 +9,7 @@ const service = useService()
 
 // broadcast하기 적절하지 않은 메시지인 경우 reject
 const challengeSoundnessOfMessage = async (text: string) => {
-  const url = coreHelpers.retrieveUrlFromString(text)
+  const url = (coreHelpers.retrieveUrlFromString(text) || '').toLowerCase()
   if (!url) return
 
   if (url.endsWith('.gif')) return Promise.reject({ message: 'GIF 파일은 업로드할 수 없습니다 😢' })
