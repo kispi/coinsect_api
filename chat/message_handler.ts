@@ -12,6 +12,8 @@ const challengeSoundnessOfMessage = async (text: string) => {
   const url = coreHelpers.retrieveUrlFromString(text)
   if (!url) return
 
+  if (url.endsWith('.gif')) return Promise.reject({ message: 'GIF 파일은 업로드할 수 없습니다 😢' })
+
   if (['.jpg', '.jpeg', '.png'].some(ext => url.endsWith(ext))) {
     try {
       if (await service.aws.rekognition.imageModeration.isGraphic(url)) {
