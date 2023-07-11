@@ -1,10 +1,6 @@
 import { dataSource } from '../database'
 import helpers from '../core/helpers'
 import IContext from '../core/interfaces/context'
-import whaleAlertService from '../services/onchain/whale_alert'
-import postService from '../services/post'
-import contentService from '../services/content'
-import marketInfoService from '../services/market_info'
 import useCache from '../core/cache'
 import dashboardService from '../services/dashboard'
 
