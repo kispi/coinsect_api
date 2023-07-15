@@ -12,17 +12,18 @@ const challengeSoundnessOfMessage = async (text: string) => {
   const url = coreHelpers.retrieveUrlFromString(text)
   if (!url) return
 
-  if (url.toLowerCase().endsWith('.gif')) return Promise.reject({ message: 'GIF 파일은 업로드할 수 없습니다 😢' })
+  const allowedImageExts = ['.jpg', '.jpeg', '.png']
+  if (!allowedImageExts.every(ext => url.toLowerCase().endsWith(ext))) {
+    return Promise.reject({ message: `${allowedImageExts.join(' / ')} 이미지만 사용할 수 있습니다 😢` })
+  }
 
-  if (['.jpg', '.jpeg', '.png'].some(ext => url.toLowerCase().endsWith(ext))) {
-    try {
-      if (await service.aws.rekognition.imageModeration.isGraphic(url)) {
-        return Promise.reject({ message: '타인에게 불쾌감을 주는 이미지를 업로드하면 채팅 이용이 제한됩니다.', code: 'ERR_GRAPHIC_IMAGE' })
-      }
-    } catch (e) {
-      // AWS Rekognition에서 reject된 경우인데, 일반적으로 이게 보일 일은 없을듯. (AWS Credential이 잘못됐다거나?)
-      return Promise.reject({ message: '이미지를 처리하는 과정에서 오류가 발생했습니다 😢' })
+  try {
+    if (await service.aws.rekognition.imageModeration.isGraphic(url)) {
+      return Promise.reject({ message: '타인에게 불쾌감을 주는 이미지를 업로드하면 채팅 이용이 제한됩니다.', code: 'ERR_GRAPHIC_IMAGE' })
     }
+  } catch (e) {
+    // AWS Rekognition에서 reject된 경우인데, 일반적으로 이게 보일 일은 없을듯. (AWS Credential이 잘못됐다거나?)
+    return Promise.reject({ message: '이미지를 처리하는 과정에서 오류가 발생했습니다 😢' })
   }
 }
 
