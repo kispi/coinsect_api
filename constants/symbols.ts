@@ -118,6 +118,19 @@ const arr = [
   { symbol: 'FLR', kr: '플레어', en: 'Flare' },
   { symbol: 'LN', kr: '링크', en: 'LINK' },
   { symbol: 'GRACY', kr: '그레이시', en: 'GRACY' },
+  { symbol: 'WLD', kr: '월드코인', en: 'Worldcoin' },
+  { symbol: 'ENTC', kr: '엔터버튼', en: 'ENTERBUTTON' },
+  { symbol: 'NCT', kr: '폴리스웜', en: 'PolySwarm' },
+  { symbol: 'LM', kr: '레저메타', en: 'LeisureMeta' },
+  { symbol: 'MAV', kr: '매버릭 프로토콜', en: 'Maverick Protocol' },
+  { symbol: 'CRTS', kr: '크레이토스', en: 'Cratos' },
+  { symbol: 'AGIX', kr: '싱귤래리티넷', en: 'SingularityNET' },
+  { symbol: 'WNCG', kr: '나인크로니클', en: 'Nine Chronicles' },
+  { symbol: 'GRND', kr: '슈퍼워크', en: 'SuperWalk' },
+  { symbol: 'FTM', kr: '팬텀', en: 'Fantom' },
+  { symbol: 'FET', kr: '페치', en: 'Fetch.ai' },
+  { symbol: 'EVER', kr: '에버스케일', en: 'Everscale' },
+  { symbol: 'STG', kr: '스타게이트 파이낸스', en: 'Stargate Finance' },
 ]
 
 const o = {}
