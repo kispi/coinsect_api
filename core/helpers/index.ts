@@ -19,7 +19,9 @@ const helpers = {
     pseudoUrl: /(^|[^/])(www\.[\S]+(\b|$))/gim,
     email: /[\w.]+@[a-zA-Z_-]+?(?:\.[a-zA-Z]{2,6})+/gim,
   },
-  retrieveUrlFromString: url => ((url || '').match(helpers.regex.url) || [])[0],
+  retrieveUrlFromString: (url: string) => ((url || '').match(helpers.regex.url) || [])[0],
+  isImageUrl: (url: string) =>
+    ['.png', '.jpeg', '.jpg', '.svg', '.bmp', '.webp', '.gif'].some(ext => (url || '').toLowerCase().endsWith(ext)),
   useCdn: (key: string) => `${store.state.serverConfig.AWS_S3_CDN}/${key}`,
   case: {
     pluralize: (str: string) => {

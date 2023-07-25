@@ -12,6 +12,8 @@ const challengeSoundnessOfMessage = async (text: string) => {
   const url = coreHelpers.retrieveUrlFromString(text)
   if (!url) return
 
+  if (!coreHelpers.isImageUrl(url)) return
+
   const allowedImageExts = ['.jpg', '.jpeg', '.png']
   if (!allowedImageExts.some(ext => url.toLowerCase().endsWith(ext))) {
     return Promise.reject({ message: `${allowedImageExts.join(' / ')} 이미지만 사용할 수 있습니다 😢` })

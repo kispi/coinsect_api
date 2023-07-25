@@ -20,8 +20,7 @@ const s3 = new AWS.S3({
 const s3Service = {
   getKeyPart: (fullUrl: string) => fullUrl.split(host)[1],
   imageExt: (fileName: string) => {
-    const imageExts = ['.png', '.jpeg', '.jpg', '.svg', '.bmp', '.webp', '.gif']
-    if (imageExts.some(ext => fileName.toLowerCase().endsWith(ext))) {
+    if (helpers.isImageUrl(fileName)) {
       const splitted = fileName.toLowerCase().split('.')
       return splitted[splitted.length - 1]
     }
