@@ -131,6 +131,7 @@ const arr = [
   { symbol: 'FET', kr: '페치', en: 'Fetch.ai' },
   { symbol: 'EVER', kr: '에버스케일', en: 'Everscale' },
   { symbol: 'STG', kr: '스타게이트 파이낸스', en: 'Stargate Finance' },
+  { symbol: 'FNSA', kr: '핀시아', en: 'FINSCHIA' },
 ]
 
 const o = {}
