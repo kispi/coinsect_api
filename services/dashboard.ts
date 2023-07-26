@@ -4,6 +4,7 @@ import IContext from '../core/interfaces/context'
 import contentService from './content'
 import marketInfoService from './market_info'
 import whaleAlertService from './onchain/whale_alert'
+import coreHelpers from '../core/helpers'
 
 const cache = useCache()
 
@@ -19,11 +20,13 @@ const dashboardService = {
         whaleAlertService.transactions(c, { limit: 20, where: 'amount_usd >= 3000000 AND (from_owner_type != "unknown" XOR to_owner_type != "unknown")' }),
         contentService.realTimePosition.all(),
         marketInfoService.leaderboard(),
+        contentService.news.cobak.feeds({ page: 0, current_time: coreHelpers.dayjs().format('YYYY-MM-DD') }),
       ])
       const resp = {
         whaleAlerts: o[0],
         realTimePositions: { data: o[1].data.filter(o => o.editable), lastUpdate: o[1].lastUpdate },
         leaderboards: o[2],
+        news: o[3],
       }
       cache.set('dashboards:main', resp, 60)
       return resp
