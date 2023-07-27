@@ -21,7 +21,7 @@ const helpers = {
   },
   retrieveUrlFromString: (url: string) => ((url || '').match(helpers.regex.url) || [])[0],
   isImageUrl: (url: string) =>
-    ['.png', '.jpeg', '.jpg', '.svg', '.bmp', '.webp', '.gif'].some(ext => (url || '').toLowerCase().endsWith(ext)),
+    ['.png', '.jpeg', '.jpg', '.jfif', '.svg', '.bmp', '.webp', '.gif'].some(ext => (url || '').toLowerCase().endsWith(ext)),
   useCdn: (key: string) => `${store.state.serverConfig.AWS_S3_CDN}/${key}`,
   case: {
     pluralize: (str: string) => {

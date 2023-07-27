@@ -20,10 +20,10 @@ const s3 = new AWS.S3({
 const s3Service = {
   getKeyPart: (fullUrl: string) => fullUrl.split(host)[1],
   imageExt: (fileName: string) => {
-    if (helpers.isImageUrl(fileName)) {
-      const splitted = fileName.toLowerCase().split('.')
-      return splitted[splitted.length - 1]
-    }
+    if (!fileName || !helpers.isImageUrl(fileName)) return ''
+
+    const splitted = fileName.toLowerCase().split('.')
+    return splitted[splitted.length - 1]
   },
   getSignedUrl: async ({ key, tagging, nouuid }) => {
     if (!key) return Promise.reject({ message: 'INVALID_PAYLOAD' })
