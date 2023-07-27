@@ -9,7 +9,7 @@ import marketInfoService from './services/market_info'
 import { dataSource } from './database'
 import { log, createHttpLog } from './core/logger'
 
-axios.defaults.timeout = 1000 * 30
+axios.defaults.timeout = 1000 * 10
 
 axios.interceptors.response.use(
   res => res.data,
