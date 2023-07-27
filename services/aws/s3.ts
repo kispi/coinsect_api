@@ -30,7 +30,7 @@ const s3Service = {
 
     const fractions = (key || '').split('/')
     const fileName = fractions[fractions.length - 1]
-    const ext = s3Service.imageExt(fileName)
+    const imageExt = s3Service.imageExt(fileName)
 
     // ADMIN의 경우는 uuid를 생성하지 않고 그냥 어드민에서 입력한 키를 그대로 사용한다.
     const Key = nouuid ?
@@ -47,7 +47,7 @@ const s3Service = {
         Tagging: tagging,
       })
       const resp = { url, headers: {} }
-      if (ext) resp.headers['Content-Type'] = `image/${ext}`
+      if (imageExt) resp.headers['Content-Type'] = `image/${imageExt === 'jfif' ? 'jpeg' : imageExt}`
       if (tagging) resp.headers['x-amz-tagging'] = tagging
       return resp
     } catch (e) {
