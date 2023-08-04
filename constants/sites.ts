@@ -3,7 +3,7 @@ export default [
   'coinsect.io/contents/public-treasury',
   'coinsect.io/contents/influencers',
   'coinsect.io/onchain/richlist',
-  'coinsect.io/indicators/real-time-positions',
+  'coinsect.io/indicators/positions',
   'coinsect.io/apps/lottery',
   'coinsect.io/apps/salary',
   'google.com',

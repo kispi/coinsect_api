@@ -211,7 +211,7 @@ const realTimePositionService = {
             진입 / 청산: ${found.entryPrice || '-'} / ${found.liqPrice || '-'}
           `,
           icon: found.image,
-          link: 'https://coinsect.io/indicators/real-time-positions',
+          link: 'https://coinsect.io/indicators/positions',
         })
       }
       setRealTimePositions(cachedPositions)
