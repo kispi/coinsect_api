@@ -16,17 +16,17 @@ const dashboardService = {
 
     const c = { orm: dataSource, req: {} } as IContext
     try {
-      const o = await Promise.all([
+      const o = await Promise.allSettled([
         whaleAlertService.transactions(c, { limit: 20, where: 'amount_usd >= 3000000 AND (from_owner_type != "unknown" XOR to_owner_type != "unknown")' }),
         contentService.realTimePosition.all(),
         marketInfoService.leaderboard(),
         contentService.news.cobak.feeds({ page: 0, current_time: coreHelpers.dayjs().format('YYYY-MM-DD') }),
       ])
       const resp = {
-        whaleAlerts: o[0],
-        realTimePositions: { data: o[1].data.filter(o => o.editable), lastUpdate: o[1].lastUpdate },
-        leaderboards: o[2],
-        news: o[3],
+        whaleAlerts: o[0].status === 'fulfilled' ? o[0].value : { data: [] },
+        realTimePositions: o[1].status === 'fulfilled' ? { data: o[1].value.data.filter(o => o.editable), lastUpdate: o[1].value.lastUpdate } : { data: [], lastUpdate: null },
+        leaderboards: o[2].status === 'fulfilled' ? o[2].value : [],
+        news: o[3].status === 'fulfilled' ? o[3].value : { breaking_news_list: [] },
       }
       cache.set('dashboards:main', resp, 60)
       return resp
