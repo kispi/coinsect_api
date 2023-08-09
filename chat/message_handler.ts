@@ -48,7 +48,7 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
         `, token
       })
     }
-  
+
     const t = store.getters.bannedUntil(ip)
     if (t) {
       return helpers.alertUser({

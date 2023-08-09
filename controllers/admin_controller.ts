@@ -144,6 +144,7 @@ const adminController = {
   user: routesUser,
   wallet: useCRUD({ model: Wallet }),
   whaleAlert: useCRUD({ model: WhaleAlert }),
+  forceRefresh: async (c: IContext) => chatService.broadcast({ type: 'forceRefresh' }),
 }
 
 export default adminController
