@@ -5,12 +5,11 @@ import contentService from './content'
 import marketInfoService from './market_info'
 import whaleAlertService from './onchain/whale_alert'
 import coreHelpers from '../core/helpers'
-import postService from './post'
 
 const cache = useCache()
 
 const dashboardService = {
-  // 고래알림, 자유게시판, 리더보드, 실시간 포지션
+  // 고래알림, 리더보드, 실시간 포지션
   main: async (forceUpdate?: boolean) => {
     const storedResp = await cache.get('dashboards:main')
     if (storedResp && !forceUpdate) return storedResp
@@ -22,14 +21,12 @@ const dashboardService = {
         contentService.realTimePosition.all(),
         marketInfoService.leaderboard(),
         contentService.news.cobak.feeds({ page: 0, current_time: coreHelpers.dayjs().format('YYYY-MM-DD') }),
-        postService.all(c, { limit: 10, sort: 'id', order: 'desc', where: `board_id in (1, 2)` })
       ])
       const resp = {
         whaleAlerts: o[0].status === 'fulfilled' ? o[0].value : { data: [] },
         realTimePositions: o[1].status === 'fulfilled' ? { data: o[1].value.data.filter(o => o.editable), lastUpdate: o[1].value.lastUpdate } : { data: [], lastUpdate: null },
         leaderboards: o[2].status === 'fulfilled' ? o[2].value : [],
         news: o[3].status === 'fulfilled' ? o[3].value : { breaking_news_list: [] },
-        recentPosts: o[4].status === 'fulfilled' ? o[4].value : { data: [] },
       }
       cache.set('dashboards:main', resp, 60)
       return resp
