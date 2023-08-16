@@ -56,31 +56,6 @@ const contentController = {
         c.res.failed({ message: '업비트 뉴스를 가져오는 중 문제가 발생했습니다' })
       }
     },
-    cobak: {
-      articles: async (c: IContext) => {
-        try {
-          const { list } = await service.content.news.cobak.articles(c.req.query as any) as any
-          c.res.success(list)
-        } catch (e) {
-          c.res.failed({ message: '코박 뉴스를 가져오는 중 문제가 발생했습니다' })
-        }
-      },
-      feeds: async (c: IContext) => {
-        try {
-          const { breaking_news_list } = await service.content.news.cobak.feeds(c.req.query as any) as any
-          c.res.success(breaking_news_list)
-        } catch (e) {
-          c.res.failed({ message: '코박 뉴스를 가져오는 중 문제가 발생했습니다' })
-        }
-      },
-      issues: async (c: IContext) => {
-        try {
-          c.res.success(await service.content.news.cobak.issues())
-        } catch (e) {
-          c.res.failed({ message: '코박 뉴스를 가져오는 중 문제가 발생했습니다' })
-        }
-      }
-    },
   },
 }
 
