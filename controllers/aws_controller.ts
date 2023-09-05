@@ -27,12 +27,15 @@ const awsController = {
           if (!user) return Promise.reject({ message: 'invalid token' })
 
           const result = await service.aws.rekognition.imageModeration.create(url)
-          service.slack.postMessage(`
-            이미지 검사기가 사용되었습니다.
-            유저: *${(user.profile || {}).nickname}* (${c.req.ip} / ${token})
+          service.slack.postMessage({
+            text: `
+              이미지 검사기가 사용되었습니다.
+              유저: *${(user.profile || {}).nickname}* (${c.req.ip} / ${token})
 
-            ${url}
-          `)
+              ${url}
+            `,
+            channel: 'image_moderation',
+          })
           c.res.success(result)
         } catch (e) {
           c.res.failed(e)

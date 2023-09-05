@@ -72,13 +72,16 @@ const messageHandlers = ({ message, ip, token }:  { message: IMessage, ip: strin
       helpers.saveMessage({ message, ip, softDelete: true })
       if (e.code === 'ERR_GRAPHIC_IMAGE') {
         const user = store.getters.user(token)
-        service.slack.postMessage(`
-          부적절한 채팅 메시지 전송이 시도되었습니다.
+        service.slack.postMessage({
+          text: `
+            부적절한 채팅 메시지 전송이 시도되었습니다.
 
-          ${message.text}
+            ${message.text}
 
-          ${user.profile.nickname} / ${ip} / ${token}
-        `)
+            ${user.profile.nickname} / ${ip} / ${token}
+          `,
+          channel: 'coinsect_api',
+        })
       }
       if (e.message) helpers.alertUser({ text: e.message, token })
       return

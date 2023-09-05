@@ -109,16 +109,19 @@ const realTimePositionService = {
         notifiedPositionHistories.push(acceptable)
         notifiedPositionHistories = notifiedPositionHistories.slice(-5) // 최근 5개까지만 유지
         const u = await chatService.getUser(payload['token'])
-        slackService.postMessage(`
-          포지션 수정 요청이 들어왔습니다
-          요청자: ${u.profile.nickname} (${c.req.ip} / ${u.token})\n
-          스트리머: *${payload['name']}*
-          진입: ${payload['entryPrice']}
-          청산: ${payload['liqPrice']}
-          규모: ${payload['size']}
-          계약: ${payload['contract']}
-          방송: ${payload['onAir']}
-        `)
+        slackService.postMessage({
+          text: `
+            포지션 수정 요청이 들어왔습니다
+            요청자: ${u.profile.nickname} (${c.req.ip} / ${u.token})\n
+            스트리머: *${payload['name']}*
+            진입: ${payload['entryPrice']}
+            청산: ${payload['liqPrice']}
+            규모: ${payload['size']}
+            계약: ${payload['contract']}
+            방송: ${payload['onAir']}
+          `,
+          channel: 'coinsect_api',
+        })
         return notifiedPositionHistories
       } catch (e) {
         return Promise.reject(e)
