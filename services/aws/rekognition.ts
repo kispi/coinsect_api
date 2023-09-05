@@ -79,14 +79,15 @@ const rekognitionService = {
         return Promise.reject(e)
       }
     },
+    isGraphicLabel: (label: ModerationLabel) => {
+      if (label.Confidence < 90) return
+
+      return ['Nudity', 'Sexual', 'Gore', 'Bodies', 'Corpses'].some(word => (label.Name || label.ParentName || '').includes(word))
+    },
     isGraphic: async (url: string) => {
       try {
         const { ModerationLabels } = await rekognitionService.imageModeration.create(url) as { ModerationLabels: Array<ModerationLabel> }
-        return ModerationLabels.some(label => {
-          if (label.Confidence < 90) return
-  
-          return ['Nudity', 'Sexual', 'Gore', 'Bodies', 'Corpses'].some(word => (label.Name || label.ParentName || '').includes(word))
-        })
+        return ModerationLabels.some(rekognitionService.imageModeration.isGraphicLabel)
       } catch (e) {
         return Promise.reject(e)
       }

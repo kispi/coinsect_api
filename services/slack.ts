@@ -1,7 +1,7 @@
 import axios from 'axios'
 import store from '../store'
-import { log } from '../core/logger'
 import helpers from '../core/helpers'
+import { log } from '../core/logger'
 
 const endpoint = store.state.serverConfig.SLACK
 
