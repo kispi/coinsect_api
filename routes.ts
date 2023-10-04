@@ -127,11 +127,6 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/contents/news/upbit', ctrls.content.news.upbit)
 
-    router.get('/onchain/richlist/bitcoin', ctrls.onchain.richlist.bitcoin)
-    router.get('/onchain/richlist/bitcoin_cash', ctrls.onchain.richlist.bitcoinCash)
-    router.get('/onchain/richlist/dogecoin', ctrls.onchain.richlist.dogecoin)
-    router.get('/onchain/richlist/litecoin', ctrls.onchain.richlist.litecoin)
-
     router.get('/onchain/whale_alert', ctrls.onchain.whaleAlert)
 
     router.post('/helpers/crawled_websites', ctrls.helper.crawledWebsites.create)

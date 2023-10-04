@@ -2,7 +2,6 @@ export default [
   'coinsect.io',
   'coinsect.io/contents/public-treasury',
   'coinsect.io/contents/influencers',
-  'coinsect.io/onchain/richlist',
   'coinsect.io/indicators/positions',
   'coinsect.io/apps/lottery',
   'coinsect.io/apps/salary',
