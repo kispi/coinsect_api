@@ -1,3 +1,4 @@
+import helpers from '../core/helpers'
 import IContext from '../core/interfaces/context'
 import useService from '../services'
 
@@ -25,7 +26,7 @@ const contentController = {
     },
     all: async (c: IContext) => {
       try {
-        c.res.asJSON(await service.content.realTimePosition.all())
+        c.res.asJSON(helpers.crypto.encryptAPIResponse(await service.content.realTimePosition.all()))
       } catch (e) {
         c.res.failed(e)
       }

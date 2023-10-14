@@ -49,7 +49,7 @@ const dashboardController = {
   },
   main: async (c: IContext) => {
     try {
-      const resp = await dashboardService.main()
+      const resp = helpers.crypto.encryptAPIResponse(await dashboardService.main())
       c.res.asJSON(resp)
     } catch (e) {
       c.res.failed(e)
