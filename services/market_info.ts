@@ -22,18 +22,11 @@ const marketInfoService = {
 
     let indices = {}
     try {
-      const resp = await Promise.all([
-        axios.get('https://coincodex.com/api/coincodex/get_metadata'),
-        axios.get('https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD'),
-      ])
-
+      const resp = await axios.get('https://coincodex.com/api/coincodex/get_metadata')
       indices = {
-        btcDominance: resp[0]['btc_dominance'],
-        btcDominance24hChangePercent: resp[0]['btc_dominance_24h_change_percent'],
-        totalMarketCap: resp[0]['total_market_cap'],
-        totalMarketCap24hChangePercent: resp[0]['total_market_cap_24h_change_percent'],
-        basePrice: resp[1][0]['basePrice'],
-        signedChangeRate: resp[1][0]['signedChangeRate'],
+        btcDominance: resp['btc_dominance'],
+        totalMarketCap: resp['total_market_cap'],
+        basePrice: resp['fiat_rates']['KRW'],
       }
       cache.set('market_info:indices', indices, 60)
       return indices
