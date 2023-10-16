@@ -14,26 +14,11 @@ const crypto = {
     const uuid = slugid.decode(slug)
     return uuid
   },
-  encryptAPIResponse: (data: any) => {
-    const jsonData = JSON.stringify(data)
-    let encrypted = ''
-
-    for (let i = 0; i < jsonData.length; i++) {
-      const char = jsonData.charAt(i)
-      let encryptedChar = ''
-
-      for (let j = 0; j < char.length; j++) {
-        const charCode = char.charCodeAt(j)
-        const shiftedCharCode = charCode - 5 // shiftAmount is 5.
-
-        encryptedChar += String.fromCharCode(shiftedCharCode)
-      }
-
-      encrypted += encryptedChar
-    }
-
-    return encrypted
-  },
+  encryptAPIResponse: (rawData: any) =>
+    JSON.stringify(rawData)
+      .split('')
+      .map((char: string) => String.fromCharCode(char.charCodeAt(0) - 5))
+      .join(''),
 }
 
 export default crypto

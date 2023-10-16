@@ -53,7 +53,7 @@ const useMiddleware = async (
     '/market_info/symbols',
     '/market_info/markets',
   ]
-  if (routesSkipLog.includes(req.routerPath)) return
+  if (routesSkipLog.includes(req.routeOptions.url)) return
 
   log.info(hl())
 }
