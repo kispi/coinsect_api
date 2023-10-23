@@ -128,11 +128,11 @@ export class Post extends BaseModel {
     }
     this.replies = helpers.organizeReplies(this.replies)
     delete this.reactions
+    delete this.ip
   }
 
   toJSON() {
     delete this.password
-    delete this.ip
     return this
   }
 }
