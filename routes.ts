@@ -140,6 +140,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/aws/s3/upload_url', ctrls.aws.s3.getSignedUrl)
     router.delete('/aws/s3/object', ctrls.aws.s3.deleteObject)
 
+    router.get('/aws/rekognition/image_moderation/examples', ctrls.aws.rekognition.imageModeration.examples)
     router.post('/aws/rekognition/image_moderation', ctrls.aws.rekognition.imageModeration.create)
   },
 })

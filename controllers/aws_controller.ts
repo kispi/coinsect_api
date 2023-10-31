@@ -18,6 +18,7 @@ const awsController = {
       },
     },
     imageModeration: {
+      examples: (c: IContext) => c.res.success(service.aws.rekognition.imageModeration.examples()),
       create: async (c: IContext) => {
         const url = c.req.body['url']
         const token = c.req.body['token']
@@ -28,7 +29,10 @@ const awsController = {
           if (!user) return Promise.reject({ message: 'invalid token' })
 
           const result = await service.aws.rekognition.imageModeration.create(url) as { ModerationLabels: Array<ModerationLabel> }
-          if (result.ModerationLabels.some(service.aws.rekognition.imageModeration.isGraphicLabel)) {
+          if (
+            !service.aws.rekognition.imageModeration.examples().includes(url) && // 이미지 검사기 예시 이미지는 제외
+            result.ModerationLabels.some(service.aws.rekognition.imageModeration.isGraphicLabel)
+          ) {
             service.slack.postMessage({
               text: `
                 이미지 검사기가 사용되었습니다.
