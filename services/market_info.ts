@@ -142,7 +142,7 @@ const marketInfoService = {
         if (dailyChange) o['dailyChange'] = dailyChange
         arr.push(o)
       })
-      cache.set('market_info:assetsIncludingMetal', arr, 3600 * 24)
+      cache.set('market_info:assetsIncludingMetal', arr, 60)
       return arr
     } catch (e) {
       return Promise.reject(e)
@@ -176,7 +176,7 @@ const marketInfoService = {
         const resp = await axios.get(`${endpoints.nasdaq.markets}/${symbols.join(',')}`)
         const data = resp['datas']
         data.forEach((row, idx) => row.$$rank = idx + 1)
-        cache.set('market_info:nasdaq.markets', data, 5)
+        cache.set('market_info:nasdaq.markets', data, 60)
         return data
       } catch (e) {
         return Promise.reject(e)
