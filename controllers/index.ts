@@ -13,6 +13,7 @@ import notification from './notification_controller'
 import onchain from './onchain_controller'
 import person from './person_controller'
 import post from './post_controller'
+import pricePrediction from './price_prediction_controller'
 import reaction from './reaction_controller'
 import reply from './reply_controller'
 import user from './user_controller'
@@ -34,6 +35,7 @@ const useControllers = () => ({
   onchain,
   person,
   post,
+  pricePrediction,
   reaction,
   reply,
   user,

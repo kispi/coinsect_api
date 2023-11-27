@@ -22,7 +22,7 @@ const postController = {
     if (!payload['board']) payload['board'] = { id : freeBoardId }
 
     try {
-      await Post.validate(payload)
+      await Post.validate(payload as Post)
     } catch (e) {
       return c.res.failed(e)
     }
@@ -32,10 +32,12 @@ const postController = {
     payload['content'] = helpers.sanitize.html(payload['content'])
 
     const user = await helpers.jwt.mustUser(c)
-    if (user) payload['user'] = user
-    else {
-      payload['password'] = helpers.crypto.hashed(payload['password'])
+    if (user) {
+      payload['user'] = user
+      delete payload['password']
+    } else {
       if (!payload['password']) return c.res.failed({ message: 'password is required' })
+      payload['password'] = helpers.crypto.hashed(payload['password'])
     }
 
     try {
@@ -55,7 +57,7 @@ const postController = {
     const payload = c.req.body
 
     try {
-      await Post.validate(payload)
+      await Post.validate(payload as Post)
     } catch (e) {
       return c.res.failed(e)
     }
@@ -86,7 +88,7 @@ const postController = {
 
     if (user) {
       target.userId = user['id']
-      target.password = null
+      delete payload['password']
     } else {
       target.password = helpers.crypto.hashed(payload['password'])
     }

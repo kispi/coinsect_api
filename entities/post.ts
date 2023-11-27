@@ -79,7 +79,7 @@ export class Post extends BaseModel {
     return this
   }
 
-  static async validate(post) {
+  static async validate(post: Post) {
     const requiredFields = ['title', 'content', 'nickname']
     if (!helpers.trimAndValidateRequiredFields(post, requiredFields)) {
       return Promise.reject()
@@ -88,6 +88,7 @@ export class Post extends BaseModel {
     if (post.title.length > store.state.globalVariables.maxlength.postTitle) {
       return Promise.reject({ message: 'TITLE_TOO_LONG' })
     }
+
     if (post.nickname.length > store.state.globalVariables.maxlength.nickname) {
       return Promise.reject({ message: 'NICKNAME_TOO_LONG' })
     }

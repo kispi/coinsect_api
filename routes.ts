@@ -112,6 +112,12 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.post('/reactions/replies', ctrls.reaction.toggle.reply)
     router.post('/reactions/messages', ctrls.reaction.toggle.message)
 
+    router.get('/price_predictions', ctrls.pricePrediction.all)
+    router.get('/price_predictions/:sharingKey', ctrls.pricePrediction.detail)
+    router.post('/price_predictions', ctrls.pricePrediction.create)
+    router.post('/price_predictions/:sharingKey/check_password', ctrls.post.checkPassword)
+    router.delete('/price_predictions/:sharingKey', ctrls.post.delete)
+
     router.get('/market_info/leaderboard', ctrls.marketInfo.leaderboard)
     router.get('/market_info/indices', ctrls.marketInfo.indices)
     router.get('/market_info/symbols', ctrls.marketInfo.symbols)
