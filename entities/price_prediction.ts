@@ -79,7 +79,7 @@ export class PricePrediction extends BaseModel {
       return Promise.reject({ message: 'FROM_MUST_BE_LESS_THAN_TO' })
     }
 
-    if (helpers.dayjs().isAfter(pricePrediction.timeFrom)) {
+    if (helpers.dayjs(pricePrediction.timeFrom).startOf('day').isBefore(helpers.dayjs().startOf('day'))) {
       return Promise.reject({ message: 'FROM_MUST_BE_IN_FUTURE' })
     }
 

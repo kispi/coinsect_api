@@ -42,6 +42,7 @@ const marketInfoService = {
       const result: any = await axios.get('https://api.upbit.com/v1/market/all')
       const symbols = {}
 
+      result.push({ korean_name: '라이트코인', english_name: 'Litecoin', market: 'KRW-LTC' })
       result.forEach(o => {
         const symbol = o.market.split('KRW-')[1] || o.market.split('BTC-')[1] || o.market.split('USDT-')[1]
         if (!symbol) return

@@ -107,6 +107,19 @@ const helpers = {
       }, delay)
     }
   },
+  prettyPrice: (price: number) => {
+    let numFracs = 0
+    if (Math.abs(price) < 100) numFracs = 2
+    if (Math.abs(price) < 1) numFracs = 4
+    if (Math.abs(price) < 0.0001) numFracs = 8
+
+    if (price === 0) numFracs = 2
+
+    return price.toLocaleString(undefined, {
+      maximumFractionDigits: numFracs,
+      minimumFractionDigits: numFracs,
+    })
+  }
 }
 
 export default helpers

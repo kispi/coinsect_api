@@ -18,6 +18,8 @@ const whaleAlertService = {
     if (c.req.query['limit'] > 20) return Promise.reject({ message: 'limit exceeded 20' })
 
     const qb = orm.querySetter(c, WhaleAlert).orderBy('timestamp', 'DESC')
+    if (!c.req.query['limit']) qb.limit(20)
+
     const [data, total] = await qb.getManyAndCount()
     return {
       data,

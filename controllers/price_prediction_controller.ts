@@ -1,10 +1,10 @@
 import { dataSource } from '../database'
 import { PricePrediction } from '../entities/price_prediction'
-import { User } from '../entities/user'
 import IContext from '../core/interfaces/context'
 import orm from '../core/orm'
 import helpers from '../core/helpers'
 import pricePredictionService from '../services/price_prediction'
+import chatService from '../services/chat'
 
 const pricePredictionController = {
   create: async (c: IContext) => {
@@ -31,14 +31,26 @@ const pricePredictionController = {
       payload['user'] = user
       delete payload['password']
     } else {
-      if (!payload['password']) return c.res.failed({ message: 'password is required' })
-      payload['password'] = helpers.crypto.hashed(payload['password'])
+      // 가격 예측 삭제 기능은 우선 넣지 말자. 그러면 비밀번호가 필요 없음
+      // if (!payload['password']) return c.res.failed({ message: 'password is required' })
+      // payload['password'] = helpers.crypto.hashed(payload['password'])
     }
 
     try {
       payload['sharingKey'] = helpers.crypto.generateUUID(true)
       await orm.querySetter(c, PricePrediction).insert().into(PricePrediction).values(payload).execute()
       c.res.success()
+
+      chatService.broadcast({
+        type: 'alert',
+        text: `
+          [${payload['nickname']}]님이 가격을 예측하였습니다.
+          마켓: ${payload['ticker']}
+          시기: ${pricePredictionService.helpers.dateRange(payload)}
+          가격: ${pricePredictionService.helpers.priceRange(payload)}
+        `,
+        meta: payload,
+      })
     } catch (e) {
       c.res.failed(e)
     }

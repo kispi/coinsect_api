@@ -30,6 +30,8 @@ const postService = {
         ))
       }
 
+      if (!c.req.query['limit']) qb.limit(20)
+
       const [data, total] = await qb.getManyAndCount()
       await Promise.all([
         loadChildren({ c, model: Post, childModel: Reply, items: data }),
