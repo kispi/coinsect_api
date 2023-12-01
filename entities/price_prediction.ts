@@ -64,6 +64,14 @@ export class PricePrediction extends BaseModel {
       return Promise.reject({ message: 'PRICE_MIN_MUST_BE_LESS_THAN_PRICE_MAX' })
     }
 
+    if (pricePrediction.priceMin && pricePrediction.priceMin < 0) {
+      return Promise.reject({ message: 'PRICE_MIN_MUST_BE_POSITIVE' })
+    }
+
+    if (pricePrediction.priceMax && pricePrediction.priceMax < 0) {
+      return Promise.reject({ message: 'PRICE_MAX_MUST_BE_POSITIVE' })
+    }
+
     if (!pricePrediction.timeFrom && !pricePrediction.timeTo) {
       return Promise.reject({ message: 'TIME_FROM_OR_TIME_TO_REQUIRED' })
     }
