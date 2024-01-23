@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "cross-env NODE_ENV=development ts-node-dev server.ts",
     "prod": "cross-env NODE_ENV=production node dist/server.js",
-    "typeorm": "typeorm-ts-node-esm -d ./database.ts"
+    "typeorm": "typeorm-ts-node-commonjs -d ./database.ts"
   },
   "repository": {
     "type": "git",
