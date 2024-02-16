@@ -67,7 +67,7 @@ const setRealTimePositions = async o => {
   cache.set('content:realTimePositions', o)
 
   const dashboards = await cache.get('dashboards:main')
-  if (dashboards.realTimePositions) {
+  if ((dashboards || {}).realTimePositions) {
     dashboards.realTimePositions = {
       data: (o.data || []).filter(o => o.editable),
       lastUpdate: o.lastUpdate,

@@ -14,19 +14,19 @@ const repos: Array<Repo> = [{
   description: 'coinsect.io',
   deploying: false,
   lastDeployLog: null,
-  command: 'cd /home/ec2-user/web/coinsect_frontend && ./deploy.sh',
+  command: 'cd ~/web/coinsect_frontend && ./deploy.sh',
 }, {
   key: 'coinsect_web',
   description: 'btc.coinsect.io',
   deploying: false,
   lastDeployLog: null,
-  command: 'cd /home/ec2-user/web/coinsect_web && ./deploy.sh',
+  command: 'cd ~/web/coinsect_web && ./deploy.sh',
 }, {
   key: 'coinsect_api',
   description: 'api.coinsect.io',
   deploying: false,
   lastDeployLog: null,
-  command: 'cd /home/ec2-user/web/coinsect_api && ./deploy.sh',
+  command: 'cd ~/web/coinsect_api && ./deploy.sh',
 }]
 
 const deployController = {}
