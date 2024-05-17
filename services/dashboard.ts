@@ -16,7 +16,7 @@ const dashboardService = {
     const c = { orm: dataSource, req: {} } as IContext
     try {
       const o = await Promise.allSettled([
-        whaleAlertService.transactions(c, { limit: 5, where: 'amount_usd >= 3000000 AND (from_owner_type != "unknown" XOR to_owner_type != "unknown")' }),
+        whaleAlertService.transactions(c, { limit: 5, where: 'amount_usd >= 3000000' }),
         contentService.realTimePosition.all(),
         marketInfoService.leaderboard(),
         contentService.news.upbit(),
