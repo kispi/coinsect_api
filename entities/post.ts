@@ -36,6 +36,10 @@ export class Post extends BaseModel {
   @Column({ default: TypePostType.Normal })
   postType: TypePostType
 
+  // 태그. 쉼표로 구분. ex) '비트코인,vue,react'
+  @Column({ nullable: true })
+  tags: string
+
   @Column({ default: 0 })
   views: number
 
