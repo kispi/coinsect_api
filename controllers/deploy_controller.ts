@@ -32,7 +32,7 @@ const repos: Array<Repo> = [{
   description: 'blog.coinsect.io',
   deploying: false,
   lastDeployLog: null,
-  command: 'cd ~/web/remix && ./deploy.sh',
+  command: 'cd ~/web/remix_blog && ./deploy.sh',
 }]
 
 const deployController = {}
