@@ -38,7 +38,10 @@ const reactionController = {
         `
 
         const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(query).getOne()
-        if (result) await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
+        if (result) {
+          if (result.deletedAt) return c.res.failed()
+          await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
+        }
         else await c.orm.getRepository(Reaction).insert({
           ip: c.req.ip,
           type: c.req.body['type'],
@@ -67,8 +70,10 @@ const reactionController = {
         `
 
         const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(query).getOne()
-        if (result) await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
-        else await c.orm.getRepository(Reaction).insert({
+        if (result) {
+          if (result.deletedAt) return c.res.failed()
+          await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
+        } else await c.orm.getRepository(Reaction).insert({
           ip: c.req.ip,
           type: c.req.body['type'],
           reply: { id: c.req.body['replyId'] },
@@ -96,7 +101,10 @@ const reactionController = {
         `
 
         const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(query).getOne()
-        if (result) await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
+        if (result) {
+          if (result.deletedAt) return c.res.failed()
+          await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
+        }
         else await c.orm.getRepository(Reaction).insert({
           ip: c.req.ip,
           type: c.req.body['type'],
