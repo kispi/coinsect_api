@@ -7,6 +7,17 @@ import IContext from '../core/interfaces/context'
 import orm from '../core/orm'
 
 const postService = {
+  sitemap: async (c: IContext) => {
+    try {
+      const queryResult = await orm.querySetter(c, Post)
+        .where('board_id = :boardId', { boardId: c.req.params['boardId'] })
+        .select(['sharing_key'])
+        .getRawMany()
+      return { data: queryResult.map(r => r.sharing_key), total: queryResult.length }
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  },
   all: async (c: IContext, overridableQuery?: unknown) => {
     // 구현이 그다지 맘에 들지는 않지만 어쨌든 컨텍스트(c)는 일회용이기 때문에, 덮어써도 무관하다
     if (overridableQuery) c.req.query = overridableQuery

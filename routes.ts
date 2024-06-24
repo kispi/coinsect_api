@@ -103,6 +103,7 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/posts', ctrls.post.all)
     router.get('/posts/:sharingKey', ctrls.post.detail)
+    router.get('/posts/sitemap/:boardId', ctrls.post.sitemap)
     router.post('/posts', ctrls.post.create)
     router.put('/posts/:sharingKey', ctrls.post.update)
     router.post('/posts/:sharingKey/check_password', ctrls.post.checkPassword)

@@ -101,6 +101,14 @@ const postController = {
       c.res.failed(e)
     }
   },
+  sitemap: async (c: IContext) => {
+    try {
+      const data = await postService.sitemap(c)
+      c.res.asJSON(data)
+    } catch (e) {
+      c.res.failed(e)
+    }
+  },
   all: async (c: IContext) => {
     try {
       const { data, total } = await postService.all(c)
