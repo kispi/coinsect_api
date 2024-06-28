@@ -5,6 +5,15 @@ import useService from '../services'
 const service = useService()
 
 const contentController = {
+  nutrition: {
+    paikdabang: async (c: IContext) => {
+      try {
+        c.res.asJSON(await service.content.nutrition.paikdabang.all())
+      } catch (e) {
+        c.res.failed()
+      }
+    },
+  },
   publicTreasuries: async (c: IContext) => {
     try {
       c.res.asJSON(await service.content.publicTreasury.all())
