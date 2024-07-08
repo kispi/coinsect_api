@@ -240,7 +240,7 @@ const realTimePositionService = {
     const result = await model.generateContent([{
       text: `
         Fill this JSON using given image. Useful numbers are located at the bottom of the image.
-        You can guess what is 'entry' and what is 'liq' by looking at the numbers, with a give position size (could be positive or negative).
+        You can guess what is 'entry' and what is 'liq' by looking at the numbers, with a given position size (could be positive or negative).
         {
           "entryPrice": number, // some platforms say it as 'open' price.
           "liqPrice": number,
