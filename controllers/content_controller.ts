@@ -23,6 +23,14 @@ const contentController = {
   },
   realTimePositions: {
     presets: (c: IContext) => c.res.asJSON(service.content.realTimePosition.presets()),
+    autoParse: async (c: IContext) => {
+      try {
+        const data = await service.content.realTimePosition.autoParse(c.req.body['url'])
+        c.res.asJSON(data)
+      } catch (e) {
+        c.res.failed(e)
+      }
+    },
     changeNotification: {
       all: (c: IContext) => c.res.asJSON(service.content.realTimePosition.changeNotification.all()),
       create: async (c: IContext) => {
@@ -31,7 +39,7 @@ const contentController = {
         } catch (e) {
           c.res.failed(e)
         }
-      }
+      },
     },
     all: async (c: IContext) => {
       try {

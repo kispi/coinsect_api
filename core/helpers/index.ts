@@ -65,13 +65,21 @@ const helpers = {
       return []
     }
   },
-  imageUrlToBlob: async (imageUrl: string, asString?: Boolean) => {
+  imageUrlToBlob: async (imageUrl: string) => {
+    try {
+      return await axios.get(imageUrl, {
+        responseType: 'arraybuffer',
+      })
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  },
+  imageUrlToBase64String: async (imageUrl: string) => {
     try {
       const data = await axios.get(imageUrl, {
         responseType: 'arraybuffer',
       })
-      if (asString) return Buffer.from(data as any, 'base64')
-      else return data
+      return Buffer.from(data as any).toString('base64')
     } catch (e) {
       return Promise.reject(e)
     }

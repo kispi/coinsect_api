@@ -1,3 +1,4 @@
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import helpers from '../../core/helpers'
 import useCache from '../../core/cache'
 import presets from '../../constants/position_presets'
@@ -227,6 +228,35 @@ const realTimePositionService = {
     if (idx >= 0) cachedPositions.data.splice(idx, 1)
     setRealTimePositions(cachedPositions)
   },
+  autoParse: async (url: string) => {
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_STUDIO)
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      generationConfig: {
+        responseMimeType: 'application/json',
+      },
+    })
+
+    const result = await model.generateContent([{
+      text: `
+        Fill this JSON using given image. Useful numbers are located at the bottom of the image.
+        You can guess what is 'entry' and what is 'liq' by looking at the numbers, with a give position size (could be positive or negative).
+        {
+          "entryPrice": number, // some platforms say it as 'open' price.
+          "liqPrice": number,
+          "size": number, // Negative if it looks like a short position, positive if it looks like a long position.
+          "contract": string // e.g. 'BTCUSDT' | 'ETHUSDT' ... ends with 'USDT'. If you're not sure, just put 'BTCUSDT'.
+        }
+      `,
+    }, {
+      inlineData: {
+        mimeType: 'image/png',
+        data: await helpers.imageUrlToBase64String(url),
+      },
+    }])
+    return result.response.text()
+  },
 }
+        
 
 export default realTimePositionService

@@ -3,33 +3,21 @@ import helpers from '../core/helpers'
 export default [{
   'image': helpers.useCdn('images/influencers/hodu_park.jpg'),
   'name': '박호두',
-  'link': 'https://bj.afreecatv.com/sweet31w',
+  'link': 'https://www.youtube.com/@852hodoo6',
 }, {
   'image': 'https://stimg.afreecatv.com/LOGO/cy/cyzhgw/cyzhgw.jpg',
   'name': '짭구',
-  'link': 'https://play.afreecatv.com/cyzhgw',
+  'link': 'https://www.youtube.com/@zzap9',
 }, {
   'image': helpers.useCdn('images/influencers/saddo.png'),
   'name': '사또',
-  'link': 'https://www.youtube.com/channel/UCnXe6v0-5vmMMRU2qx0XwUw',
-}, {
-  'image': 'https://yt3.googleusercontent.com/HDg4jeTmw2gLIGbJ_kLk2ArDYP97H2gnDe3XrGeAyawGViuF-plxwR6TuuEMm6giWlJYCkB_nQ=s176-c-k-c0x00ffffff-no-rj',
-  'name': '웨돔',
-  'link': 'https://www.youtube.com/@wedomnbro',
+  'link': 'https://www.youtube.com/@live-streamersatto',
 }, {
   'image': 'https://yt3.googleusercontent.com/ytc/AGIKgqPM3UH1lvXdN5Pxns3lBcNX1l3WhXJNZH-ncETfQA=s176-c-k-c0x00ffffff-no-rj',
   'name': '용느',
   'link': 'https://www.youtube.com/@stockking_YN',
 }, {
-  'image': 'https://static-cdn.jtvnw.net/jtv_user_pictures/e85f1e19-e793-4a07-bbc5-5135981dc4f8-profile_image-70x70.png',
-  'name': '랄로',
-  'link': 'https://www.twitch.tv/aba4647',
-}, {
-  'image': 'https://yt3.ggpht.com/Cc-OWp5QZyoSRUWDY4qIT5FjiAhSdmTBukvLxuMRc2L_UeS4VVbPBYnr3FpLfSw_JVC5lwChBLM=s900-c-k-c0x00ffffff-no-rj',
-  'name': '강은호',
-  'link': 'https://play.afreecatv.com/cocoa898',
-}, {
-  'image': 'https://profile.img.afreecatv.com/LOGO/cy/cyber91/cyber91.jpg',
-  'name': '리듬타타',
-  'link': 'https://bj.afreecatv.com/cyber91',
+  'image': 'https://yt3.googleusercontent.com/HDg4jeTmw2gLIGbJ_kLk2ArDYP97H2gnDe3XrGeAyawGViuF-plxwR6TuuEMm6giWlJYCkB_nQ=s176-c-k-c0x00ffffff-no-rj',
+  'name': '웨돔',
+  'link': 'https://www.youtube.com/@wedomnbro',
 }]
