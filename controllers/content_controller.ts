@@ -25,7 +25,10 @@ const contentController = {
     presets: (c: IContext) => c.res.asJSON(service.content.realTimePosition.presets()),
     autoParse: async (c: IContext) => {
       try {
-        const data = await service.content.realTimePosition.autoParse(c.req.body['url'])
+        const data = await service.content.realTimePosition.autoParse({
+          url: c.req.body['url'],
+          prompt: c.req.body['prompt'],
+        })
         c.res.asJSON(data)
       } catch (e) {
         c.res.failed(e)

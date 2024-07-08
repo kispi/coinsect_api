@@ -228,7 +228,13 @@ const realTimePositionService = {
     if (idx >= 0) cachedPositions.data.splice(idx, 1)
     setRealTimePositions(cachedPositions)
   },
-  autoParse: async (url: string) => {
+  autoParse: async ({
+    url,
+    prompt,
+  }: {
+    url: string,
+    prompt?: string,
+  }) => {
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_STUDIO)
     const model = genAI.getGenerativeModel({
       model: 'gemini-1.5-flash',
@@ -238,14 +244,21 @@ const realTimePositionService = {
     })
 
     const result = await model.generateContent([{
-      text: `
-        Fill this JSON using given image. Useful numbers are located at the bottom of the image.
-        You can guess what is 'entry' and what is 'liq' by looking at the numbers, with a given position size (could be positive or negative).
+      text: prompt || `
+        Fill this JSON using the given image. Useful numbers are located at the bottom of the image. 
+        - 'entryPrice' is the initial price at which the position was entered. Look for values associated with 'Position', 'Open', or similar labels.
+        - 'liqPrice' refers to the liquidation price, which is typically labeled as 'Liq' or 'Liquidation Price'.
+        - 'size' indicates the position size and could be positive (for long positions) or negative (for short positions). This value is usually near the 'Position' label.
+        - 'contract' is the trading pair and usually ends with 'USDT' (e.g., 'BTCUSDT', 'ETHUSDT'). It can also be other altcoins. If the contract is not explicitly mentioned, look for it in labels near the position information or default to 'BTCUSDT'.
+
+        Analyze the image carefully to determine the correct values based on the given context and label associations.
+        Make sure that all numbers are correctly parsed number type, not string representation of numbers something like "57,124.05".
+
         {
-          "entryPrice": number, // some platforms say it as 'open' price.
+          "entryPrice": number,
           "liqPrice": number,
-          "size": number, // Negative if it looks like a short position, positive if it looks like a long position.
-          "contract": string // e.g. 'BTCUSDT' | 'ETHUSDT' ... ends with 'USDT'. If you're not sure, just put 'BTCUSDT'.
+          "size": number,
+          "contract": string 
         }
       `,
     }, {
