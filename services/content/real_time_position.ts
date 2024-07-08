@@ -250,11 +250,11 @@ const realTimePositionService = {
 
         - 'entryPrice' is the initial price at which the position was entered. Look for values associated with 'Position', 'Open', or similar labels.
         - 'liqPrice' refers to the liquidation price, which is typically labeled as 'Liq' or 'Liquidation Price'.
-        - 'size' indicates the position size and could be positive (for long positions) or negative (for short positions). This value is usually near the 'Position' label. Traders don't do it with enormous money, so if the size * entryPrice is too big, it's highly likely that you got the wrong 'size'. In that case, use smaller candidate.
+        - 'size' indicates the position size and could be positive (for long positions) or negative (for short positions). This value is usually near the 'Position' label. Usually 'size' ranges from 1 to 100 BTC. (not always, so guess if it makes sense or not by yourself.)
         - 'contract' is the trading pair and usually ends with 'USDT' (e.g., 'BTCUSDT', 'ETHUSDT'). It can also be other altcoins. If the contract is not explicitly mentioned, look for it in labels near the position information or default to 'BTCUSDT'.
 
         Analyze the image carefully to determine the correct values based on the given context and label associations.
-        Make sure that all numbers are correctly parsed number type, not string representation of numbers something like "57,124.05".
+        Make sure that all numbers are correctly parsed number type, not string representation of numbers.
 
         I wish you can check all the values correctly like human can do even without hinting labels.
 
