@@ -256,6 +256,9 @@ const realTimePositionService = {
         Analyze the image carefully to determine the correct values based on the given context and label associations.
         Make sure that all numbers are correctly parsed number type, not string representation of numbers.
 
+        Note that I don't need the total value of the position, often calculated as 'entryPrice' * 'size'.
+        Bitcoin is currently at 5 figures, so if you see something like "56,829.50", it's a number 56829.5 (Make sure to ignore all commas)
+
         I wish you can check all the values correctly like human can do even without hinting labels.
 
         {
