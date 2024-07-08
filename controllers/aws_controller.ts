@@ -6,17 +6,6 @@ const service = useService()
 
 const awsController = {
   rekognition: {
-    realTimePosition: {
-      create: async (c: IContext) => {
-        const url = c.req.body['url']
-        try {
-          const result = await service.aws.rekognition.realTimePosition.create(url)
-          c.res.success(result)
-        } catch (e) {
-          c.res.failed(e)
-        }
-      },
-    },
     imageModeration: {
       examples: (c: IContext) => c.res.success(service.aws.rekognition.imageModeration.examples()),
       create: async (c: IContext) => {
