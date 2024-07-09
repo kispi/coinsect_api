@@ -258,6 +258,8 @@ const realTimePositionService = {
         Bitcoin is currently at 5 figures, so if you see something like "56,829.50", it's a number 56829.5 (Make sure to ignore all commas)
 
         I wish you can check all the values correctly like human can do even without hinting labels.
+
+        Often times you're confused what's entry price, what's mark price, I wish you can find the correct 'entryPrice' by reverse-calculating with the unrealized PNL and 'size'.
       `,
     }, {
       text: `
