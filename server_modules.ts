@@ -42,8 +42,8 @@ const checkServerConfig = () => {
     }
   })
 
-  if (!c['SLACK']) {
-    log.warn(`[.env] missing field SLACK: Slackbot posting won't work`)
+  if (!c['SLACK_COINSECT_API'] || !c['SLACK_IMAGE_MODERATION']) {
+    log.warn(`[.env] missing field SLACK_COINSECT_API, SLACK_IMAGE_MODERATION: Slackbot posting won't work`)
   }
 }
 
