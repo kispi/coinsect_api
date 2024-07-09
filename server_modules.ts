@@ -45,6 +45,14 @@ const checkServerConfig = () => {
   if (!c['SLACK_COINSECT_API'] || !c['SLACK_IMAGE_MODERATION']) {
     log.warn(`[.env] missing field SLACK_COINSECT_API, SLACK_IMAGE_MODERATION: Slackbot posting won't work`)
   }
+
+  if (!c['WHALE_ALERT']) {
+    log.warn(`[.env] missing field WHALE_ALERT: Whale alert won't work`)
+  }
+
+  if (!c['GOOGLE_AI_STUDIO']) {
+    log.warn(`[.env] missing field GOOGLE_AI_STUDIO: Google AI Studio won't work`)
+  }
 }
 
 const o = {}
