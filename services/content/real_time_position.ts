@@ -247,7 +247,7 @@ const realTimePositionService = {
       text: (prompt || '').trim() || `
         Ignore the orderbook. The relevant information is usually located near the bottom-left corner of the image.
 
-        - 'entryPrice' is the initial price at which the position was entered. Look for values associated with 'Position', 'Open', or similar labels.
+        - 'entryPrice' is the initial price at which the position was entered. Look for 'Open Price', 'Entry Price' or similar labels. Don't assume that entry price = position value / size.
         - 'liqPrice' refers to the liquidation price, which is typically labeled as 'Liq' or 'Liquidation Price'.
         - 'size' indicates the position size and could be positive (for long positions) or negative (for short positions). This value is usually near the 'Position' label. Usually 'size' ranges from 1 to 100 BTC. (not always, so guess if it makes sense or not by yourself.)
         - 'contract' is the trading pair and usually ends with 'USDT' (e.g., 'BTCUSDT', 'ETHUSDT'). It can also be any altcoin-USDT pair. If the contract is not explicitly mentioned, look for it in labels near the position information or default to 'BTCUSDT'.
@@ -258,8 +258,6 @@ const realTimePositionService = {
         Bitcoin is currently at 5 figures, so if you see something like "56,829.50", it's a number 56829.5 (Make sure to ignore all commas)
 
         I wish you can check all the values correctly like human can do even without hinting labels.
-
-        Often times you're confused what's entry price, what's mark price, I wish you can find the correct 'entryPrice' by reverse-calculating with the unrealized PNL and 'size'.
       `,
     }, {
       text: `
