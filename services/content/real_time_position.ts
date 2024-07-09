@@ -244,22 +244,24 @@ const realTimePositionService = {
     })
 
     const result = await model.generateContent([{
-      text: prompt || `
-        Fill this JSON using the given image. Relevant numbers are located at the bottom-left of the image.
-        If you're stuffed with too many numbers, focus on bottom-left of the image. (Remain area is not relevant usually, focus on bottom-left, again!)
+      text: (prompt || '').trim() || `
+        Ignore the orderbook. The relevant information is usually located near the bottom-left corner of the image.
 
         - 'entryPrice' is the initial price at which the position was entered. Look for values associated with 'Position', 'Open', or similar labels.
         - 'liqPrice' refers to the liquidation price, which is typically labeled as 'Liq' or 'Liquidation Price'.
         - 'size' indicates the position size and could be positive (for long positions) or negative (for short positions). This value is usually near the 'Position' label. Usually 'size' ranges from 1 to 100 BTC. (not always, so guess if it makes sense or not by yourself.)
-        - 'contract' is the trading pair and usually ends with 'USDT' (e.g., 'BTCUSDT', 'ETHUSDT'). It can also be other altcoins. If the contract is not explicitly mentioned, look for it in labels near the position information or default to 'BTCUSDT'.
+        - 'contract' is the trading pair and usually ends with 'USDT' (e.g., 'BTCUSDT', 'ETHUSDT'). It can also be any altcoin-USDT pair. If the contract is not explicitly mentioned, look for it in labels near the position information or default to 'BTCUSDT'.
 
-        Analyze the image carefully to determine the correct values based on the given context and label associations.
-        Make sure that all numbers are correctly parsed number type, not string representation of numbers.
+        Make sure entryPrice, liqPrice, and size are all numbers, not string representations of numbers.
 
-        Note that I don't need the total value of the position, often calculated as 'entryPrice' * 'size'.
+        Ignore the total value of the position, I just need how many coins are being longed or shorted.
         Bitcoin is currently at 5 figures, so if you see something like "56,829.50", it's a number 56829.5 (Make sure to ignore all commas)
 
         I wish you can check all the values correctly like human can do even without hinting labels.
+      `,
+    }, {
+      text: `
+        Fill this JSON using the given image.
 
         {
           "entryPrice": number,
@@ -267,7 +269,7 @@ const realTimePositionService = {
           "size": number,
           "contract": string 
         }
-      `,
+      `
     }, {
       inlineData: {
         mimeType: 'image/png',
