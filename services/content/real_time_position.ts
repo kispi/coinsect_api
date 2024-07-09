@@ -249,7 +249,7 @@ const realTimePositionService = {
 
         - 'entryPrice' is the initial price at which the position was entered. Look for 'Open Price', 'Entry Price' or similar labels. Don't assume that entry price = position value / size.
         - 'liqPrice' refers to the liquidation price, which is typically labeled as 'Liq' or 'Liquidation Price'.
-        - 'size' indicates the position size and could be positive (for long positions) or negative (for short positions). This value is usually near the 'Position' label. Usually 'size' ranges from 1 to 100 BTC. (not always, so guess if it makes sense or not by yourself.)
+        - 'size' indicates the position size. Positive for long position, usually where liqPrice is lower than entryPrice. Negative for short position, usually where liqPrice is higher than entryPrice. Usually ranges between 1 and 100 BTC. (not always, so make your own guess.)
         - 'contract' is the trading pair and usually ends with 'USDT' (e.g., 'BTCUSDT', 'ETHUSDT'). It can also be any altcoin-USDT pair. If the contract is not explicitly mentioned, look for it in labels near the position information or default to 'BTCUSDT'.
 
         Make sure entryPrice, liqPrice, and size are all numbers, not string representations of numbers.
