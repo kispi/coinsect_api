@@ -9,7 +9,6 @@ import marketInfo from './market_info'
 import onchain from './onchain/index'
 import profile from './profile'
 import slack from './slack'
-import youtubeSnapshot from './youtube_snapshot'
 
 const useService = () => ({
   aws,
@@ -23,7 +22,6 @@ const useService = () => ({
   onchain,
   profile,
   slack,
-  youtubeSnapshot,
 })
 
 export default useService
