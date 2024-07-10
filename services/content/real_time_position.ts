@@ -19,7 +19,6 @@ type IRealTimePosition = {
   size: number
   onAir: boolean,
   editable: boolean,
-  tracking: boolean,
   lastUpdate: Date | string,
 }
 
@@ -44,7 +43,6 @@ const createPosition = ({
   link,
   onAir: true,
   editable: true,
-  tracking: false,
   lastUpdate: now(),
 })
 
@@ -105,7 +103,7 @@ const realTimePositionService = {
           ip: c.req.ip,
           requestedAt: now(),
         }
-        const keys = ['id', 'liqPrice', 'entryPrice', 'size', 'contract', 'name', 'image', 'link', 'onAir', 'token', 'tracking']
+        const keys = ['id', 'liqPrice', 'entryPrice', 'size', 'contract', 'name', 'image', 'link', 'onAir', 'token']
         keys.filter(key => payload[key]).forEach(key => acceptable[key] = payload[key])
         notifiedPositionHistories.push(acceptable)
         notifiedPositionHistories = notifiedPositionHistories.slice(-5) // 최근 5개까지만 유지
@@ -166,7 +164,6 @@ const realTimePositionService = {
         size: null,
         onAir: true,
         editable: true,
-        tracking: true,
         lastUpdate: now(),
       })
       setRealTimePositions(cachedPositions)
@@ -187,7 +184,6 @@ const realTimePositionService = {
       payload.size ? found.size = parseFloat(payload.size) : delete found.size
       found.contract = (payload.contract || '').trim()
       found.onAir = payload.onAir
-      found.tracking = payload.tracking
 
       if (!submittedByUser) {
         found.image = (payload.image || '').trim()
@@ -226,6 +222,11 @@ const realTimePositionService = {
   delete: async id => {
     const idx = cachedPositions.data.findIndex(o => o.id === id)
     if (idx >= 0) cachedPositions.data.splice(idx, 1)
+
+    chatService.broadcast({
+      type: 'alert',
+      meta: { id, $$deleted: true },
+    })
     setRealTimePositions(cachedPositions)
   },
   autoParse: async ({
