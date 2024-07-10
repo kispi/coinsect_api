@@ -1,8 +1,9 @@
-import store from './store'
-import cronService from './services/cron'
-import chatService from './services/chat'
 import { app, initApp, backendGitHash } from './server_modules'
 import { log } from './core/logger'
+import store from './store'
+import useService from './services'
+
+const service = useService()
 
 const run = async () => {
   process.on('unhandledRejection', err => {
@@ -24,10 +25,10 @@ Server starts on port: ${store.state.serverConfig.API_PORT}
 Cache: ${store.state.serverConfig.USE_REDIS === 'yes' ? 'Redis' : 'Javascript Instance'}
   `)
 
-  if (process.env.RUN_CRON === 'yes') cronService.run()
+  if (process.env.RUN_CRON === 'yes') service.cron.run()
 
   setTimeout(() => {
-    chatService.deleteOldUsers(48)
+    service.chat.deleteOldUsers(48)
   }, 2000)
 }
 
