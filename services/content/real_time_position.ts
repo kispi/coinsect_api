@@ -228,7 +228,7 @@ const realTimePositionService = {
 
     chatService.broadcast({
       type: 'alert',
-      meta: { id, $$deleted: true },
+      meta: { id, $$deleted: true, $$alertType: 'realTimePosition' },
     })
     setRealTimePositions(cachedPositions)
   },
