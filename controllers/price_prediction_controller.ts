@@ -16,7 +16,7 @@ const pricePredictionController = {
     const bannedUser = helpers.useBannedUser({ ip: c.req.ip })
     if (bannedUser) return c.res.failed({ message: 'BANNED_USER', extra: { bannedUser } })
 
-    const payload = c.req.body
+    const payload = c.req.body as object
     try {
       await PricePrediction.populatePriceSnapshot(payload)
       await PricePrediction.validate(payload as PricePrediction)
@@ -49,7 +49,10 @@ const pricePredictionController = {
           시기: ${pricePredictionService.helpers.dateRange(payload)}
           가격: ${pricePredictionService.helpers.priceRange(payload)}
         `,
-        meta: payload,
+        meta: {
+          ...payload,
+          $$alertType: 'pricePrediction',
+        },
       })
     } catch (e) {
       c.res.failed(e)

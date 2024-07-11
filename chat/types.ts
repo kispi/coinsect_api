@@ -29,7 +29,7 @@ export interface IMessage {
   type: 'auth' | 'text' | 'image' | 'alert' | 'users' | 'ping' | 'pong' | 'forceRefresh' | 'hideMessage' | 'enter' | 'leave' | 'update',
   user: IUser,
   text?: string,
-  meta?: string | Object,
+  meta?: string | Object, // Object: { $$alertType: 'pricePrediction' | 'realTimePosition' }
   reactions: Array<Reaction>,
   numConnections: number, // 나중에 deprecate
   stats: {
