@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai')
+import store from '../../store'
 import helpers from '../../core/helpers'
 import useCache from '../../core/cache'
 import presets from '../../constants/position_presets'
@@ -239,7 +240,7 @@ const realTimePositionService = {
     url: string,
     prompt?: string,
   }) => {
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_STUDIO)
+    const genAI = new GoogleGenerativeAI(store.state.serverConfig.GOOGLE_AI_STUDIO)
     const model = genAI.getGenerativeModel({
       model: 'gemini-1.5-flash',
       generationConfig: {
