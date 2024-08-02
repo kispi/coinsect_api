@@ -101,6 +101,7 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/boards', ctrls.board.all)
 
+    router.get('/posts/with_llm', ctrls.post.allWithLLM)
     router.get('/posts', ctrls.post.all)
     router.get('/posts/:sharingKey', ctrls.post.detail)
     router.get('/posts/sitemap/:boardId', ctrls.post.sitemap)

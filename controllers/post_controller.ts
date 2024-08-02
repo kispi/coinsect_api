@@ -109,6 +109,14 @@ const postController = {
       c.res.failed(e)
     }
   },
+  allWithLLM: async (c: IContext) => {
+    try {
+      const { data, total } = await postService.allWithLLM(c)
+      c.res.asJSON({ data, total })
+    } catch (e) {
+      c.res.failed({ message: 'NOT_FOUND' } , 404)
+    }
+  },
   all: async (c: IContext) => {
     try {
       const { data, total } = await postService.all(c)
