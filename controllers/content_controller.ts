@@ -14,13 +14,6 @@ const contentController = {
       }
     },
   },
-  publicTreasuries: async (c: IContext) => {
-    try {
-      c.res.asJSON(await service.content.publicTreasury.all())
-    } catch (e) {
-      c.res.failed()
-    }
-  },
   realTimePositions: {
     presets: (c: IContext) => c.res.asJSON(service.content.realTimePosition.presets()),
     autoParse: async (c: IContext) => {
