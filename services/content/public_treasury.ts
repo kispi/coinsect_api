@@ -30,9 +30,9 @@ const publicTreasuryService = {
         const cols = row.getElementsByTagName('td')
         if (cols.length !== 10) return
 
-        const spansInNameCell = cols[0].querySelectorAll('span')
+        const nameCellAnchorTag = cols[0].querySelector('a')
         const item = {
-          name: helpers.sanitize.strict(spansInNameCell[spansInNameCell.length - 1].innerText.trim()),
+          name: ((nameCellAnchorTag || {}).innerText || '').trim(),
           symbol: helpers.sanitize.strict(cols[1].innerHTML),
           costBasis: foo(cols[5].innerText) * Math.pow(10, 6),
           valuation: foo(cols[6].innerText) * Math.pow(10, 6),
@@ -40,7 +40,6 @@ const publicTreasuryService = {
           type,
         }
         item['dominance'] = Math.round(10000 * item.holdings / 210000) / 10000
-        if (item.symbol === 'TSLA') item.name = 'Tesla, Inc.'
 
         if (item.costBasis && item.valuation && item.holdings) {
           item['profit'] = Math.round(10000 * (item.valuation - item.costBasis) / item.costBasis) / 100
