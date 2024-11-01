@@ -82,19 +82,26 @@ const postService = {
         },
       })
 
-      const text = `
-User is asking a question:"${q}" about bitcoin.
+      const prompt1 = `
+User is asking a question: "${q}" about bitcoin.
 Choose the most appropriate 3 (at most) posts within the list below.
-Response should be an array of number, sort by fitness DESC. (id of the post)
+Response should be an array of number.
 If you can't find any, please respond with an empty array.
 You don't need to fill 3, just return 0~3 posts.
 
 ${data.map((post: Post) => `post.id: ${post.id} / post.title: ${post.title}`).join('\n')}
       `.trim()
 
-      const result = await model.generateContent([{ text }])
-      const selectedPosts = data.filter((post: Post) => JSON.parse(result.response.text()).includes(post.id))
-      return { data: selectedPosts, total: selectedPosts.length }
+      const result1 = await model.generateContent([{ text: prompt1 }])
+      const selectedPosts = data.filter((post: Post) => JSON.parse(result1.response.text()).includes(post.id))
+
+      const prompt2 = `
+OK, you have chosen the following posts:
+${selectedPosts.map((post: Post) => `post.id: ${post.id} / post.title: ${post.title} / post.content: ${post.content}`).join('\n')}
+Using the information above, provide a answer to the user's question: "${q}" about bitcoin.
+      `
+      const result2 = await model.generateContent([{ text: prompt2 }])
+      return { data: selectedPosts, total: selectedPosts.length, answer: JSON.parse(result2.response.text()) }
     } catch (e) {
       return Promise.reject(e)
     }

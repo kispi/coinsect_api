@@ -111,8 +111,8 @@ const postController = {
   },
   allWithLLM: async (c: IContext) => {
     try {
-      const { data, total } = await postService.allWithLLM(c)
-      c.res.asJSON({ data, total })
+      const { data, total, answer } = await postService.allWithLLM(c)
+      c.res.asJSON({ data, total, answer })
     } catch (e) {
       c.res.failed({ message: 'NOT_FOUND' } , 404)
     }
