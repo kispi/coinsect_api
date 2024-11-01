@@ -62,6 +62,8 @@ const postService = {
     const q = c.req.query['query']
     if (!boardId || !q) return Promise.reject({ message: 'board_id or query is missing' })
 
+    log.info(`allWithLLM: query "${q}" (IP: ${c.req.ip})`)
+
     try {
       const [data, _] = await c.orm.getRepository(Post).createQueryBuilder()
         .leftJoinAndSelect('Post.user', 'user')
