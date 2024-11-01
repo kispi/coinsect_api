@@ -4,6 +4,7 @@ import { loadChildren } from '../core/controller'
 import { Reply } from '../entities/reply'
 import { Reaction } from '../entities/reaction'
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { log } from '../core/logger'
 import store from '../store'
 import IContext from '../core/interfaces/context'
 import orm from '../core/orm'
@@ -76,7 +77,7 @@ const postService = {
 
       const genAI = new GoogleGenerativeAI(store.state.serverConfig.GOOGLE_AI_STUDIO)
       const model = genAI.getGenerativeModel({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-1.5-pro',
         generationConfig: {
           responseMimeType: 'application/json',
         },
@@ -99,10 +100,12 @@ ${data.map((post: Post) => `post.id: ${post.id} / post.title: ${post.title}`).jo
 OK, you have chosen the following posts:
 ${selectedPosts.map((post: Post) => `post.id: ${post.id} / post.title: ${post.title} / post.content: ${post.content}`).join('\n')}
 Using the information above, provide a answer to the user's question: "${q}" about bitcoin.
+The result JSON should be a form of { "kr": String, "en": String }
       `
       const result2 = await model.generateContent([{ text: prompt2 }])
       return { data: selectedPosts, total: selectedPosts.length, answer: JSON.parse(result2.response.text()) }
     } catch (e) {
+      log.error('allWithLLM:', e)
       return Promise.reject(e)
     }
   },
