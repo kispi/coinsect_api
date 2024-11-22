@@ -67,12 +67,12 @@ const marketInfoService = {
 
     try {
       const data = await Promise.all([
-        axios.get('https://api.bybit.com/v2/public/symbols'),
+        axios.get('https://api.bybit.com/v5/market/tickers?category=linear'),
         axios.get('https://api.binance.com/api/v1/exchangeInfo'),
       ])
 
       const markets = {
-        bybit: data[0]['result'].map(o => o.name),
+        bybit: data[0]['result']['list'].map(o => o.symbol),
         binance: (data[1]['symbols'] || []).filter(o => o.symbol.endsWith('USDT')).map(o => o.symbol)
       }
 
