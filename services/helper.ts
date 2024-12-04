@@ -35,7 +35,12 @@ const helperService = {
       crawlingUrls[url] = true
       const meta = {}
       try {
-        const data = await axios.get(url) as string
+        const data = await axios.get(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; Slackbot 1.0; +https://api.slack.com/robots)',
+            'Accept-Language': 'ko-KR,ko;q=0.9,en-US,en;q=0.8',
+          },
+        }) as string
         const html = parse(data)
         const rawMeta = html.getElementsByTagName('meta').map(o => o.attributes)
         rawMeta.forEach(t => {
