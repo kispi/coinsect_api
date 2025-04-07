@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai')
+import axios from 'axios'
 import store from '../../store'
 import helpers from '../../core/helpers'
 import useCache from '../../core/cache'
@@ -283,7 +284,28 @@ const realTimePositionService = {
     }])
     return result.response.text()
   },
+  autoCrawl: async ({
+    youtubeHandle,
+    channelTitle,
+  }: {
+    youtubeHandle: string,
+    channelTitle?: string,
+  }) => {
+    const apikey = store.state.serverConfig.GOOGLE_AI_STUDIO
+    try {
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${youtubeHandle}&type=channel&key=${apikey}`
+      const resp = await axios.get(url)
+      const found = resp['items'].find(item => item.snippet.channelTitle === channelTitle) || resp['items'][0]
+      if (!found) return
+
+      const channelId = found.id.channelId
+      const resp2 = await axios.get(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&eventType=live&type=video&key=${apikey}`)
+      const videoId = resp2['items'][0].id.videoId
+      return videoId
+    } catch (e) {
+      return Promise.reject(e)
+    }
+  },
 }
-        
 
 export default realTimePositionService
