@@ -33,6 +33,18 @@ const repos: Array<Repo> = [{
   deploying: false,
   lastDeployLog: null,
   command: 'cd ~/web/remix_blog && ./deploy.sh',
+}, {
+  key: 'maple_api',
+  description: 'api.everymaple.com',
+  deploying: false,
+  lastDeployLog: null,
+  command: 'cd ~/web/maple_api && ./deploy.sh',
+}, {
+  key: 'maple_frontend',
+  description: 'everymaple.com',
+  deploying: false,
+  lastDeployLog: null,
+  command: 'cd ~/web/maple_frontend && ./deploy.sh',
 }]
 
 const deployController = {}

@@ -33,6 +33,12 @@ export const useRoutes = (app: FastifyInstance) => ({
 
     router.get('/deploy/remix_blog', ctrls.deploy['remix_blog'].status)
     router.post('/deploy/remix_blog', ctrls.deploy['remix_blog'].request)
+
+    router.get('/deploy/maple_frontend', ctrls.deploy['maple_frontend'].status)
+    router.post('/deploy/maple_frontend', ctrls.deploy['maple_frontend'].request)
+
+    router.get('/deploy/maple_api', ctrls.deploy['maple_api'].status)
+    router.post('/deploy/maple_api', ctrls.deploy['maple_api'].request)
   },
   admin: () => {
     const router = useRouter(app)
