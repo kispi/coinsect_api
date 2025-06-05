@@ -14,7 +14,7 @@ const init = async () => {
 init()
 
 const messaging = {
-  send: (message: MulticastMessage) => getMessaging().sendMulticast(message),
+  send: (message: MulticastMessage) => getMessaging().sendEachForMulticast(message),
 }
 
 export default messaging

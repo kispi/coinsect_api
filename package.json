@@ -28,7 +28,7 @@
     "cross-env": "^7.0.3",
     "dayjs": "^1.11.5",
     "fastify": "^4.6.0",
-    "firebase-admin": "^12.2.0",
+    "firebase-admin": "^13.4.0",
     "jsonwebtoken": "^9.0.0",
     "mysql": "^2.18.1",
     "node-html-parser": "^6.1.1",
