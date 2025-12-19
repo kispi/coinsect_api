@@ -29,7 +29,7 @@
     "dayjs": "^1.11.5",
     "fastify": "^4.6.0",
     "firebase-admin": "^13.4.0",
-    "jsonwebtoken": "^9.0.0",
+    "jsonwebtoken": "^9.0.3",
     "mysql": "^2.18.1",
     "node-html-parser": "^6.1.1",
     "pino-pretty": "^9.1.0",
