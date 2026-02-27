@@ -243,7 +243,7 @@ const realTimePositionService = {
   }) => {
     const genAI = new GoogleGenerativeAI(store.state.serverConfig.GOOGLE_AI_STUDIO)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-flash-latest',
       generationConfig: {
         responseMimeType: 'application/json',
       },
