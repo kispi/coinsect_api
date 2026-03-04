@@ -19,7 +19,8 @@ const postController = {
     if (bannedUser) return c.res.failed({ message: 'BANNED_USER', extra: { bannedUser } })
 
     const payload = c.req.body
-    if (!payload['board']) payload['board'] = { id : freeBoardId }
+    // if (!payload['board']) payload['board'] = { id : freeBoardId }
+    payload['board'] = { id: freeBoardId }
 
     try {
       await Post.validate(payload as Post)
@@ -114,7 +115,7 @@ const postController = {
       const { data, total, answer } = await postService.allWithLLM(c)
       c.res.asJSON({ data, total, answer })
     } catch (e) {
-      c.res.failed({ message: 'NOT_FOUND' } , 404)
+      c.res.failed({ message: 'NOT_FOUND' }, 404)
     }
   },
   all: async (c: IContext) => {
@@ -168,7 +169,7 @@ const postController = {
       c.res.success()
     } catch (e) {
       c.res.failed()
-      return    
+      return
     }
   },
   checkPassword: async (c: IContext) => {
