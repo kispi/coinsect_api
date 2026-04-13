@@ -21,10 +21,12 @@ const (
 )
 
 var (
-	// throttlingMS = 0 이면 스로틀링 없이 즉시 전송
-	// 지정된 값(예: 300)이면 그 ms 마다 모아서 전송
 	throttlingMS = 1000
-	upgrader     = websocket.Upgrader{
+
+	upgrader = websocket.Upgrader{
+		EnableCompression: true, // ← 압축 활성화 (가장 중요)
+		ReadBufferSize:    4096,
+		WriteBufferSize:   4096,
 		CheckOrigin: func(r *http.Request) bool {
 			origin := r.Header.Get("Origin")
 			if origin == "" {
@@ -38,12 +40,10 @@ var (
 
 			hostname := u.Hostname()
 
-			// 1. Localhost 허용
 			if hostname == "localhost" || hostname == "127.0.0.1" {
 				return true
 			}
 
-			// 2. coinsect.io 및 *.coinsect.io 허용
 			if hostname == "coinsect.io" || strings.HasSuffix(hostname, ".coinsect.io") {
 				return true
 			}
@@ -60,28 +60,21 @@ var (
 	clients   = make(map[*Client]bool)
 	clientsMu sync.RWMutex
 
-	// 전역 구독 상태 (업비트로 전송할 합쳐진 구독)
-	// Type -> Code -> true
+	// 전역 구독 상태
 	globalSubs   = make(map[string]map[string]bool)
 	globalSubsMu sync.Mutex
 
-	// 스로틀링을 위한 최신 데이터 캐시
-	// Key: "type:code" (예: "ticker:KRW-BTC")
-	// Value: 최신 JSON 메시지([]byte)
+	// 스로틀링용 최신 데이터 캐시
 	latestData   = make(map[string][]byte)
 	latestDataMu sync.Mutex
 )
 
-// 개별 클라이언트 커넥션과 구독 상태
 type Client struct {
 	Conn *websocket.Conn
-	// Type -> Code -> true
 	Subs map[string]map[string]bool
 	Mu   sync.RWMutex
 }
 
-// 업비트 통신(JSON) 파싱용 기본 구조체
-// SIMPLE 포맷 시 ty(타입), cd(코드)로 들어오는 이슈 대응
 type UpbitBasicMsg struct {
 	Type string `json:"type"`
 	Ty   string `json:"ty"`
@@ -117,26 +110,31 @@ func main() {
 		}
 	}
 
-	// 1. 단일 업비트 연결 리스너
+	// 업비트 연결
 	go connectToUpbit()
 
-	// 2. 브로드캐스팅 스로틀러
+	// 스로틀링 브로드캐스터
 	if throttlingMS > 0 {
 		go throttledBroadcaster()
 	}
 
-	// 3. 클라이언트 웹소켓 허브
 	http.HandleFunc("/ws", handleClientConnection)
 
-	fmt.Printf("Upbit Proxy Started on :%s (Throttling %dms)\n", port, throttlingMS)
+	fmt.Printf("Upbit Proxy Started on :%s (Throttling %dms, Compression: Enabled)\n", port, throttlingMS)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
-// 업비트 단일 연결 및 재연결 유지
+// 업비트 연결 (압축 적용)
 func connectToUpbit() {
+	dialer := websocket.Dialer{
+		EnableCompression: true, // ← Upbit → 서버 구간도 압축
+		ReadBufferSize:    8192,
+		WriteBufferSize:   8192,
+	}
+
 	for {
 		log.Println("Attempting to connect to Upbit...")
-		conn, _, err := websocket.DefaultDialer.Dial(UPBIT_WS_URL, nil)
+		conn, _, err := dialer.Dial(UPBIT_WS_URL, nil)
 		if err != nil {
 			log.Printf("Upbit Dial Error: %v. Retrying in 3 seconds...", err)
 			time.Sleep(3 * time.Second)
@@ -149,10 +147,8 @@ func connectToUpbit() {
 		upbitConn = conn
 		upbitMu.Unlock()
 
-		// 연결 직후 현재까지 확보된 전역 구독을 재전송
 		sendGlobalSubscriptionsToUpbit()
 
-		// 메시지 수신 무한루프
 		for {
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
@@ -162,7 +158,6 @@ func connectToUpbit() {
 			processUpbitMessage(msg)
 		}
 
-		// 연결 종료 시 리셋
 		upbitMu.Lock()
 		upbitConn = nil
 		upbitMu.Unlock()
@@ -179,6 +174,9 @@ func handleClientConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 클라이언트 연결마다 압축 명시적 활성화
+	conn.EnableWriteCompression(true)
+
 	client := &Client{
 		Conn: conn,
 		Subs: make(map[string]map[string]bool),
@@ -193,11 +191,9 @@ func handleClientConnection(w http.ResponseWriter, r *http.Request) {
 		delete(clients, client)
 		clientsMu.Unlock()
 		conn.Close()
-		// 클라이언트 종료 시 글로벌 구독 갱신
 		recalculateGlobalSubscriptions()
 	}()
 
-	// 클라이언트가 보내는 구독 Array를 파싱
 	for {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
@@ -232,7 +228,6 @@ func handleClientConnection(w http.ResponseWriter, r *http.Request) {
 		}
 		client.Mu.Unlock()
 
-		// 새 구독 추가되면 글로벌 구독 갱신
 		recalculateGlobalSubscriptions()
 	}
 }
@@ -260,11 +255,9 @@ func recalculateGlobalSubscriptions() {
 	globalSubs = newGlobalSubs
 	globalSubsMu.Unlock()
 
-	// 갱신될 때마다 업비트에 새 구독 배포
 	sendGlobalSubscriptionsToUpbit()
 }
 
-// 글로벌 구독 리스트를 포맷에 맞춰 업비트로 발송
 func sendGlobalSubscriptionsToUpbit() {
 	upbitMu.Lock()
 	conn := upbitConn
@@ -308,7 +301,6 @@ func sendGlobalSubscriptionsToUpbit() {
 	}
 }
 
-// 업비트에서 온 바이너리 JSON 메시지 처리
 func processUpbitMessage(msg []byte) {
 	var basicMsg UpbitBasicMsg
 	if err := json.Unmarshal(msg, &basicMsg); err != nil {
@@ -321,26 +313,23 @@ func processUpbitMessage(msg []byte) {
 		return
 	}
 
-	// 0이면 스로틀링 없이 즉시 직접전파
 	if throttlingMS == 0 {
 		broadcastToSubscribers(typ, code, msg)
 		return
 	}
 
-	// 스로틀링 중이면 버퍼 메모리에 적재해서 최신 데이터를 덮어씌움
 	key := typ + ":" + code
 	latestDataMu.Lock()
 	latestData[key] = msg
 	latestDataMu.Unlock()
 }
 
-// 일정 주기마다(throttlingMS) 적재된 최신 버퍼 데이터를 클라이언트에게만 배포
 func throttledBroadcaster() {
 	ticker := time.NewTicker(time.Duration(throttlingMS) * time.Millisecond)
 	for range ticker.C {
 		latestDataMu.Lock()
 		snapshot := latestData
-		latestData = make(map[string][]byte) // 비우기
+		latestData = make(map[string][]byte)
 		latestDataMu.Unlock()
 
 		if len(snapshot) == 0 {
@@ -373,7 +362,7 @@ func throttledBroadcaster() {
 					sb.Write(b)
 				}
 				sb.WriteString("]")
-				
+
 				_ = client.Conn.WriteMessage(websocket.TextMessage, []byte(sb.String()))
 			}
 		}
@@ -381,7 +370,6 @@ func throttledBroadcaster() {
 	}
 }
 
-// 데이터 타입과 코드를 구독하고 있는 클라이언트 필터링하여 TextMessage 전송
 func broadcastToSubscribers(typ string, code string, msg []byte) {
 	clientsMu.RLock()
 	defer clientsMu.RUnlock()
@@ -389,13 +377,9 @@ func broadcastToSubscribers(typ string, code string, msg []byte) {
 	for client := range clients {
 		client.Mu.RLock()
 		subMap, typeExists := client.Subs[typ]
-		isSubscribed := false
-		if typeExists && subMap[code] {
-			isSubscribed = true
-		}
+		isSubscribed := typeExists && subMap[code]
 		client.Mu.RUnlock()
 
-		// 구독중인 유저에게만 "텍스트 형식"으로 배포 (클라이언트에서 Blob 파싱 불필요)
 		if isSubscribed {
 			_ = client.Conn.WriteMessage(websocket.TextMessage, msg)
 		}
