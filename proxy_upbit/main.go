@@ -352,19 +352,28 @@ func throttledBroadcaster() {
 			}
 			client.Mu.RUnlock()
 
-			if len(batched) > 0 {
-				var sb strings.Builder
-				sb.WriteString("[")
-				for i, b := range batched {
-					if i > 0 {
-						sb.WriteString(",")
-					}
-					sb.Write(b)
-				}
-				sb.WriteString("]")
-
-				_ = client.Conn.WriteMessage(websocket.TextMessage, []byte(sb.String()))
+			if len(batched) == 0 {
+				continue
 			}
+
+			var sb strings.Builder
+			sb.WriteString("[")
+			for i, b := range batched {
+				if i > 0 {
+					sb.WriteString(",")
+				}
+				sb.Write(b)
+			}
+			sb.WriteString("]")
+
+			payload := []byte(sb.String())
+
+			w, err := client.Conn.NextWriter(websocket.TextMessage)
+			if err != nil {
+				continue
+			}
+			w.Write(payload)
+			w.Close() // Close() 시점에 압축 flush
 		}
 		clientsMu.RUnlock()
 	}
@@ -381,7 +390,12 @@ func broadcastToSubscribers(typ string, code string, msg []byte) {
 		client.Mu.RUnlock()
 
 		if isSubscribed {
-			_ = client.Conn.WriteMessage(websocket.TextMessage, msg)
+			w, err := client.Conn.NextWriter(websocket.TextMessage)
+			if err != nil {
+				continue
+			}
+			w.Write(msg)
+			w.Close()
 		}
 	}
 }
