@@ -5,5 +5,8 @@ services/firebase/fcm_cert.ts
 *.exe
 *.exe~
 
+proxy_upbit/*.log
+proxy_upbit/proxy_upbit
+
 .env
 ormconfig.ts
