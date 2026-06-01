@@ -81,7 +81,8 @@ export const initApp = async (app: FastifyInstance) => {
       if (
         !origin || // 나중엔 삭제될 조건인데 일단 동일 서버에서 호출하는 경우도 허용해줌 (origin 없음)
         origin.includes('//localhost') ||
-        origin.includes('coinsect.io')
+        origin.includes('coinsect.io') ||
+        origin.includes('gravex.app')
       ) {
         cb(null, true)
         return
