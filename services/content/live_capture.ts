@@ -3,11 +3,17 @@ import * as os from 'os'
 import * as path from 'path'
 import { execFile } from 'child_process'
 import { promisify } from 'util'
+import { log } from '../../core/logger'
 
 const execFileAsync = promisify(execFile)
 
 const YT_DLP = process.env.YT_DLP_PATH || 'yt-dlp'
 const FFMPEG = process.env.FFMPEG_PATH || 'ffmpeg'
+
+// 유튜브의 봇 차단 우회 수단은 계속 바뀌므로 배포 없이 서버 환경변수로 조정할 수 있게 둔다.
+// 예:) YT_DLP_EXTRA_ARGS='--extractor-args youtube:player_client=tv,android_vr --cookies /home/ubuntu/yt-cookies.txt'
+// 값 자체에는 공백을 쓸 수 없다. (공백으로 잘라 인자 배열을 만든다)
+const extraArgs = (process.env.YT_DLP_EXTRA_ARGS || '').trim().split(/\s+/).filter(Boolean)
 
 const firstLineOf = (e, fallback: string) => ((e || {}).stderr || '').toString().split('\n')[0].trim() || fallback
 
@@ -34,6 +40,7 @@ export const resolveLiveStream = async (channelUrl: string) => {
       '--print', '%(id)s',
       '--print', '%(is_live)s',
       '--print', 'urls',
+      ...extraArgs,
       target,
     ], { timeout: 1000 * 30, maxBuffer: 1024 * 1024 })
     stdout = result.stdout
@@ -41,9 +48,13 @@ export const resolveLiveStream = async (channelUrl: string) => {
     if (e.code === 'ENOENT') throw { message: '서버에 yt-dlp가 설치되어 있지 않습니다.' }
 
     const stderr = ((e || {}).stderr || '').toString()
+    // 아래에서 사용자용 메시지로 뭉개지므로 원문을 남겨둬야 원인을 특정할 수 있다.
+    log.error(`yt-dlp failed for ${target}: ${stderr.trim() || e.message}`)
     if (/404|does not exist/i.test(stderr)) throw { message: '채널을 찾을 수 없습니다. 채널 URL을 확인해주세요.' }
-    if (/not currently live|This live event|no video/i.test(stderr)) throw { message: '현재 방송 중이 아닙니다.' }
-    if (/Sign in to confirm|bot|cookies/i.test(stderr)) throw { message: '유튜브가 서버 접근을 차단했습니다. (봇 차단)' }
+    if (/not currently live|This live event/i.test(stderr)) throw { message: '현재 방송 중이 아닙니다.' }
+    // player_client 설정이 해당 방송과 맞지 않을 때 주로 발생한다. '방송 중 아님'과 혼동하기 쉽다.
+    if (/No video formats found/i.test(stderr)) throw { message: '스트림 형식을 찾지 못했습니다. (YT_DLP_EXTRA_ARGS의 player_client 설정 확인)' }
+    if (/Sign in to confirm|not a bot/i.test(stderr)) throw { message: '유튜브가 서버 접근을 차단했습니다. (봇 차단)' }
     throw { message: `라이브 주소 확인에 실패했습니다: ${firstLineOf(e, e.message)}` }
   }
 
@@ -74,6 +85,8 @@ export const captureFrames = async (hlsUrl: string, count: number, intervalSecon
       .map(name => fs.readFileSync(path.join(dir, name)).toString('base64'))
   } catch (e) {
     if (e.code === 'ENOENT') throw { message: '서버에 ffmpeg가 설치되어 있지 않습니다.' }
+
+    log.error(`ffmpeg failed: ${((e || {}).stderr || '').toString().trim() || e.message}`)
     throw { message: `스크린샷 캡처에 실패했습니다: ${firstLineOf(e, e.message)}` }
   } finally {
     fs.rmSync(dir, { recursive: true, force: true })
