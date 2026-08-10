@@ -1,5 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai')
 import axios from 'axios'
+import { resolveLiveStream, captureFrames } from './live_capture'
 import store from '../../store'
 import helpers from '../../core/helpers'
 import useCache from '../../core/cache'
@@ -14,6 +15,7 @@ type IRealTimePosition = {
   id: string
   name: string
   link: string
+  channelUrl: string
   image: string
   contract: string
   entryPrice: number
@@ -30,10 +32,12 @@ const createPosition = ({
   image,
   name,
   link,
+  channelUrl,
 }: {
   image: string,
   name: string,
   link?: string,
+  channelUrl?: string,
 }): IRealTimePosition => ({
   id: helpers.crypto.generateUUID(true),
   image,
@@ -43,6 +47,7 @@ const createPosition = ({
   contract: 'BTCUSDT',
   size: null,
   link,
+  channelUrl,
   onAir: true,
   editable: true,
   lastUpdate: now(),
@@ -145,6 +150,7 @@ const realTimePositionService = {
     if ((o.name || '').length > 20) throw { message: '스트리머 이름은 20자 미만으로 적어주세요' }
     if ((o.image || '').length > 255) throw { message: '255자 미만의 이미지 URL을 사용해주세요' }
     if ((o.link || '').length > 255) throw { message: '255자 미만의 방송플랫폼 URL을 사용해주세요' }
+    if ((o.channelUrl || '').length > 255) throw { message: '255자 미만의 채널 URL을 사용해주세요' }
     if (o.contract && !o.contract.endsWith('USDT')) throw { message: '계약은 반드시 USDT로 끝나야 합니다' }
   },
   all: async () => {
@@ -159,6 +165,7 @@ const realTimePositionService = {
         id: helpers.crypto.generateUUID(true),
         image: payload.image,
         link: payload.link,
+        channelUrl: payload.channelUrl,
         name: payload.name,
         liqPrice: null,
         entryPrice: null,
@@ -191,6 +198,7 @@ const realTimePositionService = {
         found.image = (payload.image || '').trim()
         found.name = (payload.name || '').trim()
         found.link = (payload.link || '').trim()
+        found.channelUrl = (payload.channelUrl || '').trim()
         found.editable = payload.editable
       }
       removeNotifiedPositionHistoriesOf(found.id)
@@ -236,9 +244,13 @@ const realTimePositionService = {
   },
   autoParse: async ({
     url,
+    base64,
+    mimeType,
     prompt,
   }: {
-    url: string,
+    url?: string,
+    base64?: string,
+    mimeType?: string,
     prompt?: string,
   }) => {
     const genAI = new GoogleGenerativeAI(store.state.serverConfig.GOOGLE_AI_STUDIO)
@@ -278,11 +290,45 @@ const realTimePositionService = {
       `
     }, {
       inlineData: {
-        mimeType: 'image/png',
-        data: await helpers.imageUrlToBase64String(url),
+        mimeType: mimeType || 'image/png',
+        data: base64 || await helpers.imageUrlToBase64String(url),
       },
     }])
     return result.response.text()
+  },
+  // 채널 URL만으로 라이브 화면을 직접 떠서 인식한다. 프레임마다 따로 인식시키고
+  // 판정은 하지 않는다 — 후보를 나란히 보여주고 관리자가 고른다.
+  autoCapture: async ({
+    channelUrl,
+    prompt,
+    frames,
+    interval,
+  }: {
+    channelUrl: string,
+    prompt?: string,
+    frames?: number,
+    interval?: number,
+  }) => {
+    const count = Math.min(Math.max(parseInt(String(frames)) || 3, 1), 5)
+    const intervalSeconds = Math.min(Math.max(parseInt(String(interval)) || 4, 1), 10)
+
+    const { videoId, hlsUrl } = await resolveLiveStream(channelUrl)
+    const images = await captureFrames(hlsUrl, count, intervalSeconds)
+    if (images.length === 0) throw { message: '화면을 캡처하지 못했습니다.' }
+
+    const candidates = await Promise.all(images.map(async base64 => {
+      const image = `data:image/jpeg;base64,${base64}`
+      try {
+        const parsed = JSON.parse(await realTimePositionService.autoParse({ base64, mimeType: 'image/jpeg', prompt }))
+        return { image, position: parsed, failed: false }
+      } catch (e) {
+        return { image, position: null, failed: true }
+      }
+    }))
+
+    if (candidates.every(o => o.failed)) throw { message: '화면에서 포지션을 찾지 못했습니다.' }
+
+    return { videoId, candidates }
   },
   autoCrawl: async ({
     youtubeHandle,

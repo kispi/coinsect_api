@@ -27,6 +27,19 @@ const contentController = {
         c.res.failed(e)
       }
     },
+    autoCapture: async (c: IContext) => {
+      try {
+        const data = await service.content.realTimePosition.autoCapture({
+          channelUrl: c.req.body['channelUrl'],
+          prompt: c.req.body['prompt'],
+          frames: c.req.body['frames'],
+          interval: c.req.body['interval'],
+        })
+        c.res.asJSON(data)
+      } catch (e) {
+        c.res.failed(e)
+      }
+    },
     changeNotification: {
       all: (c: IContext) => c.res.asJSON(service.content.realTimePosition.changeNotification.all()),
       create: async (c: IContext) => {

@@ -60,6 +60,7 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/admin/contents/real_time_positions/presets', ctrls.content.realTimePositions.presets, middlewares.auth.admin.position)
     router.post('/admin/contents/real_time_positions', ctrls.content.realTimePositions.set, middlewares.auth.admin.position)
     router.post('/admin/contents/real_time_positions/auto_parse', ctrls.content.realTimePositions.autoParse, middlewares.auth.admin.position)
+    router.post('/admin/contents/real_time_positions/auto_capture', ctrls.content.realTimePositions.autoCapture, middlewares.auth.admin.position)
     router.delete('/admin/contents/real_time_positions/:id', ctrls.content.realTimePositions.delete, middlewares.auth.admin.position)
 
     router.put('/admin/helpers/crawled_websites', ctrls.helper.crawledWebsites.delete, middlewares.auth.admin.super) // DELETE 메소드는 request body를 가질 수 없어서 put으로
