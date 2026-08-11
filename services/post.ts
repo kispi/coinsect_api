@@ -3,7 +3,7 @@ import { Post } from '../entities/post'
 import { loadChildren } from '../core/controller'
 import { Reply } from '../entities/reply'
 import { Reaction } from '../entities/reaction'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI } from '@google/genai'
 import { log } from '../core/logger'
 import store from '../store'
 import IContext from '../core/interfaces/context'
@@ -77,10 +77,11 @@ const postService = {
       ])
       data.forEach((post: Post) => post.mutatePostToBeSecure(c.req.ip))
 
-      const genAI = new GoogleGenerativeAI(store.state.serverConfig.GOOGLE_AI_STUDIO)
-      const model = genAI.getGenerativeModel({
+      const genAI = new GoogleGenAI({ apiKey: store.state.serverConfig.GOOGLE_AI_STUDIO })
+      const generate = (parts: Array<{ text: string }>) => genAI.models.generateContent({
         model: 'gemini-flash-latest',
-        generationConfig: {
+        contents: parts,
+        config: {
           responseMimeType: 'application/json',
         },
       })
@@ -95,8 +96,8 @@ You don't need to fill 3, just return 0~3 posts.
 ${data.map((post: Post) => `post.id: ${post.id} / post.title: ${post.title}`).join('\n')}
       `.trim()
 
-      const result1 = await model.generateContent([{ text: prompt1 }])
-      const selectedPosts = data.filter((post: Post) => JSON.parse(result1.response.text()).includes(post.id))
+      const result1 = await generate([{ text: prompt1 }])
+      const selectedPosts = data.filter((post: Post) => JSON.parse(result1.text).includes(post.id))
 
       const prompt2 = `
 OK, you have chosen the following posts:
@@ -104,8 +105,8 @@ ${selectedPosts.map((post: Post) => `post.id: ${post.id} / post.title: ${post.ti
 Using the information above, provide a answer to the user's question: "${q}" about bitcoin.
 The result JSON should be a form of { "kr": String, "en": String }
       `
-      const result2 = await model.generateContent([{ text: prompt2 }])
-      return { data: selectedPosts, total: selectedPosts.length, answer: JSON.parse(result2.response.text()) }
+      const result2 = await generate([{ text: prompt2 }])
+      return { data: selectedPosts, total: selectedPosts.length, answer: JSON.parse(result2.text) }
     } catch (e) {
       log.error('allWithLLM:', e)
       return Promise.reject(e)

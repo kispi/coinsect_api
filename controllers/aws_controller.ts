@@ -1,4 +1,4 @@
-import { ModerationLabel } from 'aws-sdk/clients/rekognition'
+import { ModerationLabel } from '@aws-sdk/client-rekognition'
 import IContext from '../core/interfaces/context'
 import useService from '../services'
 

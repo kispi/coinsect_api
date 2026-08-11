@@ -7,7 +7,7 @@ import firebase from '../services/firebase'
 import messageHandlers from './message_handler'
 import { Message, populateReactions } from '../entities/message'
 import { IMessage, IUser, IUserSetting } from './types'
-import { SocketStream } from '@fastify/websocket'
+import { WebSocket } from '@fastify/websocket'
 import { FastifyRequest } from 'fastify'
 import { createHttpLog, log } from '../core/logger'
 import { simplifiedReaction } from '../entities/reaction'
@@ -21,7 +21,8 @@ const debouncedBroadcast = type => coreHelpers.debounce(() => {
   helpers.broadcast({ type })
 }, 500)
 
-export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
+// @fastify/websocket v9+ 부터 핸들러가 SocketStream이 아닌 WebSocket 자체를 넘겨준다.
+export const onConnected = (connection: WebSocket, req: FastifyRequest) => {
   // 웹소켓 접속시 토큰이 query param으로 넘어온 경우 그대로 사용, 없으면 만들어줌
   const token = req.query['token'] || helpers.mustToken()
 
@@ -31,7 +32,7 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
   // 유저 접속시 통계 업데이트
   debouncedBroadcast('enter')()
 
-  connection.socket.on('close', () => {
+  connection.on('close', () => {
     const idx = connections.findIndex(conn => conn.connection === connection)
     if (idx >= 0) connections.splice(idx, 1)
 
@@ -39,12 +40,12 @@ export const onConnected = (connection: SocketStream, req: FastifyRequest) => {
     debouncedBroadcast('leave')()
   })
 
-  connection.socket.on('error', error => {
+  connection.on('error', error => {
     log.error('websocket error:', error)
     log.error(JSON.stringify(createHttpLog(req, null)))
   })
 
-  connection.socket.on('message', rawMessage => {
+  connection.on('message', rawMessage => {
     try {
       const message: IMessage = JSON.parse(rawMessage)
       const handler = messageHandlers({ message, token, ip: req.ip })[message.type]

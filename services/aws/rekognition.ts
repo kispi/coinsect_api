@@ -1,5 +1,9 @@
-const AWS = require('aws-sdk')
-import { ModerationLabel } from 'aws-sdk/clients/rekognition'
+import {
+  RekognitionClient,
+  DetectModerationLabelsCommand,
+  DetectTextCommand,
+  ModerationLabel,
+} from '@aws-sdk/client-rekognition'
 import { log } from '../../core/logger'
 import useCache from '../../core/cache'
 import helpers from '../../core/helpers'
@@ -13,10 +17,12 @@ let moderationTestingUrls = {}
 let textDetectedUrls = {}
 let textDetectingUrls = {}
 
-const rekognition = new AWS.Rekognition({
+const rekognition = new RekognitionClient({
   region: 'ap-northeast-2',
-  accessKeyId: store.state.serverConfig.AWS_ACCESS_KEY_ID,
-  secretAccessKey: store.state.serverConfig.AWS_SECRET_ACCESS_KEY,
+  credentials: {
+    accessKeyId: store.state.serverConfig.AWS_ACCESS_KEY_ID,
+    secretAccessKey: store.state.serverConfig.AWS_SECRET_ACCESS_KEY,
+  },
 })
 
 const rekognitionService = {
@@ -65,24 +71,21 @@ const rekognitionService = {
   
       moderationTestingUrls[url] = true
       try {
-        const base64 = await helpers.imageUrlToBlob(url)
-        return new Promise((resolve, reject) => {
-          rekognition.detectModerationLabels({
-            Image: {
-              Bytes: base64,
-            },
-          }, (err, data) => {
-            delete moderationTestingUrls[url]
-            if (err) reject(err)
-  
-            moderationTestedUrls[url] = data
-            cache.set('moderation_tested_urls', moderationTestedUrls)
-            resolve(data)
-          })
-        })
+        const bytes = await helpers.imageUrlToBlob(url)
+        const data = await rekognition.send(new DetectModerationLabelsCommand({
+          Image: {
+            Bytes: bytes,
+          },
+        }))
+
+        moderationTestedUrls[url] = data
+        cache.set('moderation_tested_urls', moderationTestedUrls)
+        return data
       } catch (e) {
         log.error('rekognition.imageModeration:', e)
         return Promise.reject(e)
+      } finally {
+        delete moderationTestingUrls[url]
       }
     },
     isGraphicLabel: (label: ModerationLabel) => {
@@ -114,24 +117,21 @@ const rekognitionService = {
 
       textDetectingUrls[url] = true
       try {
-        const base64 = await helpers.imageUrlToBlob(url)
-        return new Promise((resolve, reject) => {
-          rekognition.detectText({
-            Image: {
-              Bytes: base64,
-            },
-          }, (err, data) => {
-            delete textDetectingUrls[url]
-            if (err) reject(err)
+        const bytes = await helpers.imageUrlToBlob(url)
+        const data = await rekognition.send(new DetectTextCommand({
+          Image: {
+            Bytes: bytes,
+          },
+        }))
 
-            textDetectedUrls[url] = data
-            cache.set('text_detected_urls', textDetectedUrls)
-            resolve(data)
-          })
-        })
+        textDetectedUrls[url] = data
+        cache.set('text_detected_urls', textDetectedUrls)
+        return data
       } catch (e) {
         log.error('rekognition.detectText:', e)
         return Promise.reject(e)
+      } finally {
+        delete textDetectingUrls[url]
       }
     },
   },

@@ -148,7 +148,7 @@ const sendMessage = ({ message, token, ip }: { message, token?: string, ip?: str
   const finalMessage = asIMessage(message)
   if (finalMessage.text) finalMessage.text = coreHelpers.allNewlineTrimmed(finalMessage.text)
 
-  targetConnections.forEach(connectionWrapper => connectionWrapper.connection.socket.send(JSON.stringify(finalMessage)))
+  targetConnections.forEach(connectionWrapper => connectionWrapper.connection.send(JSON.stringify(finalMessage)))
 }
 
 // 메시지를 접속된 클라이언트들에게 뿌리고 서버 메모리에 저장한다. (나중에 redis pubsub으로 변경)

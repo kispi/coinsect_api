@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai')
+import { GoogleGenAI } from '@google/genai'
 import axios from 'axios'
 import store from '../../store'
 import helpers from '../../core/helpers'
@@ -241,15 +241,9 @@ const realTimePositionService = {
     url: string,
     prompt?: string,
   }) => {
-    const genAI = new GoogleGenerativeAI(store.state.serverConfig.GOOGLE_AI_STUDIO)
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-flash-latest',
-      generationConfig: {
-        responseMimeType: 'application/json',
-      },
-    })
+    const genAI = new GoogleGenAI({ apiKey: store.state.serverConfig.GOOGLE_AI_STUDIO })
 
-    const result = await model.generateContent([{
+    const contents = [{
       text: (prompt || '').trim() || `
         Ignore the orderbook. The relevant information is usually located near the bottom-left corner of the image.
 
@@ -281,8 +275,16 @@ const realTimePositionService = {
         mimeType: 'image/png',
         data: await helpers.imageUrlToBase64String(url),
       },
-    }])
-    return result.response.text()
+    }]
+
+    const result = await genAI.models.generateContent({
+      model: 'gemini-flash-latest',
+      config: {
+        responseMimeType: 'application/json',
+      },
+      contents,
+    })
+    return result.text
   },
   autoCrawl: async ({
     youtubeHandle,
