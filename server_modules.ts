@@ -120,7 +120,10 @@ export const initApp = async (app: FastifyInstance) => {
 
 export const app = fastify({
   trustProxy: true,
-  ignoreTrailingSlash: true,
+  // fastify 5부터 라우터 옵션은 routerOptions 아래로 옮겨졌다. (최상위 지정은 fastify 6에서 제거됨)
+  routerOptions: {
+    ignoreTrailingSlash: true,
+  },
 })
 
 export const backendGitHash = () => new Promise((resolve, reject) => {

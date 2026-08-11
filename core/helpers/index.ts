@@ -65,11 +65,12 @@ const helpers = {
       return []
     }
   },
-  imageUrlToBlob: async (imageUrl: string) => {
+  // server_modules.ts의 전역 axios 인터셉터가 res.data만 돌려주므로 실제 반환값은 응답 본문(Buffer)이다.
+  imageUrlToBlob: async (imageUrl: string): Promise<Uint8Array<ArrayBuffer>> => {
     try {
       return await axios.get(imageUrl, {
         responseType: 'arraybuffer',
-      })
+      }) as unknown as Uint8Array<ArrayBuffer>
     } catch (e) {
       return Promise.reject(e)
     }

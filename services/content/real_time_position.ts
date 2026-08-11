@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai')
+import { GoogleGenAI } from '@google/genai'
 import axios from 'axios'
 import { resolveLiveStream, captureFrames } from './live_capture'
 import store from '../../store'
@@ -253,15 +253,9 @@ const realTimePositionService = {
     mimeType?: string,
     prompt?: string,
   }) => {
-    const genAI = new GoogleGenerativeAI(store.state.serverConfig.GOOGLE_AI_STUDIO)
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-flash-latest',
-      generationConfig: {
-        responseMimeType: 'application/json',
-      },
-    })
+    const genAI = new GoogleGenAI({ apiKey: store.state.serverConfig.GOOGLE_AI_STUDIO })
 
-    const result = await model.generateContent([{
+    const contents = [{
       text: (prompt || '').trim() || `
         Ignore the orderbook. The relevant information is usually located near the bottom-left corner of the image.
 
@@ -293,8 +287,16 @@ const realTimePositionService = {
         mimeType: mimeType || 'image/png',
         data: base64 || await helpers.imageUrlToBase64String(url),
       },
-    }])
-    return result.response.text()
+    }]
+
+    const result = await genAI.models.generateContent({
+      model: 'gemini-flash-latest',
+      config: {
+        responseMimeType: 'application/json',
+      },
+      contents,
+    })
+    return result.text
   },
   // 채널 URL만으로 라이브 화면을 직접 떠서 인식한다. 프레임마다 따로 인식시키고
   // 판정은 하지 않는다 — 후보를 나란히 보여주고 관리자가 고른다.

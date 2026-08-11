@@ -1,4 +1,4 @@
-import { SocketStream } from '@fastify/websocket'
+import { WebSocket } from '@fastify/websocket'
 import { Reaction } from '../entities/reaction'
 
 export interface IUser {
@@ -41,7 +41,7 @@ export interface IMessage {
 }
 
 export interface IConnection {
-  connection: SocketStream,
+  connection: WebSocket,
   user: IUser,
   ip: string,
 }

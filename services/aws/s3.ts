@@ -1,20 +1,21 @@
-const AWS = require('aws-sdk')
+import { S3Client, PutObjectCommand, DeleteObjectCommand, DeleteObjectTaggingCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import helpers from '../../core/helpers'
 import store from '../../store'
-
-AWS.config.update({
-  region: 'ap-northeast-2',
-  accessKeyId: store.state.serverConfig.AWS_ACCESS_KEY_ID,
-  secretAccessKey: store.state.serverConfig.AWS_SECRET_ACCESS_KEY,
-})
 
 const Bucket = 'coinsect-production'
 
 const host = 'https://coinsect-production.s3.ap-northeast-2.amazonaws.com/'
 
-const s3 = new AWS.S3({
-  signatureVersion: 'v4',
-  region: 'ap-northeast-2'
+const s3 = new S3Client({
+  region: 'ap-northeast-2',
+  credentials: {
+    accessKeyId: store.state.serverConfig.AWS_ACCESS_KEY_ID,
+    secretAccessKey: store.state.serverConfig.AWS_SECRET_ACCESS_KEY,
+  },
+  // SDK v3 기본값(WHEN_SUPPORTED)은 presigned URL에 빈 body 기준 x-amz-checksum-crc32를 박아버려서
+  // 클라이언트가 실제 파일을 PUT하면 BadDigest로 실패한다. v2와 동일하게 체크섬을 붙이지 않는다.
+  requestChecksumCalculation: 'WHEN_REQUIRED',
 })
 
 const s3Service = {
@@ -38,14 +39,13 @@ const s3Service = {
       key.split('/').filter(frag => frag).slice(0, -1).join('/') + '/' + helpers.crypto.generateUUID() + '_' + fileName
 
     try {
-      const url = await s3.getSignedUrl('putObject', {
-        Bucket: 'coinsect-production',
+      const url = await getSignedUrl(s3, new PutObjectCommand({
+        Bucket,
         Key,
-        Expires: 60 * 1,
         ContentType: 'image/png;image/jpeg;image/jpg;image/gif;image/svg+xml',
         ACL: 'public-read',
-        Tagging: tagging,
-      })
+        Tagging: tagging || undefined,
+      }), { expiresIn: 60 * 1 })
       const resp = { url, headers: {} }
       if (imageExt) resp.headers['Content-Type'] = `image/${imageExt === 'jfif' ? 'jpeg' : imageExt}`
       if (tagging) resp.headers['x-amz-tagging'] = tagging
@@ -54,14 +54,14 @@ const s3Service = {
       return Promise.reject(e)
     }
   },
-  deleteObject: (Key: string) => s3.deleteObject({
+  deleteObject: (Key: string) => s3.send(new DeleteObjectCommand({
     Bucket,
     Key,
-  }).promise(),
-  deleteObjectTagging: (Key: string) => s3.deleteObjectTagging({
+  })),
+  deleteObjectTagging: (Key: string) => s3.send(new DeleteObjectTaggingCommand({
     Bucket,
     Key,
-  }).promise(),
+  })),
 }
 
 export default s3Service

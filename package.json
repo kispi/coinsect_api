@@ -19,31 +19,39 @@
     "url": "https://github.com/kispi/coinsect_api/issues"
   },
   "homepage": "https://github.com/kispi/coinsect_api#readme",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  },
   "dependencies": {
-    "@fastify/cors": "^8.1.0",
-    "@fastify/websocket": "^7.1.1",
-    "@google/generative-ai": "^0.14.1",
-    "aws-sdk": "^2.1225.0",
-    "axios": "^1.7.2",
-    "cross-env": "^7.0.3",
-    "dayjs": "^1.11.5",
-    "fastify": "^4.6.0",
-    "firebase-admin": "^13.4.0",
+    "@aws-sdk/client-rekognition": "^3.1107.0",
+    "@aws-sdk/client-s3": "^3.1107.0",
+    "@aws-sdk/s3-request-presigner": "^3.1107.0",
+    "@fastify/cors": "^11.3.0",
+    "@fastify/websocket": "^11.3.0",
+    "@google/genai": "^2.16.0",
+    "axios": "^1.19.0",
+    "cross-env": "^10.1.0",
+    "dayjs": "^1.11.21",
+    "dotenv": "^16.6.1",
+    "fastify": "^5.11.3",
+    "firebase-admin": "^14.2.0",
     "jsonwebtoken": "^9.0.3",
-    "mysql": "^2.18.1",
-    "node-html-parser": "^6.1.1",
-    "pino-pretty": "^9.1.0",
-    "redis": "^4.3.1",
-    "reflect-metadata": "^0.1.13",
-    "sanitize-html": "^2.7.2",
-    "slugid": "^3.1.0",
-    "typeorm": "^0.3.10",
+    "mysql2": "^3.23.3",
+    "node-html-parser": "^9.0.1",
+    "redis": "^5.12.1",
+    "reflect-metadata": "^0.2.2",
+    "sanitize-html": "^2.17.6",
+    "slugid": "^5.0.1",
+    "typeorm": "^0.3.31",
     "typeorm-naming-strategies": "^4.1.0",
     "typescript": "^6.0.3"
   },
   "devDependencies": {
-    "@types/node": "^20.14.10",
-    "ts-node": "^10.0.0",
+    "@types/node": "^24.13.3",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0"
   }
 }
