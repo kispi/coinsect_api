@@ -65,12 +65,41 @@ jobs:
       - name: Build
         run: npm run build
 
+      # 호스트키를 시크릿에 고정해두고 대조한다(gukto_api/gukto_frontend와 같은 방식).
+      #
+      # 구 코드는 `ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts` 한 줄이었는데, 그건 접속
+      # **직전에** 서버에게 지문을 물어보고 그 답을 그대로 수첩에 적은 뒤 그 수첩과 대조하는
+      # 것이라 항상 통과한다. 즉 중간자 검증 효과가 없고, SSH가 미지의 호스트라며 멈춰 서는
+      # 것만 막는 용도였다. 가짜 서버가 응답하면 그 가짜 지문을 그대로 신뢰한다.
+      #
+      # EC2_KNOWN_HOSTS에는 호스트명과 IP 항목을 **둘 다** 넣어뒀다. known_hosts는 입력한 주소
+      # 문자열로 찾으므로, 한쪽만 있으면 EC2_HOST를 IP<->호스트명으로 바꾸는 순간 조회에 실패한다.
+      #
+      # ⚠️ 서버를 재생성해 호스트키가 바뀌면 이 시크릿을 갱신할 때까지 배포가 실패한다.
+      # 갱신: ssh-keyscan -H webserver.coinsect.io 13.125.248.100 | gh secret set EC2_KNOWN_HOSTS --repo <repo>
+      #
+      # 시크릿을 env로 받아 printf로 쓴다. `echo "${{ secrets.X }}"`는 시크릿 내용을 셸 소스에
+      # 그대로 박아 bash가 백틱과 ${...}를 해석하게 만든다(coinsect_api의 ormconfig.ts가 실제로
+      # 그렇게 깨져 프로덕션이 400을 뱉었다).
       - name: Setup SSH key
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
+          EC2_KNOWN_HOSTS: ${{ secrets.EC2_KNOWN_HOSTS }}
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 700 ~/.ssh
+          printf '%s\n' "${EC2_PRIVATE_KEY}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+          if [[ -n "${EC2_KNOWN_HOSTS}" ]]; then
+            printf '%s\n' "${EC2_KNOWN_HOSTS}" > ~/.ssh/known_hosts
+          else
+            # 시크릿이 비어 있을 때만 쓰는 폴백. 위 주석대로 검증 효과가 없으므로 경고를 남긴다.
+            echo "::warning::EC2_KNOWN_HOSTS가 비어 있다. 호스트키 검증 없이 접속한다."
+            ssh-keyscan -H "${EC2_HOST}" > ~/.ssh/known_hosts
+          fi
+          chmod 600 ~/.ssh/known_hosts
 
       - name: Deploy to EC2
         env:
