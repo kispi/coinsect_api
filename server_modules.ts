@@ -104,7 +104,6 @@ export const initApp = async (app: FastifyInstance) => {
   app.setNotFoundHandler(handleNotFound)
   const routeMaker = useRoutes(app)
   routeMaker.admin()
-  routeMaker.deploy()
   routeMaker.service()
 
   Promise.all([

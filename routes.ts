@@ -19,30 +19,6 @@ const useRouteCRUD = ({ app, model, middleware = middlewares.auth.admin.super })
 }
 
 export const useRoutes = (app: FastifyInstance) => ({
-  deploy: () => {
-    const router = useRouter(app)
-
-    // 배포는 서버에서 셸 명령을 실행하므로 반드시 인증을 거쳐야 한다.
-    const auth = middlewares.auth.admin.super
-
-    router.get('/deploy/coinsect_frontend', ctrls.deploy['coinsect_frontend'].status, auth)
-    router.post('/deploy/coinsect_frontend', ctrls.deploy['coinsect_frontend'].request, auth)
-
-    router.get('/deploy/coinsect_web', ctrls.deploy['coinsect_web'].status, auth)
-    router.post('/deploy/coinsect_web', ctrls.deploy['coinsect_web'].request, auth)
-
-    router.get('/deploy/coinsect_api', ctrls.deploy['coinsect_api'].status, auth)
-    router.post('/deploy/coinsect_api', ctrls.deploy['coinsect_api'].request, auth)
-
-    router.get('/deploy/remix_blog', ctrls.deploy['remix_blog'].status, auth)
-    router.post('/deploy/remix_blog', ctrls.deploy['remix_blog'].request, auth)
-
-    router.get('/deploy/maple_frontend', ctrls.deploy['maple_frontend'].status, auth)
-    router.post('/deploy/maple_frontend', ctrls.deploy['maple_frontend'].request, auth)
-
-    router.get('/deploy/maple_api', ctrls.deploy['maple_api'].status, auth)
-    router.post('/deploy/maple_api', ctrls.deploy['maple_api'].request, auth)
-  },
   admin: () => {
     const router = useRouter(app)
 

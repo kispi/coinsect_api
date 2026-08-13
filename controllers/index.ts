@@ -5,7 +5,6 @@ import board from './board_controller'
 import config from './config_controller'
 import content from './content_controller'
 import dashboard from './dashboard_controller'
-import deploy from './deploy_controller'
 import firebase from './firebase_controller'
 import helper from './helper_controller'
 import marketInfo from './market_info_controller'
@@ -27,7 +26,6 @@ const useControllers = () => ({
   config,
   content,
   dashboard,
-  deploy,
   firebase,
   helper,
   marketInfo,
