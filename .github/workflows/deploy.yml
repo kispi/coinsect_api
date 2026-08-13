@@ -106,21 +106,27 @@ jobs:
             pm2 save
           ENDSSH
 
-      # gukto 레포들이 쓰던 알림 단계와 같은 채널·같은 시크릿 이름을 쓴다.
+      # coinsect_api 채널로 보낸다. 방식이 다른 레포(gukto/maple/goapi)와 다르다:
+      # 저쪽은 봇 토큰 + chat.postMessage로 채널을 인자로 지정하지만, 여기서는 coinsect_api가
+      # 이미 쓰고 있는 Incoming Webhook(.env의 SLACK_COINSECT_API, services/slack.ts)을 그대로
+      # 쓴다. 웹훅 URL 자체가 채널에 묶여 있어 채널 지정이 필요 없고, 봇 토큰 쪽은 이 워크스페이스에서
+      # channels:read 스코프가 없어 채널 목록조차 못 읽는다(chat.postMessage 대상 채널 확인 불가).
+      #
+      # 웹훅 응답은 JSON이 아니라 평문 "ok"라, gukto 쪽 워크플로처럼 jq로 .ok를 보면 안 된다.
+      #
       # if: always()라 실패한 배포도 알린다 - 성공만 알리면 조용한 실패가 성공과 구분되지 않는다.
       - name: Notify Slack
         if: always()
         env:
-          EC2_SLACK_API_KEY: ${{ secrets.EC2_SLACK_API_KEY }}
-          EC2_SLACK_CHANNEL_GUKTO_API: ${{ secrets.EC2_SLACK_CHANNEL_GUKTO_API }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_COINSECT_API }}
           JOB_STATUS: ${{ job.status }}
           COMMIT_SHA: ${{ github.sha }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          if [[ -z "${EC2_SLACK_API_KEY}" || -z "${EC2_SLACK_CHANNEL_GUKTO_API}" ]]; then
-            echo "Slack secrets are missing; skipping notification."
+          if [[ -z "${SLACK_WEBHOOK_URL}" ]]; then
+            echo "Slack webhook is missing; skipping notification."
             exit 0
           fi
 
@@ -140,13 +146,15 @@ jobs:
           EOF
           )"
 
-          payload="$(jq -n --arg channel "${EC2_SLACK_CHANNEL_GUKTO_API}" --arg text "${text}" '{channel: $channel, text: $text}')"
-          response="$(curl -fsS -X POST "https://slack.com/api/chat.postMessage" \
-            -H "Authorization: Bearer ${EC2_SLACK_API_KEY}" \
+          # 커밋 메시지에 한글이 들어오므로 jq로 JSON을 만들어 이스케이프를 맡기고,
+          # Content-Type에 charset=utf-8을 명시한다.
+          payload="$(jq -n --arg text "${text}" '{text: $text}')"
+          response="$(curl -fsS -X POST \
             -H "Content-type: application/json; charset=utf-8" \
-            --data "${payload}")"
+            --data "${payload}" \
+            "${SLACK_WEBHOOK_URL}")"
 
-          if [[ "$(jq -r '.ok' <<< "${response}")" != "true" ]]; then
+          if [[ "${response}" != "ok" ]]; then
             echo "::error::Slack notification failed: ${response}"
             exit 1
           fi
