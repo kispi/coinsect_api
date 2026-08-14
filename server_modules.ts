@@ -73,16 +73,39 @@ const handleNotFound = (req: FastifyRequest, res: FastifyReply) => {
   res.send({ message: 'Not Found' })
 }
 
+const allowedOriginDomains = ['coinsect.io', 'gravex.app']
+const allowedOriginDevHosts = ['localhost', '127.0.0.1', '[::1]']
+
+/*
+  origin은 hostname을 파싱해서 정확히 비교한다.
+  substring 비교를 쓰면 `https://coinsect.io.attacker.com`이나 `https://localhost.attacker.com`처럼
+  공격자가 소유한 도메인도 통과해버린다.
+*/
+const isAllowedOrigin = (origin: string) => {
+  let hostname: string
+
+  try {
+    hostname = new URL(origin).hostname
+  } catch (e) {
+    return false
+  }
+
+  if (allowedOriginDevHosts.indexOf(hostname) >= 0) return true
+
+  return allowedOriginDomains.some(domain => hostname === domain || hostname.endsWith(`.${domain}`))
+}
+
 export const initApp = async (app: FastifyInstance) => {
   checkServerConfig()
 
   app.register(fastifyCors, {
+    // @fastify/cors의 기본값은 'GET,HEAD,POST'라서 지정하지 않으면
+    // 어드민 콘솔의 수정(PUT)/삭제(DELETE)가 preflight 단계에서 전부 막힌다.
+    methods: 'GET,HEAD,POST,PUT,DELETE',
     origin: (origin, cb) => {
       if (
         !origin || // 나중엔 삭제될 조건인데 일단 동일 서버에서 호출하는 경우도 허용해줌 (origin 없음)
-        origin.includes('//localhost') ||
-        origin.includes('coinsect.io') ||
-        origin.includes('gravex.app')
+        isAllowedOrigin(origin)
       ) {
         cb(null, true)
         return
