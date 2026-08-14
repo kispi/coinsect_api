@@ -2,6 +2,7 @@ import axios from 'axios'
 import parse from 'node-html-parser'
 import useCache from '../core/cache'
 import hardCodedSymbols from '../constants/symbols'
+import { log } from '../core/logger'
 
 const endpoints = {
   nasdaq: {
@@ -15,23 +16,54 @@ const endpoints = {
 
 const cache = useCache()
 
+const INDICES_CACHE_KEY = 'market_info:indices'
+// indices가 비면 프론트의 usdKrw가 0이 되고, 그 순간 김프 계산(calculateKimp)과 메인 카드의
+// 업비트 가격 표시가 통째로 사라진다. 원천이 잠깐 죽어도 화면이 비지 않도록 마지막 성공값을
+// 따로 길게 남겨두고 폴백으로 쓴다.
+const INDICES_LAST_GOOD_CACHE_KEY = 'market_info:indices:last_good'
+const INDICES_LAST_GOOD_TTL = 60 * 60 * 24
+
+// 원래 원천이던 coincodex의 get_metadata가 응답을 멈추면서(그쪽 Varnish가 계속 503) basePrice가
+// 사라졌고, 그게 프론트의 김프/업비트 가격이 안 뜨는 원인이었다. coingecko의 global 하나면
+// 도미넌스·총 시총·원달러 환율을 다 얻을 수 있어 그쪽으로 옮긴다
+// (coingecko는 services/wallet.ts에서도 이미 쓰는 원천이다).
+// 주의: server_modules.ts의 axios 응답 인터셉터가 res.data를 벗겨주므로 아래 ['data']는
+// coingecko 응답 본문의 data 필드다.
+const fetchIndices = async () => {
+  const data = await axios.get('https://api.coingecko.com/api/v3/global').then(body => body['data'])
+  const totalMarketCap = Number(data?.['total_market_cap']?.['usd'])
+  const totalMarketCapKrw = Number(data?.['total_market_cap']?.['krw'])
+  const btcDominance = Number(data?.['market_cap_percentage']?.['btc'])
+  // coingecko가 같은 시총을 통화별로 환산해 주므로 krw/usd 비율이 곧 원달러 환율이다.
+  const basePrice = totalMarketCapKrw / totalMarketCap
+
+  if (![totalMarketCap, btcDominance, basePrice].every(v => Number.isFinite(v) && v > 0)) {
+    throw new Error('market_info.indices: unexpected payload from coingecko')
+  }
+
+  return { btcDominance, totalMarketCap, basePrice }
+}
+
 const marketInfoService = {
   indices: async () => {
-    const stored = await cache.get('market_info:indices')
+    const stored = await cache.get(INDICES_CACHE_KEY)
     if (stored) return stored
 
-    let indices = {}
     try {
-      const resp = await axios.get('https://coincodex.com/api/coincodex/get_metadata')
-      indices = {
-        btcDominance: resp['btc_dominance'],
-        totalMarketCap: resp['total_market_cap'],
-        basePrice: resp['fiat_rates']['KRW'],
-      }
-      cache.set('market_info:indices', indices, 60)
+      const indices = await fetchIndices()
+      cache.set(INDICES_CACHE_KEY, indices, 60)
+      cache.set(INDICES_LAST_GOOD_CACHE_KEY, indices, INDICES_LAST_GOOD_TTL)
       return indices
     } catch (e) {
-      return Promise.reject(e)
+      const lastGood = await cache.get(INDICES_LAST_GOOD_CACHE_KEY)
+      if (lastGood) {
+        log.error('market_info.indices: upstream failed, serving last known good value')
+        return lastGood
+      }
+
+      // 인터셉터가 던지는 axios response를 그대로 올려보내면 순환 참조라 fastify가 직렬화에
+      // 실패해 "Converting circular structure to JSON" 503으로 새어나간다.
+      return Promise.reject(new Error('market_info.indices: failed to load indices'))
     }
   },
   symbols: async (forceUpdateCache?: Boolean) => {
