@@ -118,6 +118,12 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/market_info/kospi', ctrls.marketInfo.kospi)
     router.get('/market_info/assets_including_metal', ctrls.marketInfo.assetsIncludingMetal)
 
+    // 구 goapi(별도 Go 서버, /goapi/*)에서 옮겨온 정적 데이터다. nginx가 api.coinsect.io/goapi/를
+    // localhost:3000으로 프록시하던 구간이 사라지고 이 라우트가 대신한다.
+    router.get('/contents/bitcoin_quotes', ctrls.content.bitcoinQuotes)
+    router.get('/contents/countries', ctrls.content.countries)
+    router.get('/contents/prices', ctrls.content.prices)
+
     router.get('/contents/nutrition/paikdabang', ctrls.content.nutrition.paikdabang)
     router.get('/contents/real_time_positions', ctrls.content.realTimePositions.all)
     router.post('/contents/real_time_positions/change_notifications', ctrls.content.realTimePositions.changeNotification.create)

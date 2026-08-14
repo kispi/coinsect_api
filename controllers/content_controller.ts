@@ -1,10 +1,20 @@
 import helpers from '../core/helpers'
 import IContext from '../core/interfaces/context'
 import useService from '../services'
+import bitcoinQuotes from '../constants/bitcoin_quotes'
+import countries from '../constants/countries'
+import prices from '../constants/prices'
 
 const service = useService()
 
 const contentController = {
+  // goapi(kispi/goapi)에서 넘어온 정적 데이터 3종이다. 원본은 Go 서버가 기동 시 data/*.json을
+  // 읽어 메모리에 캐시해두고 그대로 뱉는 구조였는데, TS 모듈 상수가 되면서 그 캐시 계층 자체가
+  // 필요 없어졌다. 서비스 계층을 두지 않은 것도 같은 이유로, config/reaction 컨트롤러가
+  // constants/emojis를 직접 쓰는 것과 같은 방식이다.
+  bitcoinQuotes: (c: IContext) => c.res.asJSON(bitcoinQuotes),
+  countries: (c: IContext) => c.res.asJSON(countries),
+  prices: (c: IContext) => c.res.asJSON(prices),
   nutrition: {
     paikdabang: async (c: IContext) => {
       try {
