@@ -17,7 +17,7 @@
 - `reactions.message_id`의 FK는 `messages_202605`를 가리킨다. 운영과 1:1로 보존한다. **고치지 말 것** — 별개 작업이다.
 - 이번 범위는 SQLi 한정이다. 인증, 비밀번호 해싱, 자격증명 평문 보관은 건드리지 않는다.
 - 커밋 메시지는 한국어, 기존 저장소 스타일(`type: 동사로 끝나는 한 줄`)을 따른다.
-- `?where=`의 클라이언트는 `coinsect_nuxt`와 `coinsect_admin` 두 곳이다(`coinsect_frontend`는 삭제된 레거시). 서버에서 `decodeURI`를 빼므로 두 저장소의 쿼리빌더에서 `encodeURI`도 같이 빼야 한다 — 부록 참고. **API 배포와 두 클라이언트 배포는 함께 나가야 한다.**
+- `?where=`의 클라이언트는 `coinsect_nuxt`, `coinsect_web`, `coinsect_admin` 세 곳이다(`coinsect_frontend`는 삭제된 레거시). 서버에서 `decodeURI`를 빼므로 세 저장소의 쿼리빌더에서 `encodeURI`도 같이 빼야 한다 — 부록 참고. **API 배포와 세 클라이언트 배포는 함께 나가야 한다.**
 - 자격증명: PostgreSQL `webserver.coinsect.io:5432`, 롤/DB 모두 `coinsect`, 비밀번호는 기존 MySQL과 동일. SSH는 `C:\Users\kispi\Desktop\aws\kispi-seoul.pem`, 사용자 `ubuntu`.
 
 ---
@@ -127,15 +127,20 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 **Interfaces:**
 - Produces:
   - `class FilterError extends Error { status: number }`
-  - `parseFilters(raw: unknown, meta: EntityMetadata): ParsedFilter[]`
-  - `applyFilters(qb: SelectQueryBuilder<any>, alias: string, filters: ParsedFilter[]): void`
-  - `parseSort(rawSort: unknown, rawOrder: unknown, meta: EntityMetadata): { property: string, order: 'ASC' | 'DESC' } | null`
-  - `parseJoins(raw: unknown, meta: EntityMetadata, rootAlias: string): Array<{ target: string, alias: string }>`
+  - `type AliasMap = Map<string, EntityMetadata>`
+  - `parseJoins(raw: unknown, meta: EntityMetadata, rootAlias: string): { joins: Array<{ target: string, alias: string }>, aliases: AliasMap }`
+  - `parseFilters(raw: unknown, meta: EntityMetadata, rootAlias: string, aliases: AliasMap): ParsedFilter[]`
+  - `applyFilters(qb: SelectQueryBuilder<any>, filters: ParsedFilter[]): void`
+  - `parseSort(rawSort: unknown, rawOrder: unknown, meta: EntityMetadata, rootAlias: string, aliases: AliasMap): { alias: string, property: string, order: 'ASC' | 'DESC' } | null`
   - `parsePositiveInt(raw: unknown, opts: { fallback: number, max: number }): number`
-  - `interface ParsedFilter { property: string, op: FilterOp, value: string | string[] | boolean | null }`
+  - `interface ParsedFilter { alias: string, property: string, op: FilterOp, value: string | string[] | boolean | null }`
   - `type FilterOp = 'eq'|'ne'|'gt'|'gte'|'lt'|'lte'|'like'|'in'|'isnull'`
 
-**설계 노트:** `ParsedFilter.property`는 DB 컬럼명이 아니라 **엔티티 프로퍼티명**을 담는다. TypeORM QueryBuilder는 `alias.propertyName`을 실제 컬럼으로 번역해 주므로, 이렇게 해야 `SnakeNamingStrategy`에 결합되지 않는다. 입력은 프로퍼티명(`amountUsd`)과 DB 컬럼명(`amount_usd`) 둘 다 받는다 — 기존 호출부가 후자를 쓰고 있다.
+**설계 노트 1 — 프로퍼티명으로 정규화한다.** `ParsedFilter.property`는 DB 컬럼명이 아니라 **엔티티 프로퍼티명**을 담는다. TypeORM QueryBuilder는 `alias.propertyName`을 실제 컬럼으로 번역해 주므로, 이렇게 해야 `SnakeNamingStrategy`에 결합되지 않는다. 입력은 프로퍼티명(`amountUsd`)과 DB 컬럼명(`amount_usd`) 둘 다 받는다 — 기존 호출부가 후자를 쓴다.
+
+**설계 노트 2 — 점 표기를 지원해야 한다.** `coinsect_admin`의 데이터 테이블이 `profile.nickname`, `post.title`, `blockchain.name`, `message.text` 같은 조인 컬럼으로 정렬하고 검색한다(`src/models/{user,reaction,wallet,chat-user}.js`). 구 `columnWithTable`도 `if (column.includes('.')) return column`으로 이를 통과시켰다. 따라서 `where`와 `sort` 모두 `별칭.컬럼`을 받아야 하고, 그 별칭은 **같은 요청의 `?join=`이 만든 것**이어야 한다. 그래서 `parseJoins`가 먼저 돌아 별칭 맵을 만들고, `parseFilters`와 `parseSort`가 그 맵을 받는다.
+
+**설계 노트 3 — 조인 별칭은 관계명을 쓴다.** 구 코드는 `tb_${idx}`를 별칭으로 썼는데, 클라이언트는 `blockchain.name`처럼 **관계명**으로 컬럼을 가리킨다. 즉 별칭과 참조가 어긋나 있었다(어드민의 조인 컬럼 정렬이 실제로 동작했는지 의심스럽다). 별칭을 관계 프로퍼티명으로 맞추면 `?join=Wallet.blockchain`과 `?sort=blockchain.name`이 자연스럽게 이어진다.
 
 - [ ] **Step 1: 실패하는 테스트 작성**
 
@@ -177,120 +182,166 @@ const fakeQb = () => {
 }
 
 test('parseFilters: 값이 비면 빈 배열을 준다', () => {
-  assert.deepEqual(parseFilters(undefined, fakeMeta()), [])
-  assert.deepEqual(parseFilters('', fakeMeta()), [])
+  assert.deepEqual(parseFilters(undefined, fakeMeta(), 'WhaleAlert'), [])
+  assert.deepEqual(parseFilters('', fakeMeta(), 'WhaleAlert'), [])
 })
 
 test('parseFilters: DB 컬럼명을 프로퍼티명으로 정규화한다', () => {
-  const [filter] = parseFilters('amount_usd:gte:3000000', fakeMeta())
+  const [filter] = parseFilters('amount_usd:gte:3000000', fakeMeta(), 'WhaleAlert')
   assert.equal(filter.property, 'amountUsd')
   assert.equal(filter.op, 'gte')
   assert.equal(filter.value, '3000000')
 })
 
 test('parseFilters: 프로퍼티명도 그대로 받는다', () => {
-  const [filter] = parseFilters('amountUsd:gte:3000000', fakeMeta())
+  const [filter] = parseFilters('amountUsd:gte:3000000', fakeMeta(), 'WhaleAlert')
   assert.equal(filter.property, 'amountUsd')
 })
 
 test('parseFilters: 엔티티에 없는 컬럼은 거부한다', () => {
-  assert.throws(() => parseFilters('nope:eq:1', fakeMeta()), FilterError)
+  assert.throws(() => parseFilters('nope:eq:1', fakeMeta(), 'WhaleAlert'), FilterError)
 })
 
 test('parseFilters: 임의 SQL은 컬럼 검증에서 막힌다', () => {
-  assert.throws(() => parseFilters('1=1 OR 1=1', fakeMeta()), FilterError)
-  assert.throws(() => parseFilters("hash:eq:x' OR '1'='1", fakeMeta()), FilterError, undefined,
+  assert.throws(() => parseFilters('1=1 OR 1=1', fakeMeta(), 'WhaleAlert'), FilterError)
+  assert.throws(() => parseFilters("hash:eq:x' OR '1'='1", fakeMeta(), 'WhaleAlert'), FilterError, undefined,
     '연산자 자리가 비정상이면 거부되어야 한다')
 })
 
 test('parseFilters: 허용되지 않은 연산자는 거부한다', () => {
-  assert.throws(() => parseFilters('hash:regexp:x', fakeMeta()), FilterError)
+  assert.throws(() => parseFilters('hash:regexp:x', fakeMeta(), 'WhaleAlert'), FilterError)
 })
 
 test('parseFilters: in은 쉼표로 나눈다', () => {
-  const [filter] = parseFilters('hash:in:a,b,c', fakeMeta())
+  const [filter] = parseFilters('hash:in:a,b,c', fakeMeta(), 'WhaleAlert')
   assert.deepEqual(filter.value, ['a', 'b', 'c'])
 })
 
 test('parseFilters: isnull은 불리언만 받는다', () => {
-  assert.equal(parseFilters('deleted_at:isnull:true', fakeMeta())[0].value, true)
-  assert.equal(parseFilters('deleted_at:isnull:false', fakeMeta())[0].value, false)
-  assert.throws(() => parseFilters('deleted_at:isnull:yes', fakeMeta()), FilterError)
+  assert.equal(parseFilters('deleted_at:isnull:true', fakeMeta(), 'WhaleAlert')[0].value, true)
+  assert.equal(parseFilters('deleted_at:isnull:false', fakeMeta(), 'WhaleAlert')[0].value, false)
+  assert.throws(() => parseFilters('deleted_at:isnull:yes', fakeMeta(), 'WhaleAlert'), FilterError)
 })
 
 test('parseFilters: like는 값의 와일드카드를 이스케이프한다', () => {
-  const [filter] = parseFilters('hash:like:100%_x', fakeMeta())
+  const [filter] = parseFilters('hash:like:100%_x', fakeMeta(), 'WhaleAlert')
   assert.equal(filter.value, '%100\\%\\_x%')
 })
 
 test('parseFilters: 값에 콜론이 있어도 잘리지 않는다', () => {
-  const [filter] = parseFilters('hash:eq:a:b:c', fakeMeta())
+  const [filter] = parseFilters('hash:eq:a:b:c', fakeMeta(), 'WhaleAlert')
   assert.equal(filter.value, 'a:b:c')
 })
 
 test('parseFilters: 배열로 여러 조건을 받는다', () => {
-  const filters = parseFilters(['hash:eq:a', 'amount_usd:gte:1'], fakeMeta())
+  const filters = parseFilters(['hash:eq:a', 'amount_usd:gte:1'], fakeMeta(), 'WhaleAlert')
   assert.equal(filters.length, 2)
 })
 
 test('parseFilters: 조건 개수 상한을 넘기면 거부한다', () => {
   const many = Array.from({ length: 11 }, () => 'hash:eq:a')
-  assert.throws(() => parseFilters(many, fakeMeta()), FilterError)
+  assert.throws(() => parseFilters(many, fakeMeta(), 'WhaleAlert'), FilterError)
 })
 
 test('parseFilters: 지나치게 긴 값은 거부한다', () => {
-  assert.throws(() => parseFilters(`hash:eq:${'a'.repeat(201)}`, fakeMeta()), FilterError)
+  assert.throws(() => parseFilters(`hash:eq:${'a'.repeat(201)}`, fakeMeta(), 'WhaleAlert'), FilterError)
 })
 
 test('applyFilters: 값을 SQL에 넣지 않고 파라미터로 넘긴다', () => {
   const qb = fakeQb()
-  applyFilters(qb as any, 'WhaleAlert', parseFilters('amount_usd:gte:3000000', fakeMeta()))
+  applyFilters(qb as any, parseFilters('amount_usd:gte:3000000', fakeMeta(), 'WhaleAlert'))
   assert.equal(qb.calls[0].sql, 'WhaleAlert.amountUsd >= :qf_0')
   assert.deepEqual(qb.calls[0].params, { qf_0: '3000000' })
 })
 
 test('applyFilters: in은 스프레드 문법을 쓴다', () => {
   const qb = fakeQb()
-  applyFilters(qb as any, 'WhaleAlert', parseFilters('hash:in:a,b', fakeMeta()))
+  applyFilters(qb as any, parseFilters('hash:in:a,b', fakeMeta(), 'WhaleAlert'))
   assert.equal(qb.calls[0].sql, 'WhaleAlert.hash IN (:...qf_0)')
   assert.deepEqual(qb.calls[0].params, { qf_0: ['a', 'b'] })
 })
 
 test('applyFilters: isnull은 파라미터 없이 SQL만 만든다', () => {
   const qb = fakeQb()
-  applyFilters(qb as any, 'WhaleAlert', parseFilters('deleted_at:isnull:true', fakeMeta()))
+  applyFilters(qb as any, parseFilters('deleted_at:isnull:true', fakeMeta(), 'WhaleAlert'))
   assert.equal(qb.calls[0].sql, 'WhaleAlert.deletedAt IS NULL')
-  applyFilters(qb as any, 'WhaleAlert', parseFilters('deleted_at:isnull:false', fakeMeta()))
+  applyFilters(qb as any, parseFilters('deleted_at:isnull:false', fakeMeta(), 'WhaleAlert'))
   assert.equal(qb.calls[1].sql, 'WhaleAlert.deletedAt IS NOT NULL')
 })
 
 test('parseSort: 실재하는 컬럼과 방향만 통과시킨다', () => {
-  assert.deepEqual(parseSort('amount_usd', 'asc', fakeMeta()), { property: 'amountUsd', order: 'ASC' })
-  assert.deepEqual(parseSort('amountUsd', undefined, fakeMeta()), { property: 'amountUsd', order: 'DESC' })
-  assert.equal(parseSort(undefined, 'asc', fakeMeta()), null)
-  assert.throws(() => parseSort('nope', 'asc', fakeMeta()), FilterError)
-  assert.throws(() => parseSort('amountUsd', 'asc; DROP TABLE users', fakeMeta()), FilterError)
+  const meta = fakeMeta()
+  assert.deepEqual(parseSort('amount_usd', 'asc', meta, 'WhaleAlert'), { alias: 'WhaleAlert', property: 'amountUsd', order: 'ASC' })
+  assert.deepEqual(parseSort('amountUsd', undefined, meta, 'WhaleAlert'), { alias: 'WhaleAlert', property: 'amountUsd', order: 'DESC' })
+  assert.equal(parseSort(undefined, 'asc', meta, 'WhaleAlert'), null)
+  assert.throws(() => parseSort('nope', 'asc', meta, 'WhaleAlert'), FilterError)
+  assert.throws(() => parseSort('amountUsd', 'asc; DROP TABLE users', meta, 'WhaleAlert'), FilterError)
 })
 
-test('parseJoins: 실재하는 관계만 통과시킨다', () => {
-  const meta = fakeMeta({
-    name: 'Post',
-    relations: [{ propertyName: 'user', inverseEntityMetadata: { relations: [{ propertyName: 'profile', inverseEntityMetadata: { relations: [] } }] } }],
-  })
-  assert.deepEqual(parseJoins('Post.user', meta, 'Post'), [{ target: 'Post.user', alias: 'tb_0' }])
-  assert.throws(() => parseJoins('Post.nope', meta, 'Post'), FilterError)
-  assert.throws(() => parseJoins('Other.user', meta, 'Post'), FilterError)
+// coinsect_admin의 데이터 테이블이 profile.nickname, blockchain.name 같은 조인 컬럼으로
+// 정렬하고 검색한다. 별칭은 같은 요청의 ?join=이 만든 것이어야 한다.
+const postMeta = () => fakeMeta({
+  name: 'Post',
+  columns: [{ propertyName: 'id', databaseName: 'id' }, { propertyName: 'title', databaseName: 'title' }],
+  relations: [{
+    propertyName: 'user',
+    inverseEntityMetadata: {
+      columns: [{ propertyName: 'email', databaseName: 'email' }],
+      relations: [{
+        propertyName: 'profile',
+        inverseEntityMetadata: { columns: [{ propertyName: 'nickname', databaseName: 'nickname' }], relations: [] },
+      }],
+    },
+  }],
+})
+
+test('parseJoins: 실재하는 관계만 통과시키고 별칭은 관계명을 쓴다', () => {
+  const { joins } = parseJoins('Post.user', postMeta(), 'Post')
+  assert.deepEqual(joins, [{ target: 'Post.user', alias: 'user' }])
+  assert.throws(() => parseJoins('Post.nope', postMeta(), 'Post'), FilterError)
+  assert.throws(() => parseJoins('Other.user', postMeta(), 'Post'), FilterError)
 })
 
 test('parseJoins: 앞선 조인이 만든 별칭을 이어받는다', () => {
-  const meta = fakeMeta({
-    name: 'Post',
-    relations: [{ propertyName: 'user', inverseEntityMetadata: { relations: [{ propertyName: 'profile', inverseEntityMetadata: { relations: [] } }] } }],
-  })
-  assert.deepEqual(parseJoins('Post.user,user.profile', meta, 'Post'), [
-    { target: 'Post.user', alias: 'tb_0' },
-    { target: 'user.profile', alias: 'tb_1' },
+  const { joins, aliases } = parseJoins('Post.user,user.profile', postMeta(), 'Post')
+  assert.deepEqual(joins, [
+    { target: 'Post.user', alias: 'user' },
+    { target: 'user.profile', alias: 'profile' },
   ])
+  assert.ok(aliases.has('profile'))
+})
+
+test('parseSort: 조인 별칭의 컬럼으로 정렬할 수 있다', () => {
+  const meta = postMeta()
+  const { aliases } = parseJoins('Post.user,user.profile', meta, 'Post')
+  assert.deepEqual(
+    parseSort('profile.nickname', 'asc', meta, 'Post', aliases),
+    { alias: 'profile', property: 'nickname', order: 'ASC' },
+  )
+})
+
+test('parseSort: 조인하지 않은 별칭은 거부한다', () => {
+  const meta = postMeta()
+  const { aliases } = parseJoins(undefined, meta, 'Post')
+  assert.throws(() => parseSort('profile.nickname', 'asc', meta, 'Post', aliases), FilterError)
+})
+
+test('parseFilters: 조인 별칭의 컬럼으로 필터할 수 있다', () => {
+  const meta = postMeta()
+  const { aliases } = parseJoins('Post.user,user.profile', meta, 'Post')
+  const [filter] = parseFilters('profile.nickname:like:kim', meta, 'Post', aliases)
+  assert.equal(filter.alias, 'profile')
+  assert.equal(filter.property, 'nickname')
+
+  const qb = fakeQb()
+  applyFilters(qb as any, [filter])
+  assert.equal(qb.calls[0].sql, 'profile.nickname LIKE :qf_0')
+})
+
+test('parseFilters: 조인 별칭 자리에 임의 문자열을 넣으면 거부한다', () => {
+  const meta = postMeta()
+  const { aliases } = parseJoins('Post.user', meta, 'Post')
+  assert.throws(() => parseFilters('users u; DROP TABLE x--.id:eq:1', meta, 'Post', aliases), FilterError)
 })
 
 test('parsePositiveInt: 숫자로 강제하고 상한을 건다', () => {
@@ -351,6 +402,8 @@ export interface ParsedFilter {
 
 const isFilterOp = (v: string): v is FilterOp => Object.prototype.hasOwnProperty.call(OPERATORS, v)
 
+export type AliasMap = Map<string, EntityMetadata>
+
 /**
  * 엔티티에 실재하는 컬럼만 통과시키고, 프로퍼티명으로 정규화해서 돌려준다.
  * TypeORM QueryBuilder가 alias.propertyName을 실제 컬럼으로 번역해 주기 때문에
@@ -362,10 +415,37 @@ export const resolveProperty = (meta: EntityMetadata, field: string): string => 
   return column.propertyName
 }
 
+/**
+ * '별칭.컬럼' 또는 '컬럼'을 해석한다. 별칭이 붙으면 같은 요청의 ?join=이 만든 것이어야
+ * 한다 - coinsect_admin이 profile.nickname, blockchain.name 같은 조인 컬럼으로 정렬하고
+ * 검색하기 때문이다.
+ */
+export const resolveField = (
+  field: string,
+  meta: EntityMetadata,
+  rootAlias: string,
+  aliases: AliasMap,
+): { alias: string, property: string } => {
+  const dot = field.lastIndexOf('.')
+  if (dot === -1) return { alias: rootAlias, property: resolveProperty(meta, field) }
+
+  const alias = field.slice(0, dot)
+  const column = field.slice(dot + 1)
+  const target = aliases.get(alias)
+  if (!target) throw new FilterError(`unknown alias: ${alias} (join it first)`)
+
+  return { alias, property: resolveProperty(target, column) }
+}
+
 // 값에 든 %와 _를 리터럴로 만든다. 이스케이프하지 않으면 사용자가 조건을 임의로 넓힐 수 있다.
 const escapeLikeValue = (v: string) => v.replace(/[\\%_]/g, ch => `\\${ch}`)
 
-const parseOne = (entry: unknown, meta: EntityMetadata): ParsedFilter => {
+const parseOne = (
+  entry: unknown,
+  meta: EntityMetadata,
+  rootAlias: string,
+  aliases: AliasMap,
+): ParsedFilter => {
   if (typeof entry !== 'string') throw new FilterError('filter must be a string')
 
   // 값에 콜론이 들어갈 수 있으므로 앞의 두 개만 나누고 나머지는 값으로 되돌린다.
@@ -374,11 +454,11 @@ const parseOne = (entry: unknown, meta: EntityMetadata): ParsedFilter => {
   if (!field || !op) throw new FilterError(`malformed filter: ${entry}`)
   if (!isFilterOp(op)) throw new FilterError(`unknown operator: ${op}`)
 
-  const property = resolveProperty(meta, field)
+  const { alias, property } = resolveField(field, meta, rootAlias, aliases)
 
   if (op === 'isnull') {
     if (value !== 'true' && value !== 'false') throw new FilterError('isnull takes true or false')
-    return { property, op, value: value === 'true' }
+    return { alias, property, op, value: value === 'true' }
   }
 
   if (value.length > MAX_VALUE_LENGTH) throw new FilterError('filter value too long')
@@ -387,26 +467,31 @@ const parseOne = (entry: unknown, meta: EntityMetadata): ParsedFilter => {
     const values = value.split(',').filter(v => v !== '')
     if (values.length === 0) throw new FilterError('in takes at least one value')
     if (values.length > MAX_IN_VALUES) throw new FilterError('too many values for in')
-    return { property, op, value: values }
+    return { alias, property, op, value: values }
   }
 
-  if (op === 'like') return { property, op, value: `%${escapeLikeValue(value)}%` }
+  if (op === 'like') return { alias, property, op, value: `%${escapeLikeValue(value)}%` }
 
-  return { property, op, value }
+  return { alias, property, op, value }
 }
 
-export const parseFilters = (raw: unknown, meta: EntityMetadata): ParsedFilter[] => {
+export const parseFilters = (
+  raw: unknown,
+  meta: EntityMetadata,
+  rootAlias: string,
+  aliases: AliasMap = new Map(),
+): ParsedFilter[] => {
   if (raw === undefined || raw === null || raw === '') return []
 
   const entries = Array.isArray(raw) ? raw : [raw]
   if (entries.length > MAX_FILTERS) throw new FilterError('too many filters')
 
-  return entries.map(entry => parseOne(entry, meta))
+  return entries.map(entry => parseOne(entry, meta, rootAlias, aliases))
 }
 
-export const applyFilters = (qb: SelectQueryBuilder<any>, alias: string, filters: ParsedFilter[]) => {
+export const applyFilters = (qb: SelectQueryBuilder<any>, filters: ParsedFilter[]) => {
   filters.forEach((filter, idx) => {
-    const target = `${alias}.${filter.property}`
+    const target = `${filter.alias}.${filter.property}`
     const key = `qf_${idx}`
 
     if (filter.op === 'isnull') {
@@ -425,47 +510,51 @@ export const parseSort = (
   rawSort: unknown,
   rawOrder: unknown,
   meta: EntityMetadata,
-): { property: string, order: 'ASC' | 'DESC' } | null => {
+  rootAlias: string,
+  aliases: AliasMap = new Map(),
+): { alias: string, property: string, order: 'ASC' | 'DESC' } | null => {
   if (rawSort === undefined || rawSort === null || rawSort === '') return null
   if (typeof rawSort !== 'string') throw new FilterError('sort must be a string')
 
   const order = String(rawOrder || 'desc').toUpperCase()
   if (order !== 'ASC' && order !== 'DESC') throw new FilterError('order must be asc or desc')
 
-  return { property: resolveProperty(meta, rawSort), order }
+  return { ...resolveField(rawSort, meta, rootAlias, aliases), order }
 }
 
+/**
+ * 별칭은 관계 프로퍼티명을 쓴다. 클라이언트가 blockchain.name처럼 관계명으로 컬럼을
+ * 가리키므로, tb_0 같은 익명 별칭을 쓰면 정렬/검색에서 참조가 어긋난다.
+ */
 export const parseJoins = (
   raw: unknown,
   meta: EntityMetadata,
   rootAlias: string,
-): Array<{ target: string, alias: string }> => {
-  if (raw === undefined || raw === null || raw === '') return []
+): { joins: Array<{ target: string, alias: string }>, aliases: AliasMap } => {
+  const aliases: AliasMap = new Map([[rootAlias, meta]])
+  if (raw === undefined || raw === null || raw === '') return { joins: [], aliases }
   if (typeof raw !== 'string') throw new FilterError('join must be a string')
 
   const targets = raw.split(',').map(t => t.trim()).filter(Boolean)
   if (targets.length > MAX_JOINS) throw new FilterError('too many joins')
 
-  // 조인이 진행되면서 새로 참조 가능해지는 별칭을 누적한다.
-  // 기존 클라이언트가 'Post.user,user.profile'처럼 관계명으로 이어 받으므로 둘 다 등록한다.
-  const known = new Map<string, any>([[rootAlias, meta]])
-
-  return targets.map((target, idx) => {
+  const joins = targets.map(target => {
     const parts = target.split('.')
     if (parts.length !== 2) throw new FilterError(`malformed join: ${target}`)
 
     const [parentAlias, relationName] = parts
-    const parentMeta = known.get(parentAlias)
+    const parentMeta = aliases.get(parentAlias)
     if (!parentMeta) throw new FilterError(`unknown join source: ${parentAlias}`)
 
     const relation = (parentMeta.relations || []).find(r => r.propertyName === relationName)
     if (!relation) throw new FilterError(`unknown relation: ${target}`)
 
-    const alias = `tb_${idx}`
-    known.set(alias, relation.inverseEntityMetadata)
-    known.set(relationName, relation.inverseEntityMetadata)
-    return { target, alias }
+    // 별칭 = 관계명. 'Post.user,user.profile'처럼 이어 받는 것도 이 맵으로 해결된다.
+    aliases.set(relationName, relation.inverseEntityMetadata)
+    return { target, alias: relationName }
   })
+
+  return { joins, aliases }
 }
 
 export const parsePositiveInt = (raw: unknown, { fallback, max }: { fallback: number, max: number }): number => {
@@ -555,13 +644,19 @@ const orm = {
     const offset = parsePositiveInt(q['offset'], { fallback: 0, max: MAX_OFFSET })
     if (offset) qb.offset(offset)
 
-    const sort = parseSort(q['sort'], q['order'], meta)
-    if (sort) qb.orderBy(`${alias}.${sort.property}`, sort.order)
+    // 조인이 먼저다. where와 sort가 조인 별칭(profile.nickname 등)을 참조할 수 있으므로
+    // 별칭 맵이 있어야 검증이 된다.
+    const { joins, aliases } = parseJoins(q['join'], meta, alias)
+    joins.forEach(({ target, alias: joinAlias }) => {
+      // 컨트롤러가 이미 같은 관계를 조인해 둔 경우가 있다(wallet_controller). 중복 별칭은 건너뛴다.
+      if (qb.expressionMap.aliases.some(a => a.name === joinAlias)) return
+      qb.leftJoinAndSelect(target, joinAlias)
+    })
 
-    applyFilters(qb, alias, parseFilters(q['where'], meta))
+    const sort = parseSort(q['sort'], q['order'], meta, alias, aliases)
+    if (sort) qb.orderBy(`${sort.alias}.${sort.property}`, sort.order)
 
-    parseJoins(q['join'], meta, alias)
-      .forEach(({ target, alias: joinAlias }) => qb.leftJoinAndSelect(target, joinAlias))
+    applyFilters(qb, parseFilters(q['where'], meta, alias, aliases))
 
     return qb
   },
@@ -570,7 +665,10 @@ const orm = {
 export default orm
 ```
 
-기존 코드에 있던 `decodeURI(q['where'])`는 뺀다. Fastify가 쿼리스트링을 이미 디코드해서 넘기므로 이중 디코드였다.
+두 가지가 바뀌었다.
+
+- `decodeURI(q['where'])`를 뺀다. Fastify가 쿼리스트링을 이미 디코드해서 넘기므로 이중 디코드였다.
+- 조인을 `where`/`sort`보다 **먼저** 처리한다. 구 코드는 조인이 맨 뒤였는데, 이제 `sort=profile.nickname` 같은 참조를 검증하려면 별칭 맵이 먼저 있어야 한다.
 
 - [ ] **Step 3: `overridableQuery`의 컨텍스트 변조를 없앤다**
 
@@ -820,6 +918,18 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
       if (cursor) qb.where('Message.id < :cursor', { cursor })
 ```
 
+- [ ] **Step 6b: `wallet_controller.ts`의 조인 별칭을 관계명으로 바꾼다**
+
+`controllers/wallet_controller.ts:8`이 `leftJoinAndSelect('Wallet.blockchain', 'tb_0')`으로 별칭을 하드코딩하고 있다. 그런데 `coinsect_admin`의 `ViewWallets.vue`가 같은 관계를 `?join=Wallet.blockchain`으로도 요청하고, 어드민 모델(`src/models/wallet.js`)은 컬럼을 `blockchain.id`, `blockchain.name`으로 가리킨다. 즉 별칭(`tb_0`)과 참조(`blockchain`)가 어긋나 있었다.
+
+Task 3에서 `?join=`의 별칭이 관계명이 되므로 여기도 맞춘다. 그러면 Task 3의 중복 조인 건너뛰기가 걸려 조인이 한 번만 일어난다.
+
+```ts
+      const [data, total] = await orm.querySetter(c, Wallet)
+        .leftJoinAndSelect('Wallet.blockchain', 'blockchain')
+        .getManyAndCount()
+```
+
 - [ ] **Step 7: 남은 보간이 없는지 확인**
 
 Run:
@@ -881,7 +991,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 `services/post.ts:62`의 `c.req.query['query']`는 LLM에게 던지는 자연어 질문이다. Step 1에서 목록 검색이 `keyword`로 빠졌으므로 `query`가 두 뜻으로 쓰이지 않도록 `question`으로 바꾼다. 같은 함수의 `board_id`도 나머지 API와 맞춰 `boardId`로 바꾼다.
 
-`/posts/with_llm`은 아직 어떤 클라이언트도 호출하지 않으므로(`coinsect_nuxt`, `coinsect_admin` 모두 없음) 깨질 곳이 없다.
+`/posts/with_llm`은 `coinsect_web`(btc.coinsect.io)의 `app/services/post.ts:41`이 호출한다. 그 파일은 `where`와 `keyword` 때문에 어차피 고쳐야 하므로 같은 커밋에서 함께 바꾼다 — 부록 B 참고.
 
 ```ts
   allWithLLM: async (c: IContext) => {
@@ -2094,9 +2204,9 @@ Expected: `전부 일치`
 gh secret set EC2_ORMCONFIG --repo kispi/coinsect_api < ormconfig.ts
 ```
 
-- [ ] **Step 5: 배포 — API와 두 클라이언트를 함께 내보낸다**
+- [ ] **Step 5: 배포 — API와 세 클라이언트를 함께 내보낸다**
 
-새 API는 구 `?where=` 문법을 400으로 거부한다. `coinsect_nuxt`와 `coinsect_admin`의 부록 작업이 끝나 있어야 하고, 세 배포가 같이 나가야 한다. API를 먼저 올리면 그 사이 커뮤니티 목록·고래알림 필터·어드민 테이블 검색이 전부 400을 뱉는다.
+새 API는 구 `?where=` 문법을 400으로 거부한다. `coinsect_nuxt`, `coinsect_web`, `coinsect_admin`의 부록 작업이 끝나 있어야 하고, 네 배포가 같이 나가야 한다. API를 먼저 올리면 그 사이 커뮤니티 목록·고래알림 필터·어드민 테이블 검색이 전부 400을 뱉는다.
 
 ```bash
 gh workflow run "Deploy to EC2" --repo kispi/coinsect_api
@@ -2104,7 +2214,7 @@ gh run watch --repo kispi/coinsect_api
 ```
 Expected: 성공. "Verify ormconfig.ts survived shell expansion" 단계도 통과해야 한다
 
-이어서 `coinsect_nuxt`, `coinsect_admin`을 배포한다.
+이어서 `coinsect_nuxt`, `coinsect_web`, `coinsect_admin`을 배포한다.
 
 - [ ] **Step 6: smoke test**
 
@@ -2188,13 +2298,13 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 **리스크 대응 커버리지:** 타임존 → Task 7/9 + verify의 경계값 대조. 시퀀스 → Task 9 `resetSequences` + Task 11 Step 6. 메모리 → `BATCH = 1000`. 하드 삭제 → README에 명시.
 
-**클라이언트 영향 (조사 완료):** `?where=`의 클라이언트는 `coinsect_nuxt`(4곳)와 `coinsect_admin`(1곳, 제네릭 데이터 테이블)이다. `coinsect_frontend`는 삭제된 레거시라 제외했다. 조사에서 나온 것들:
+**클라이언트 영향 (조사 완료):** `?where=`의 클라이언트는 `coinsect_nuxt`(4곳), `coinsect_web`(1곳), `coinsect_admin`(1곳, 제네릭 데이터 테이블)이다. `coinsect_frontend`는 삭제된 레거시라 제외했다. 조사에서 나온 것들:
 
 - `coinsect_nuxt`의 고래알림 "거래소 간 이동 제외" 필터가 **MySQL 전용 `XOR`**을 보내고 있었다. DSL과 무관하게 PostgreSQL에서 깨지므로 Task 6 Step 4에서 전용 파라미터로 옮긴다. DSL로 표현이 안 되는 유일한 조건이다.
 - 양쪽 쿼리빌더가 `encodeURI`를 걸고 서버가 `decodeURI`로 되돌리는 이중 인코딩 구조였다. 서버에서 `decodeURI`가 빠지므로 클라이언트도 함께 고쳐야 한다.
 - `coinsect_admin`의 `hooks/table.js` URL 직렬화가 인코딩을 전혀 하지 않는다. 값에 `&`가 들어가면 URL이 깨진다.
 
-세부는 부록 B에 있다. **API와 두 클라이언트 배포는 함께 나가야 한다** (Task 11 Step 5).
+세부는 부록 B에 있다. **API와 세 클라이언트 배포는 함께 나가야 한다** (Task 11 Step 5).
 
 **계약 관련 정리 (사용자 승인):** 마이그레이션과 직접 관련은 없지만 같은 계약 표면이라 함께 고치는 것들 — `?query=keyword=값` → `?keyword=`(Task 6 Step 1), `/posts/with_llm`의 `board_id`/`query` → `boardId`/`question`(Task 6 Step 1b), `c.req.query`를 덮어쓰던 `overridableQuery` → 명시적 `overrides` 인자(Task 3 Step 3), 클라이언트 쿼리빌더의 문자열 SQL → 타입 있는 조건 빌더(부록 B).
 
@@ -2298,11 +2408,15 @@ OR나 괄호 그룹은 지원하지 않는다. 필요하면 그 엔드포인트�
 
 ## 부록 B: 클라이언트 저장소 변경
 
-`?where=`를 쓰는 곳을 실제로 조사한 결과다(`coinsect_frontend`는 삭제된 레거시라 제외).
+`?where=`를 쓰는 곳을 실제로 조사한 결과다. 클라이언트는 **세 개**다 —
+`coinsect_nuxt`(coinsect.io), `coinsect_web`(btc.coinsect.io), `coinsect_admin`.
+`coinsect_frontend`는 삭제된 레거시라 제외했다.
+
 이 저장소 밖이므로 별도 작업이지만 **API 배포와 함께 나가야 한다** — 새 서버는 구 문법을
 400으로 거부한다.
 
-두 저장소의 쿼리빌더는 같은 문제를 공유한다.
+세 저장소의 쿼리빌더는 같은 조상에서 갈라져 나와(`구 helpers/querybuilder.js`) 같은 문제를
+공유한다.
 
 - `where(exp)`가 SQL 조각을 문자열로 받는다. 주석에도 "일단은 exp 직접사용하도록 구현"이라
   적혀 있다. 타입 검사가 전혀 안 걸리고 서버 컬럼명을 클라이언트가 손으로 적는다.
@@ -2310,8 +2424,8 @@ OR나 괄호 그룹은 지원하지 않는다. 필요하면 그 엔드포인트�
 - `where`가 문자열 하나라 조건을 `' AND '`로 이어 붙인다. 새 프로토콜은 반복 파라미터다.
 - `build()`가 `JSON.parse(JSON.stringify(...))`로 의미 없는 깊은 복사를 한다.
 
-문자열 대신 **타입 있는 조건 객체**를 쌓는 형태로 바꾼다. 두 저장소가 각자 작은 빌더를
-갖되 문법은 부록 A를 따른다(저장소 3개에 공유 패키지를 두는 건 과하다).
+문자열 대신 **타입 있는 조건 객체**를 쌓는 형태로 바꾼다. 세 저장소가 각자 작은 빌더를
+갖되 문법은 부록 A를 따른다(저장소 4개에 공유 패키지를 두는 건 과하다).
 
 ### 공통 빌더 형태
 
@@ -2387,9 +2501,41 @@ export const qb = () => {
 
 `tests/utils/querybuilder.spec.ts`도 새 API에 맞춰 다시 쓴다.
 
+### `coinsect_web` (btc.coinsect.io)
+
+`app/utils/querybuilder.ts`가 `coinsect_nuxt`와 같은 파일이다(`base()`의 기본 `limit`만 10으로
+다르다). 위 형태로 교체하되 `base()`의 10은 유지한다.
+
+호출부는 `app/services/post.ts` 한 곳에 몰려 있다.
+
+| 위치 | 현재 | 바꿀 것 |
+|---|---|---|
+| `services/post.ts:29` | `.query(\`keyword=${keyword}\`)` | `.param('keyword', keyword)` |
+| `services/post.ts:30` | `post_type = "normal" AND board_id = N` | `.where('postType','eq','normal').where('boardId','eq',N)` |
+| `services/post.ts:41` | `{ query, board_id: N }` | `{ question: query, boardId: N }` |
+
+마지막 줄이 `/posts/with_llm` 호출이다. Task 6 Step 1b에서 서버 파라미터가
+`board_id`/`query` → `boardId`/`question`으로 바뀐다. `ModalBitcoinGPT.vue:70`의 주석도
+함께 갱신한다.
+
+`app/types/api/post.ts:75`의 응답 타입은 바뀌지 않는다.
+
 ### `coinsect_admin`
 
 `src/helpers/querybuilder.js`를 위 형태로 교체한다. 그 외 세 곳이 함께 바뀐다.
+
+어드민은 다른 두 클라이언트와 달리 **점 표기 컬럼**과 **`?join=`**을 쓴다. 서버 쪽 대응은
+Task 2(별칭 맵)와 Task 6 Step 6b(`wallet_controller`의 별칭)에서 끝난다.
+
+| 위치 | 보내는 것 |
+|---|---|
+| `ViewPersons.vue:27` | `join('Person.images')` |
+| `ViewReactions.vue:22` | `join('Reaction.post,Reaction.reply,Reaction.message')` |
+| `ViewWallets.vue:26` | `join('Wallet.blockchain')` |
+| `models/{user,reaction,wallet,chat-user}.js` | `profile.nickname`, `post.title`, `blockchain.name`, `message.text` 등 정렬/검색 컬럼 |
+
+조인 별칭이 `tb_0`에서 관계명으로 바뀌므로 이 점 표기가 비로소 제대로 해석된다. 클라이언트
+쪽은 `join(...)` 호출을 그대로 두면 된다 — 별칭을 클라이언트가 지정하지 않기 때문이다.
 
 **1. `src/components/app/data-table/DataTable.vue:216-225`**
 
@@ -2444,10 +2590,11 @@ const q = sp.toString()
 ### 확인 순서
 
 1. API를 리허설 DB에 붙여 띄운다(Task 10 Step 5).
-2. 두 클라이언트를 그 API로 향하게 하고 아래를 직접 돌린다.
-   - 커뮤니티 목록 / 공지 / 키워드 검색
-   - 대시보드 최근글
-   - 고래알림 필터 4종 (금액, USD금액, 심볼, 거래소 간 이동 제외)
-   - 어드민 데이터 테이블의 컬럼 검색 — 일반 문자열과 `> 100` 형태 둘 다
-   - 어드민에서 검색 후 새로고침 (URL 복원 경로)
+2. 세 클라이언트를 그 API로 향하게 하고 아래를 직접 돌린다.
+   - **nuxt** — 커뮤니티 목록 / 공지 / 키워드 검색, 대시보드 최근글,
+     고래알림 필터 4종(금액, USD금액, 심볼, 거래소 간 이동 제외)
+   - **web** — 비트코인 블로그 목록 / 키워드 검색, BitcoinGPT 모달(`with_llm`)
+   - **admin** — 데이터 테이블의 컬럼 검색(일반 문자열과 `> 100` 형태 둘 다),
+     조인 컬럼 정렬(사용자 목록의 `profile.nickname`, 지갑 목록의 `blockchain.name`,
+     반응 목록의 `post.title`), 검색 후 새로고침(URL 복원 경로)
 3. 구 문법이 남아 있으면 400이 뜨므로 네트워크 탭에서 바로 드러난다.
