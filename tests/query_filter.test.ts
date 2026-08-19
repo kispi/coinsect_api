@@ -199,7 +199,7 @@ test('parseFilters: 조인 별칭의 컬럼으로 필터할 수 있다', () => {
 
   const qb = fakeQb()
   applyFilters(qb as any, [filter])
-  assert.equal(qb.calls[0].sql, 'profile.nickname LIKE :qf_0')
+  assert.equal(qb.calls[0].sql, 'profile.nickname ILIKE :qf_0')
 })
 
 test('parseFilters: 조인 별칭 자리에 임의 문자열을 넣으면 거부한다', () => {

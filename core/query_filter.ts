@@ -9,7 +9,7 @@ const OPERATORS: Record<FilterOp, string> = {
   gte: '>=',
   lt: '<',
   lte: '<=',
-  like: 'LIKE',
+  like: 'ILIKE',
   in: 'IN',
   isnull: 'IS NULL',
 }
