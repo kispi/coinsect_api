@@ -202,10 +202,23 @@ test('parseFilters: 엔티티에 없는 컬럼은 거부한다', () => {
   assert.throws(() => parseFilters('nope:eq:1', fakeMeta(), 'WhaleAlert'), FilterError)
 })
 
-test('parseFilters: 임의 SQL은 컬럼 검증에서 막힌다', () => {
+test('parseFilters: 임의 SQL은 문법 검증에서 막힌다', () => {
+  // 콜론이 없으면 op 자리가 비어 malformed로 걸린다.
   assert.throws(() => parseFilters('1=1 OR 1=1', fakeMeta(), 'WhaleAlert'), FilterError)
-  assert.throws(() => parseFilters("hash:eq:x' OR '1'='1", fakeMeta(), 'WhaleAlert'), FilterError, undefined,
-    '연산자 자리가 비정상이면 거부되어야 한다')
+  assert.throws(() => parseFilters('amount_usd >= 3000000', fakeMeta(), 'WhaleAlert'), FilterError)
+})
+
+// 문법이 정상이면 값에 무엇이 들어 있든 거부하지 않는다. 값은 SQL이 아니라
+// 파라미터로 나가므로 그것이 곧 방어다. 거부가 아니라 바인딩을 검증한다.
+test('parseFilters: 값에 든 SQL은 리터럴로 취급해 파라미터로 넘긴다', () => {
+  const payload = "x' OR '1'='1"
+  const [filter] = parseFilters(`hash:eq:${payload}`, fakeMeta(), 'WhaleAlert')
+  assert.equal(filter.value, payload)
+
+  const qb = fakeQb()
+  applyFilters(qb as any, [filter])
+  assert.equal(qb.calls[0].sql, 'WhaleAlert.hash = :qf_0')
+  assert.deepEqual(qb.calls[0].params, { qf_0: payload })
 })
 
 test('parseFilters: 허용되지 않은 연산자는 거부한다', () => {
