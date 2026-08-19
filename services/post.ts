@@ -38,10 +38,10 @@ const postService = {
         // 값에 든 %와 _를 리터럴로 만든다. 이스케이프하지 않으면 조건이 임의로 넓어진다.
         const pattern = `%${keyword.replace(/[\\%_]/g, ch => `\\${ch}`)}%`
         qb.andWhere(new Brackets(subQb => subQb
-          .where('Post.nickname LIKE :pattern', { pattern })
-          .orWhere('profile.nickname LIKE :pattern', { pattern })
-          .orWhere('Post.title LIKE :pattern', { pattern })
-          .orWhere('Post.content LIKE :pattern', { pattern })
+          .where('Post.nickname ILIKE :pattern', { pattern })
+          .orWhere('profile.nickname ILIKE :pattern', { pattern })
+          .orWhere('Post.title ILIKE :pattern', { pattern })
+          .orWhere('Post.content ILIKE :pattern', { pattern })
         ))
       }
 

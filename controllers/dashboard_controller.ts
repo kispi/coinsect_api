@@ -31,14 +31,15 @@ const activityQuery = ({ tablename, start, end }: { tablename: string, start?: s
     WHERE ${tablename}.user_id IS NOT NULL
   `
 
-  // MySQL 드라이버에서는 ? 자리표시자를 사용한다. PostgreSQL로 전환할 때 $1, $2 등으로 변경된다.
+  // pg 드라이버는 $1, $2 같은 위치 기반 자리표시자를 쓴다. ?를 그대로 두면 드라이버가
+  // 이해하지 못한다.
   if (start) {
     params.push(start)
-    base += ` AND ${tablename}.created_at >= ?`
+    base += ` AND ${tablename}.created_at >= $${params.length}`
   }
   if (end) {
     params.push(end)
-    base += ` AND ${tablename}.created_at < ?`
+    base += ` AND ${tablename}.created_at < $${params.length}`
   }
 
   return {
