@@ -1,0 +1,10 @@
+{
+  "name": "coinsect-migrate",
+  "private": true,
+  "type": "module",
+  "description": "MySQL -> PostgreSQL 일회성 이관 도구. 서버에서 단독 실행한다.",
+  "dependencies": {
+    "mysql2": "^3.23.3",
+    "pg": "^8.13.1"
+  }
+}
