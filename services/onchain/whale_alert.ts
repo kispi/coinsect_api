@@ -3,7 +3,7 @@ import { WhaleAlert } from '../../entities/whale_alert'
 import { dataSource } from '../../database'
 import axios from 'axios'
 import store from '../../store'
-import orm from '../../core/orm'
+import orm, { QueryOverrides } from '../../core/orm'
 import IContext from '../../core/interfaces/context'
 
 const apiKey = store.state.serverConfig.WHALE_ALERT
@@ -12,13 +12,13 @@ const apiKey = store.state.serverConfig.WHALE_ALERT
 // Rate Limit for Free Plan: 10 per minute.
 
 const whaleAlertService = {
-  transactions: async (c: IContext, overridableQuery?: unknown) => {
-    if (overridableQuery) c.req.query = overridableQuery
+  transactions: async (c: IContext, overrides?: QueryOverrides) => {
+    const query = overrides || c.req.query
 
-    if (c.req.query['limit'] > 20) return Promise.reject({ message: 'limit exceeded 20' })
+    if (query['limit'] > 20) return Promise.reject({ message: 'limit exceeded 20', status: 400 })
 
-    const qb = orm.querySetter(c, WhaleAlert).orderBy('timestamp', 'DESC')
-    if (!c.req.query['limit']) qb.limit(20)
+    const qb = orm.querySetter(c, WhaleAlert, overrides).orderBy('timestamp', 'DESC')
+    if (!query['limit']) qb.limit(20)
 
     const [data, total] = await qb.getManyAndCount()
     return {

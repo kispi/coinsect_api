@@ -7,7 +7,7 @@ import { GoogleGenAI } from '@google/genai'
 import { log } from '../core/logger'
 import store from '../store'
 import IContext from '../core/interfaces/context'
-import orm from '../core/orm'
+import orm, { QueryOverrides } from '../core/orm'
 
 const postService = {
   sitemap: async (c: IContext) => {
@@ -21,14 +21,13 @@ const postService = {
       return Promise.reject(e)
     }
   },
-  all: async (c: IContext, overridableQuery?: unknown) => {
-    // 구현이 그다지 맘에 들지는 않지만 어쨌든 컨텍스트(c)는 일회용이기 때문에, 덮어써도 무관하다
-    if (overridableQuery) c.req.query = overridableQuery
+  all: async (c: IContext, overrides?: QueryOverrides) => {
+    const query = overrides || c.req.query
 
-    if (c.req.query['limit'] > 20) return Promise.reject({ message: 'limit exceeded 20' })
+    if (query['limit'] > 20) return Promise.reject({ message: 'limit exceeded 20', status: 400 })
 
     try {
-      const qb = orm.querySetter(c, Post)
+      const qb = orm.querySetter(c, Post, overrides)
         .leftJoinAndSelect('Post.user', 'user')
         .leftJoinAndSelect('user.profile', 'profile')
         .leftJoinAndSelect('Post.board', 'board')
@@ -44,7 +43,7 @@ const postService = {
         ))
       }
 
-      if (!c.req.query['limit']) qb.limit(20)
+      if (!query['limit']) qb.limit(20)
 
       const [data, total] = await qb.getManyAndCount()
       await Promise.all([
