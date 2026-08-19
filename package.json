@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc && rm -rf dist && mv dist-temp dist",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "cross-env TS_NODE_PROJECT=tsconfig.test.json node --require ts-node/register --test \"tests/**/*.test.ts\"",
     "dev": "cross-env NODE_ENV=development ts-node-dev server.ts",
     "prod": "cross-env NODE_ENV=production node dist/server.js",
     "typeorm": "typeorm-ts-node-commonjs -d ./database.ts"
