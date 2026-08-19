@@ -35,7 +35,7 @@ const mustAuthToken = async (c: IContext) => {
 const mustUser = async (c: IContext, email: string) => {
   const existingUser = await c.orm.getRepository(User)
     .createQueryBuilder()
-    .where(`email = '${email}'`)
+    .where('email = :email', { email })
     .leftJoinAndSelect('User.profile', 'profile')
     .getOne()
   if (existingUser) return existingUser

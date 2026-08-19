@@ -8,7 +8,9 @@ const afterReact = async (c: IContext) => {
   chatService.invalidate() // loadRecentMessages를 수행해서 변경된 리액션이 반영된 캐시로 갱신.
 
   try {
-    const reactions = await c.orm.getRepository(Reaction).createQueryBuilder().where(`message_id = ${c.req.body['messageId']}`).getMany()
+    const reactions = await c.orm.getRepository(Reaction).createQueryBuilder()
+      .where('message_id = :messageId', { messageId: c.req.body['messageId'] })
+      .getMany()
 
     chatService.updateReactions({
       messageId: c.req.body['messageId'],
@@ -31,15 +33,19 @@ const reactionController = {
 
       const user = await helpers.jwt.mustUser(c)
       try {
-        const query = `
-          ${user ? `user_id = ${user['id']}` : `ip = '${c.req.ip}'`} AND
-          type = '${c.req.body['type']}' AND
-          post_id = '${c.req.body['postId']}'
-        `
+        const qb = c.orm.getRepository(Reaction).createQueryBuilder()
+          .where('type = :type', { type: c.req.body['type'] })
+          .andWhere('post_id = :postId', { postId: c.req.body['postId'] })
 
-        const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(query).getOne()
-        if (result) await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
-        else await c.orm.getRepository(Reaction).insert({
+        // user_id가 null이면 ip를 기준으로, user_id가 있으면 user_id를 기준으로 중복방지.
+        if (user) qb.andWhere('user_id = :userId', { userId: user['id'] })
+        else qb.andWhere('ip = :ip', { ip: c.req.ip })
+
+        const result = await qb.getOne()
+        if (result) {
+          await c.orm.getRepository(Reaction).createQueryBuilder()
+            .where('id = :id', { id: result.id }).delete().execute()
+        } else await c.orm.getRepository(Reaction).insert({
           ip: c.req.ip,
           type: c.req.body['type'],
           post: { id: c.req.body['postId'] },
@@ -60,15 +66,19 @@ const reactionController = {
 
       const user = await helpers.jwt.mustUser(c)
       try {
-        const query = `
-          ${user ? `user_id = ${user['id']}` : `ip = '${c.req.ip}'`} AND
-          type = '${c.req.body['type']}' AND
-          reply_id = '${c.req.body['replyId']}'
-        `
+        const qb = c.orm.getRepository(Reaction).createQueryBuilder()
+          .where('type = :type', { type: c.req.body['type'] })
+          .andWhere('reply_id = :replyId', { replyId: c.req.body['replyId'] })
 
-        const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(query).getOne()
-        if (result) await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
-        else await c.orm.getRepository(Reaction).insert({
+        // user_id가 null이면 ip를 기준으로, user_id가 있으면 user_id를 기준으로 중복방지.
+        if (user) qb.andWhere('user_id = :userId', { userId: user['id'] })
+        else qb.andWhere('ip = :ip', { ip: c.req.ip })
+
+        const result = await qb.getOne()
+        if (result) {
+          await c.orm.getRepository(Reaction).createQueryBuilder()
+            .where('id = :id', { id: result.id }).delete().execute()
+        } else await c.orm.getRepository(Reaction).insert({
           ip: c.req.ip,
           type: c.req.body['type'],
           reply: { id: c.req.body['replyId'] },
@@ -89,15 +99,19 @@ const reactionController = {
 
       const user = await helpers.jwt.mustUser(c)
       try {
-        const query = `
-          ${user ? `user_id = ${user['id']}` : `ip = '${c.req.ip}'`} AND
-          type = '${c.req.body['type']}' AND
-          message_id = '${c.req.body['messageId']}'
-        `
+        const qb = c.orm.getRepository(Reaction).createQueryBuilder()
+          .where('type = :type', { type: c.req.body['type'] })
+          .andWhere('message_id = :messageId', { messageId: c.req.body['messageId'] })
 
-        const result = await c.orm.getRepository(Reaction).createQueryBuilder().where(query).getOne()
-        if (result) await c.orm.getRepository(Reaction).createQueryBuilder().where(`id = ${result.id}`).delete().execute()
-        else await c.orm.getRepository(Reaction).insert({
+        // user_id가 null이면 ip를 기준으로, user_id가 있으면 user_id를 기준으로 중복방지.
+        if (user) qb.andWhere('user_id = :userId', { userId: user['id'] })
+        else qb.andWhere('ip = :ip', { ip: c.req.ip })
+
+        const result = await qb.getOne()
+        if (result) {
+          await c.orm.getRepository(Reaction).createQueryBuilder()
+            .where('id = :id', { id: result.id }).delete().execute()
+        } else await c.orm.getRepository(Reaction).insert({
           ip: c.req.ip,
           type: c.req.body['type'],
           message: { id: c.req.body['messageId'] },

@@ -50,7 +50,11 @@ const routesChat = {
           until: date.format(),
         }]).execute()
 
-      if (c.req.body['deleteMessages'] === 'ok') await c.orm.createQueryBuilder().where(`ip = "${c.req.body['ip']}"`).softDelete().from(Message).execute()
+      if (c.req.body['deleteMessages'] === 'ok') {
+        await c.orm.createQueryBuilder()
+          .where('ip = :ip', { ip: c.req.body['ip'] })
+          .softDelete().from(Message).execute()
+      }
       chatService.invalidate()
       c.res.success()
     } catch (e) {
@@ -98,7 +102,7 @@ routesPost.detail = async (c: IContext) => {
       .leftJoinAndSelect('Post.board', 'board')
       .leftJoinAndSelect('Post.replies', 'replies')
       .leftJoinAndSelect('replies.parent', 'parent')
-      .where(`Post.id = ${c.req.params['id']}`).getOneOrFail()
+      .where('Post.id = :id', { id: c.req.params['id'] }).getOneOrFail()
       c.res.asJSON(data)
   } catch (e) {
     c.res.failed(e)

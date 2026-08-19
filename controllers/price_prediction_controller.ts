@@ -71,7 +71,7 @@ const pricePredictionController = {
       const pricePrediction = await orm.querySetter(c, PricePrediction)
         .leftJoinAndSelect('PricePrediction.user', 'user')
         .leftJoinAndSelect('user.profile', 'profile')
-        .where(`PricePrediction.sharing_key = '${c.req.params['sharingKey']}'`)
+        .where('PricePrediction.sharing_key = :sharingKey', { sharingKey: c.req.params['sharingKey'] })
         .andWhere('PricePrediction.deleted_at IS NULL')
         .getOneOrFail() as PricePrediction
       c.res.asJSON(pricePrediction)

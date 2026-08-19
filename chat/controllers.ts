@@ -289,7 +289,7 @@ export const chatCtrl = {
         .limit(limit || store.getters.config().numLatestMessages)
         .orderBy('Message.id', 'DESC')
       const cursor = c.req.query['firstMessageId']
-      if (cursor) qb.where(`Message.id < ${cursor}`)
+      if (cursor) qb.where('Message.id < :cursor', { cursor })
       else {
         return c.res.asJSON(processedMessages(store.getters.recentMessages(), c.req.ip))
       }

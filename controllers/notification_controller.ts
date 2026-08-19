@@ -5,7 +5,7 @@ import { Notification } from '../entities/notification'
 const notificationController = {
   all: async (c: IContext) => {
     try {
-      const [data, total] = await orm.querySetter(c, Notification).where('active = 1').getManyAndCount()
+      const [data, total] = await orm.querySetter(c, Notification).where('active = true').getManyAndCount()
       c.res.asJSON({ data, total })
     } catch (e) {
       c.res.failed(e)
