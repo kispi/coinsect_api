@@ -1723,6 +1723,16 @@ gitignore 대상이라 커밋되지 않지만 로컬 개발과 다음 단계 검
 
 MySQL의 `utf8mb4_0900_ai_ci` 콜레이션에서 `LIKE`는 대소문자를 구분하지 않았다. PostgreSQL의 `LIKE`는 구분하므로 그대로 두면 검색 결과가 줄어든다.
 
+**가장 넓은 표면은 `core/query_filter.ts`다.** `OPERATORS`의 `like: 'LIKE'`가 DSL의 `?where=필드:like:값`을 만드는데, 이 경로는 `orm.querySetter`를 쓰는 컨트롤러 10여 개가 전부 공유한다. `docs/api/query-protocol.md`도 이 연산자를 `ILIKE`로 문서화하고 있으므로 코드가 문서를 따라가야 한다.
+
+```ts
+  like: 'ILIKE',
+```
+
+`tests/query_filter.test.ts`의 `'profile.nickname LIKE :qf_0'` 단언도 `ILIKE`로 함께 고친다.
+
+아래 두 서비스는 DSL을 거치지 않고 직접 조건을 만드는 곳이라 별도로 바꾼다.
+
 `services/post.ts`:
 
 ```ts
