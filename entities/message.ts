@@ -6,7 +6,9 @@ import BaseModel from './base_model'
 
 export const populateReactions = async (messages: Array<Message>) => {
   const messageIds = messages.map(message => message.id)
-  const reactions = await dataSource.getRepository(Reaction).createQueryBuilder().where(`message_id IN (${messageIds.join(',')})`).getMany()
+  if (messageIds.length === 0) return
+
+  const reactions = await dataSource.getRepository(Reaction).createQueryBuilder().where('message_id IN (:...messageIds)', { messageIds }).getMany()
   const reactionsMap = {}
   reactions.forEach(reaction => {
     if (!reactionsMap[reaction.messageId]) reactionsMap[reaction.messageId] = [reaction]

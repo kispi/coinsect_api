@@ -28,14 +28,14 @@ export const useCRUD = ({
     if (withDeleted) qs.withDeleted()
 
     try {
-      const data = await qs.where(`${entityName}.id = ${c.req.params['id']}`).getOne()
+      const data = await qs.where(`${entityName}.id = :id`, { id: c.req.params['id'] }).getOne()
       c.res.asJSON(data)
     } catch (e) {
       c.res.failed(e)
     }
   },
   delete: async (c: IContext) => {
-    const o = orm.querySetter(c, model).where(`id = ${c.req.params['id']}`)
+    const o = orm.querySetter(c, model).where('id = :id', { id: c.req.params['id'] })
     const promise = useSoftDelete ? o.softDelete() : o.delete()
     try {
       await promise.execute()
@@ -79,7 +79,7 @@ export const useCRUD = ({
     const qs = c.orm.getRepository(childModel).createQueryBuilder()
     if (withDeleted) qs.withDeleted()
 
-    const children = await qs.where(`${childModelName}.${modelName.toLowerCase()}.id IN (:id)`, { id: modelIds }).getMany()
+    const children = await qs.where(`${childModelName}.${modelName.toLowerCase()}.id IN (:...modelIds)`, { modelIds }).getMany()
     const childrenMap = {}
     children.forEach(child => {
       const arr = child[`${modelName.toLowerCase()}Id`]
