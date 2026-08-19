@@ -408,6 +408,7 @@ export class FilterError extends Error {
 }
 
 export interface ParsedFilter {
+  alias: string
   property: string
   op: FilterOp
   value: string | string[] | boolean | null
