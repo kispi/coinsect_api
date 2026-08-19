@@ -33,13 +33,15 @@ const postService = {
         .leftJoinAndSelect('Post.board', 'board')
 
       // LIKE 검색이 너무 많아서 나중에 규모가 커지면 ES등 튜닝 필요함
-      const keyword = (c.req.query['query'] || '').split('=')[1]
+      const keyword = query['keyword']
       if (keyword) {
+        // 값에 든 %와 _를 리터럴로 만든다. 이스케이프하지 않으면 조건이 임의로 넓어진다.
+        const pattern = `%${keyword.replace(/[\\%_]/g, ch => `\\${ch}`)}%`
         qb.andWhere(new Brackets(subQb => subQb
-          .where(`Post.nickname LIKE "%${keyword}%"`)
-          .orWhere(`profile.nickname LIKE "%${keyword}%"`)
-          .orWhere(`Post.title LIKE "%${keyword}%"`)
-          .orWhere(`Post.content LIKE "%${keyword}%"`)
+          .where('Post.nickname LIKE :pattern', { pattern })
+          .orWhere('profile.nickname LIKE :pattern', { pattern })
+          .orWhere('Post.title LIKE :pattern', { pattern })
+          .orWhere('Post.content LIKE :pattern', { pattern })
         ))
       }
 
@@ -57,9 +59,9 @@ const postService = {
     }
   },
   allWithLLM: async (c: IContext) => {
-    const boardId = c.req.query['board_id']
-    const q = c.req.query['query']
-    if (!boardId || !q) return Promise.reject({ message: 'board_id or query is missing' })
+    const boardId = c.req.query['boardId']
+    const q = c.req.query['question']
+    if (!boardId || !q) return Promise.reject({ message: 'boardId or question is missing', status: 400 })
 
     log.info(`allWithLLM: query "${q}" (IP: ${c.req.ip})`)
 

@@ -27,11 +27,13 @@ const pricePredictionService = {
         .leftJoinAndSelect('PricePrediction.user', 'user')
         .leftJoinAndSelect('user.profile', 'profile')
 
-      const keyword = (c.req.query['query'] || '').split('=')[1]
+      const keyword = c.req.query['keyword']
       if (keyword) {
+        // 값에 든 %와 _를 리터럴로 만든다. 이스케이프하지 않으면 조건이 임의로 넓어진다.
+        const pattern = `%${keyword.replace(/[\\%_]/g, ch => `\\${ch}`)}%`
         qb.andWhere(new Brackets(subQb => subQb
-          .where(`PricePrediction.nickname LIKE "%${keyword}%"`)
-          .orWhere(`profile.nickname LIKE "%${keyword}%"`)
+          .where('PricePrediction.nickname LIKE :pattern', { pattern })
+          .orWhere('profile.nickname LIKE :pattern', { pattern })
         ))
       }
 

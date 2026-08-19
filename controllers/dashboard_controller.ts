@@ -6,10 +6,18 @@ import dashboardService from '../services/dashboard'
 
 const cache = useCache()
 
-const activityQuery = ({ tablename, start, end }: { tablename: string, start?: string, end?: string }) => {
-  if (start && !helpers.dayjs(start).isValid()) return Promise.reject({ message: 'INVALID_DATE' })
-  if (end && !helpers.dayjs(end).isValid()) return Promise.reject({ message: 'INVALID_DATE' })
+const ACTIVITY_TABLES = ['messages', 'posts', 'replies'] as const
+type ActivityTable = typeof ACTIVITY_TABLES[number]
 
+const activityQuery = ({ tablename, start, end }: { tablename: string, start?: string, end?: string }) => {
+  // 테이블명은 자리표시자로 넘길 수 없으므로 화이트리스트로 막는다.
+  if (!ACTIVITY_TABLES.includes(tablename as ActivityTable)) {
+    return Promise.reject({ message: 'INVALID_TABLE', status: 400 })
+  }
+  if (start && !helpers.dayjs(start).isValid()) return Promise.reject({ message: 'INVALID_DATE', status: 400 })
+  if (end && !helpers.dayjs(end).isValid()) return Promise.reject({ message: 'INVALID_DATE', status: 400 })
+
+  const params: string[] = []
   let base = `
     SELECT
       COUNT(*) AS count,
@@ -23,25 +31,36 @@ const activityQuery = ({ tablename, start, end }: { tablename: string, start?: s
     WHERE ${tablename}.user_id IS NOT NULL
   `
 
-  if (start) base += ` AND ${tablename}.created_at >= '${start}'`
-  if (end) base += ` AND ${tablename}.created_at < '${end}'`
+  if (start) {
+    params.push(start)
+    base += ` AND ${tablename}.created_at >= $${params.length}`
+  }
+  if (end) {
+    params.push(end)
+    base += ` AND ${tablename}.created_at < $${params.length}`
+  }
 
-  return base + `
-    GROUP BY ${tablename}.user_id
-    ORDER BY COUNT(*) DESC;
-  `
+  return {
+    sql: base + `
+      GROUP BY ${tablename}.user_id
+      ORDER BY COUNT(*) DESC
+    `,
+    params,
+  }
 }
 
 const dashboardController = {
   activities: async (c: IContext) => {
-    const keys = ['messages', 'posts', 'replies']
     try {
-      const data = await Promise.all(keys.map(async tablename => dataSource.query(await activityQuery({
-        tablename,
-        start: c.req.query['start'],
-        end: c.req.query['end'],
-      }))))
-      const aggregated = keys.map((key, idx) => ({ key, data: data[idx] }))
+      const data = await Promise.all(ACTIVITY_TABLES.map(async tablename => {
+        const { sql, params } = await activityQuery({
+          tablename,
+          start: c.req.query['start'],
+          end: c.req.query['end'],
+        })
+        return dataSource.query(sql, params)
+      }))
+      const aggregated = ACTIVITY_TABLES.map((key, idx) => ({ key, data: data[idx] }))
       c.res.success(aggregated)
     } catch (e) {
       c.res.failed(e)
