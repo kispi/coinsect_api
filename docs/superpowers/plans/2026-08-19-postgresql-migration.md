@@ -17,6 +17,7 @@
 - `reactions.message_id`의 FK는 `messages_202605`를 가리킨다. 운영과 1:1로 보존한다. **고치지 말 것** — 별개 작업이다.
 - 이번 범위는 SQLi 한정이다. 인증, 비밀번호 해싱, 자격증명 평문 보관은 건드리지 않는다.
 - 커밋 메시지는 한국어, 기존 저장소 스타일(`type: 동사로 끝나는 한 줄`)을 따른다.
+- `?where=`의 클라이언트는 `coinsect_nuxt`와 `coinsect_admin` 두 곳이다(`coinsect_frontend`는 삭제된 레거시). 서버에서 `decodeURI`를 빼므로 두 저장소의 쿼리빌더에서 `encodeURI`도 같이 빼야 한다 — 부록 참고. **API 배포와 두 클라이언트 배포는 함께 나가야 한다.**
 - 자격증명: PostgreSQL `webserver.coinsect.io:5432`, 롤/DB 모두 `coinsect`, 비밀번호는 기존 MySQL과 동일. SSH는 `C:\Users\kispi\Desktop\aws\kispi-seoul.pem`, 사용자 `ubuntu`.
 
 ---
@@ -501,11 +502,16 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 **Files:**
 - Modify: `core/orm.ts` (전체 교체)
 - Modify: `services/dashboard.ts:22` (내부 호출부의 `where` 문법)
+- Modify: `services/post.ts`, `services/onchain/whale_alert.ts` (`overridableQuery`의 컨텍스트 변조 제거)
 - Modify: `core/response.ts` 확인 (FilterError의 status를 응답에 반영하는지)
+- Create: `docs/api/query-protocol.md` (클라이언트와 공유하는 계약 문서)
 
 **Interfaces:**
 - Consumes: Task 2의 `parseFilters`, `applyFilters`, `parseSort`, `parseJoins`, `parsePositiveInt`, `FilterError`
-- Produces: `orm.querySetter(c, model)` — 시그니처 동일. 잘못된 필터를 만나면 `FilterError`를 던진다
+- Produces:
+  - `orm.querySetter(c, model, overrides?: QueryOverrides)` — `overrides`가 있으면 `c.req.query` 대신 그것을 읽는다
+  - `interface QueryOverrides { limit?: number, offset?: number, where?: string | string[], sort?: string, order?: string, join?: string }`
+  - `docs/api/query-protocol.md` — 세 저장소가 공유하는 계약의 단일 출처
 
 - [ ] **Step 1: `core/response.ts`의 에러 처리 확인**
 
@@ -515,6 +521,8 @@ Run: `cat core/response.ts`
 
 - [ ] **Step 2: `core/orm.ts` 전체 교체**
 
+`overrides` 매개변수가 추가된다. 지금은 내부 호출부가 `c.req.query`를 통째로 덮어쓰는 방식이라 (`services/post.ts`에 "구현이 그다지 맘에 들지는 않지만"이라는 주석이 붙어 있다) 요청 컨텍스트가 조용히 변조된다. 명시적 인자로 받으면 그 부작용이 사라진다.
+
 ```ts
 import { dataSource } from '../database'
 import IContext from './interfaces/context'
@@ -523,9 +531,20 @@ import { applyFilters, parseFilters, parseJoins, parsePositiveInt, parseSort } f
 export const MAX_LIMIT = 1000
 export const MAX_OFFSET = 1000000
 
+export interface QueryOverrides {
+  limit?: number
+  offset?: number
+  where?: string | string[]
+  sort?: string
+  order?: string
+  join?: string
+}
+
 const orm = {
-  querySetter: (c: IContext, model) => {
-    const q = c.req.query || {}
+  // overrides를 주면 요청 쿼리 대신 그것을 읽는다. 내부 호출이 c.req.query를
+  // 덮어쓰지 않도록 하기 위한 것이다.
+  querySetter: (c: IContext, model, overrides?: QueryOverrides) => {
+    const q = overrides || c.req.query || {}
     const meta = dataSource.getRepository(model).metadata
     const alias = meta.name
     const qb = c.orm.getRepository(model).createQueryBuilder(alias)
@@ -553,7 +572,24 @@ export default orm
 
 기존 코드에 있던 `decodeURI(q['where'])`는 뺀다. Fastify가 쿼리스트링을 이미 디코드해서 넘기므로 이중 디코드였다.
 
-- [ ] **Step 3: 내부 호출부를 새 문법으로 고친다**
+- [ ] **Step 3: `overridableQuery`의 컨텍스트 변조를 없앤다**
+
+`services/post.ts:all`과 `services/onchain/whale_alert.ts:transactions`가 `if (overridableQuery) c.req.query = overridableQuery`로 요청 객체를 덮어쓰고 있다(전자에는 "구현이 그다지 맘에 들지는 않지만"이라는 주석이 붙어 있다). 두 곳 다 `overrides`를 그대로 아래로 넘기는 형태로 바꾼다.
+
+`services/onchain/whale_alert.ts`:
+
+```ts
+  transactions: async (c: IContext, overrides?: QueryOverrides) => {
+    const query = overrides || c.req.query
+    if (query['limit'] > 20) return Promise.reject({ message: 'limit exceeded 20', status: 400 })
+
+    const qb = orm.querySetter(c, WhaleAlert, overrides).orderBy('timestamp', 'DESC')
+    if (!query['limit']) qb.limit(20)
+```
+
+`services/post.ts:all`도 같은 방식으로 바꾼다 — `c.req.query = overridableQuery` 줄과 그 위의 사과성 주석을 지우고 `orm.querySetter(c, Post, overrides)`로 넘긴다. `c.req.ip`를 쓰는 부분은 그대로 둔다.
+
+- [ ] **Step 4: 내부 호출부를 새 문법으로 고친다**
 
 `services/dashboard.ts:22` — `'amount_usd >= 3000000'`이 더 이상 유효하지 않다.
 
@@ -561,26 +597,35 @@ export default orm
 whaleAlertService.transactions(c, { limit: 5, where: 'amountUsd:gte:3000000' }),
 ```
 
-- [ ] **Step 4: 남은 구 문법 호출부가 없는지 확인**
+- [ ] **Step 5: 계약 문서를 쓴다**
+
+세 저장소가 공유하는 계약이므로 단일 출처를 만든다. 내용은 아래 "부록: 쿼리 프로토콜 문서"에 그대로 적어 두었다. `docs/api/query-protocol.md`로 저장한다.
+
+- [ ] **Step 6: 남은 구 문법 호출부가 없는지 확인**
 
 Run: `grep -rn --include=*.ts "where:" --exclude-dir=node_modules --exclude-dir=dist . | grep -v "query_filter\|tests/"`
 Expected: `services/dashboard.ts`의 새 문법 한 줄 외에 쿼리 객체로 `where`를 넘기는 곳이 없어야 한다. 있으면 전부 DSL로 고친다.
 
-- [ ] **Step 5: 타입 체크와 테스트**
+- [ ] **Step 7: 타입 체크와 테스트**
 
 Run: `npx tsc --noEmit -p tsconfig.json && npm test`
 Expected: 에러 없음, 테스트 전부 PASS
 
-- [ ] **Step 6: 커밋**
+- [ ] **Step 8: 커밋**
 
 ```bash
-git add core/orm.ts core/response.ts services/dashboard.ts
+git add core/orm.ts core/response.ts services/ docs/api/query-protocol.md
 git commit -m "fix: 쿼리스트링이 WHERE 절에 그대로 붙던 SQL 주입 경로를 막는다
 
 querySetter의 ?where=는 임의 SQL을 그대로 받아 왔고, 이 경로가 boards,
 notifications, wallets, posts, price_predictions, whale_alerts 같은 인증 없는
 공개 엔드포인트에서 쓰였다. field:op:value DSL만 받도록 바꾸고 limit/offset도
 숫자로 강제한 뒤 상한을 건다.
+
+내부 호출이 c.req.query를 통째로 덮어쓰던 방식도 없앤다. querySetter가
+overrides를 명시적 인자로 받으므로 요청 컨텍스트가 변조되지 않는다.
+
+세 저장소가 공유하는 계약이라 docs/api/query-protocol.md에 단일 출처를 둔다.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 ```
@@ -808,14 +853,18 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 **Files:**
 - Modify: `services/post.ts:38-46`
 - Modify: `services/price_prediction.ts:31-36`
+- Modify: `services/onchain/whale_alert.ts` (전용 필터 파라미터 추가)
 - Modify: `controllers/dashboard_controller.ts` (`activityQuery`)
+- Modify: `tests/whale_alert_filter.test.ts` (신규)
 
 - [ ] **Step 1: `services/post.ts`의 검색 조건 수정**
 
 검색어가 그대로 SQL에 들어가고 있었다. `LIKE`는 이 단계에서 유지하고 Task 8에서 `ILIKE`로 바꾼다 — MySQL에서 아직 동작해야 하기 때문이다.
 
+검색어를 받는 방식도 함께 고친다. 지금은 클라이언트가 `?query=keyword=비트코인`을 보내고 서버가 `.split('=')[1]`로 잘라 쓴다. 검색어에 `=`가 들어가면 잘리는 구조이고(`a=b`를 검색하면 `a`만 검색된다) 파라미터 안에 파라미터를 넣는 형태라 계약이 불투명하다. `?keyword=비트코인`으로 평평하게 만든다. 클라이언트 쪽 변경은 부록에 있다.
+
 ```ts
-      const keyword = (c.req.query['query'] || '').split('=')[1]
+      const keyword = c.req.query['keyword']
       if (keyword) {
         // 값에 든 %와 _를 리터럴로 만든다. 이스케이프하지 않으면 조건이 임의로 넓어진다.
         const pattern = `%${keyword.replace(/[\\%_]/g, ch => `\\${ch}`)}%`
@@ -827,6 +876,21 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
         ))
       }
 ```
+
+- [ ] **Step 1b: `allWithLLM`의 파라미터 이름을 정리한다**
+
+`services/post.ts:62`의 `c.req.query['query']`는 LLM에게 던지는 자연어 질문이다. Step 1에서 목록 검색이 `keyword`로 빠졌으므로 `query`가 두 뜻으로 쓰이지 않도록 `question`으로 바꾼다. 같은 함수의 `board_id`도 나머지 API와 맞춰 `boardId`로 바꾼다.
+
+`/posts/with_llm`은 아직 어떤 클라이언트도 호출하지 않으므로(`coinsect_nuxt`, `coinsect_admin` 모두 없음) 깨질 곳이 없다.
+
+```ts
+  allWithLLM: async (c: IContext) => {
+    const boardId = c.req.query['boardId']
+    const q = c.req.query['question']
+    if (!boardId || !q) return Promise.reject({ message: 'boardId or question is missing', status: 400 })
+```
+
+`log.info`와 프롬프트에서 `q`를 쓰는 부분은 그대로 둔다.
 
 - [ ] **Step 2: `services/price_prediction.ts`의 검색 조건 수정**
 
@@ -910,7 +974,67 @@ const activityQuery = ({ tablename, start, end }: { tablename: string, start?: s
   },
 ```
 
-- [ ] **Step 4: 보간이 전부 사라졌는지 확인**
+- [ ] **Step 4: `whale_alert`에 전용 필터 파라미터를 추가한다**
+
+`coinsect_nuxt`의 "거래소 간 이동 제외" 필터가 아래 조건을 보내고 있다.
+
+```
+(from_owner_type != "unknown" XOR to_owner_type != "unknown")
+```
+
+`XOR`은 **MySQL 전용 연산자**라 PostgreSQL에는 없다. DSL과 무관하게 어차피 깨지는 조건이고, 평면 AND 구조인 DSL로는 표현할 수도 없다. 서버가 이름 붙은 파라미터로 받아 직접 조립한다.
+
+의미는 "한쪽만 알려진 주체인 거래"다 — `!=`에 대한 XOR은 `is not null`-스타일 불리언 XOR이므로 `<>`로 옮긴다.
+
+`services/onchain/whale_alert.ts`에 아래를 추가하고 export한다.
+
+```ts
+// coinsect_nuxt의 excludeBetweenSameExchange 필터. 한쪽만 알려진 주체인 거래를 남긴다.
+// 구 프론트는 MySQL 전용 XOR을 직접 보냈는데, PostgreSQL에는 XOR이 없고 화이트리스트
+// DSL로 표현할 수도 없어서 서버가 이름으로 받는다.
+export const applyExcludeBetweenSameExchange = (qb: SelectQueryBuilder<WhaleAlert>) => {
+  qb.andWhere(
+    `((WhaleAlert.from_owner_type <> :unknown) <> (WhaleAlert.to_owner_type <> :unknown))`,
+    { unknown: 'unknown' },
+  )
+}
+```
+
+`transactions`에서 배선한다.
+
+```ts
+    const qb = orm.querySetter(c, WhaleAlert).orderBy('timestamp', 'DESC')
+    if (!c.req.query['limit']) qb.limit(20)
+    if (c.req.query['excludeBetweenSameExchange'] === 'true') applyExcludeBetweenSameExchange(qb)
+```
+
+- [ ] **Step 5: 전용 필터의 SQL 조립을 테스트한다**
+
+`tests/whale_alert_filter.test.ts`:
+
+```ts
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import { applyExcludeBetweenSameExchange } from '../services/onchain/whale_alert'
+
+const fakeQb = () => {
+  const calls: Array<{ sql: string, params?: object }> = []
+  return { calls, andWhere(sql: string, params?: object) { calls.push({ sql, params }); return this } }
+}
+
+test('excludeBetweenSameExchange: XOR을 불리언 <>로 옮기고 값은 파라미터로 넘긴다', () => {
+  const qb = fakeQb()
+  applyExcludeBetweenSameExchange(qb as any)
+
+  assert.equal(qb.calls.length, 1)
+  assert.match(qb.calls[0].sql, /<>/)
+  assert.doesNotMatch(qb.calls[0].sql, /XOR/i, 'XOR은 PostgreSQL에 없다')
+  assert.doesNotMatch(qb.calls[0].sql, /'unknown'/, '값은 SQL에 박히면 안 된다')
+  assert.deepEqual(qb.calls[0].params, { unknown: 'unknown' })
+})
+```
+
+- [ ] **Step 6: 보간이 전부 사라졌는지 확인**
 
 Run:
 ```bash
@@ -918,20 +1042,24 @@ grep -rn --include=*.ts -E '(where|andWhere|orWhere)\(`[^`]*\$\{' --exclude-dir=
 ```
 Expected: 출력 없음
 
-- [ ] **Step 5: 타입 체크와 테스트**
+- [ ] **Step 7: 타입 체크와 테스트**
 
 Run: `npx tsc --noEmit -p tsconfig.json && npm test`
 Expected: 에러 없음, 테스트 전부 PASS
 
-- [ ] **Step 6: 커밋**
+- [ ] **Step 8: 커밋**
 
 ```bash
-git add services/post.ts services/price_prediction.ts controllers/dashboard_controller.ts
+git add services/ controllers/dashboard_controller.ts tests/whale_alert_filter.test.ts
 git commit -m "fix: 검색어와 대시보드 날짜가 SQL에 그대로 들어가던 문제를 고친다
 
 게시글/가격예측 검색의 LIKE 패턴을 파라미터로 넘기고 값의 와일드카드를
 이스케이프한다. 대시보드 집계는 날짜를 자리표시자로 넘기고 테이블명에
 화이트리스트를 건다.
+
+고래알림의 '거래소 간 이동 제외'는 프론트가 MySQL 전용 XOR을 직접 보내고
+있었다. PostgreSQL에 XOR이 없고 화이트리스트 DSL로도 표현할 수 없어
+excludeBetweenSameExchange 파라미터로 서버가 받는다.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 ```
@@ -1966,13 +2094,17 @@ Expected: `전부 일치`
 gh secret set EC2_ORMCONFIG --repo kispi/coinsect_api < ormconfig.ts
 ```
 
-- [ ] **Step 5: 배포**
+- [ ] **Step 5: 배포 — API와 두 클라이언트를 함께 내보낸다**
+
+새 API는 구 `?where=` 문법을 400으로 거부한다. `coinsect_nuxt`와 `coinsect_admin`의 부록 작업이 끝나 있어야 하고, 세 배포가 같이 나가야 한다. API를 먼저 올리면 그 사이 커뮤니티 목록·고래알림 필터·어드민 테이블 검색이 전부 400을 뱉는다.
 
 ```bash
 gh workflow run "Deploy to EC2" --repo kispi/coinsect_api
 gh run watch --repo kispi/coinsect_api
 ```
 Expected: 성공. "Verify ormconfig.ts survived shell expansion" 단계도 통과해야 한다
+
+이어서 `coinsect_nuxt`, `coinsect_admin`을 배포한다.
 
 - [ ] **Step 6: smoke test**
 
@@ -2054,6 +2186,268 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 | 컷오버 5단계 | Task 10, 11, 12 |
 | 검증 항목 | Task 9 (verify.mjs), Task 10 Step 5, Task 11 Step 6 |
 
-**리스크 대응 커버리지:** 타임존 → Task 7/9 + verify의 경계값 대조. 시퀀스 → Task 9 `resetSequences` + Task 11 Step 6. `?where=` 문법 변경으로 인한 프론트 영향 → Task 3 Step 4에서 내부 호출부를 훑고, Task 10 Step 5에서 실제 확인. 메모리 → `BATCH = 1000`. 하드 삭제 → README에 명시.
+**리스크 대응 커버리지:** 타임존 → Task 7/9 + verify의 경계값 대조. 시퀀스 → Task 9 `resetSequences` + Task 11 Step 6. 메모리 → `BATCH = 1000`. 하드 삭제 → README에 명시.
 
-**알려진 미결:** 프론트엔드(`coinsect_frontend`/`coinsect_nuxt`)가 `?where=`를 쓰고 있다면 그쪽도 새 문법으로 고쳐야 한다. 이 저장소 밖이라 계획에 포함하지 않았고, Task 10 Step 5에서 실제 요청을 보며 확인한다. 쓰는 곳이 나오면 별도 작업으로 뺀다.
+**클라이언트 영향 (조사 완료):** `?where=`의 클라이언트는 `coinsect_nuxt`(4곳)와 `coinsect_admin`(1곳, 제네릭 데이터 테이블)이다. `coinsect_frontend`는 삭제된 레거시라 제외했다. 조사에서 나온 것들:
+
+- `coinsect_nuxt`의 고래알림 "거래소 간 이동 제외" 필터가 **MySQL 전용 `XOR`**을 보내고 있었다. DSL과 무관하게 PostgreSQL에서 깨지므로 Task 6 Step 4에서 전용 파라미터로 옮긴다. DSL로 표현이 안 되는 유일한 조건이다.
+- 양쪽 쿼리빌더가 `encodeURI`를 걸고 서버가 `decodeURI`로 되돌리는 이중 인코딩 구조였다. 서버에서 `decodeURI`가 빠지므로 클라이언트도 함께 고쳐야 한다.
+- `coinsect_admin`의 `hooks/table.js` URL 직렬화가 인코딩을 전혀 하지 않는다. 값에 `&`가 들어가면 URL이 깨진다.
+
+세부는 부록 B에 있다. **API와 두 클라이언트 배포는 함께 나가야 한다** (Task 11 Step 5).
+
+**계약 관련 정리 (사용자 승인):** 마이그레이션과 직접 관련은 없지만 같은 계약 표면이라 함께 고치는 것들 — `?query=keyword=값` → `?keyword=`(Task 6 Step 1), `/posts/with_llm`의 `board_id`/`query` → `boardId`/`question`(Task 6 Step 1b), `c.req.query`를 덮어쓰던 `overridableQuery` → 명시적 `overrides` 인자(Task 3 Step 3), 클라이언트 쿼리빌더의 문자열 SQL → 타입 있는 조건 빌더(부록 B).
+
+---
+
+## 부록 A: 쿼리 프로토콜 문서
+
+Task 3 Step 5의 산출물이다. 아래 `---` 사이의 내용을 `docs/api/query-protocol.md`로 저장한다.
+
+---
+
+# 목록 조회 쿼리 프로토콜
+
+`orm.querySetter`를 쓰는 모든 목록 엔드포인트가 받는 공통 쿼리 파라미터다.
+`coinsect_nuxt`와 `coinsect_admin`이 이 계약에 맞춰 요청을 만든다. 세 저장소의 단일
+출처이므로, 문법을 바꾸려면 이 문서를 먼저 고친다.
+
+2026-08-19 이전에는 `where`가 임의 SQL 조각이었고 서버가 그대로 WHERE 절에 이어
+붙였다. 인증 없는 공개 엔드포인트에서도 그랬다. 지금은 아래 문법만 받는다.
+
+## 파라미터
+
+| 이름 | 형식 | 설명 |
+|---|---|---|
+| `limit` | 정수 | 0 이상. 상한 1000 |
+| `offset` | 정수 | 0 이상 |
+| `sort` | 컬럼명 | 엔티티에 실재하는 컬럼만 |
+| `order` | `asc` \| `desc` | 기본 `desc` |
+| `where` | `필드:연산자:값` | 반복 가능. 여러 개는 AND로 묶인다 |
+| `join` | `별칭.관계명` 쉼표 구분 | 실재하는 관계만 |
+
+## `where` 문법
+
+```
+필드:연산자:값
+```
+
+- **필드** — 엔티티 프로퍼티명(`amountUsd`)과 DB 컬럼명(`amount_usd`) 둘 다 받는다.
+  실재하지 않으면 400.
+- **연산자** — `eq` `ne` `gt` `gte` `lt` `lte` `like` `in` `isnull`. 그 외는 400.
+- **값** — 첫 두 콜론 뒤는 전부 값이다. `hash:eq:a:b:c`의 값은 `a:b:c`.
+
+| 연산자 | 예 | SQL |
+|---|---|---|
+| `eq` | `boardId:eq:1` | `board_id = $1` |
+| `ne` | `postType:ne:notice` | `post_type <> $1` |
+| `gt` `gte` `lt` `lte` | `amountUsd:gte:3000000` | `amount_usd >= $1` |
+| `like` | `title:like:비트코인` | `title ILIKE '%비트코인%'` |
+| `in` | `symbol:in:BTC,ETH` | `symbol IN ($1, $2)` |
+| `isnull` | `deletedAt:isnull:true` | `deleted_at IS NULL` |
+
+`like`의 값에 든 `%`와 `_`는 리터럴로 이스케이프된다. 사용자가 조건을 넓힐 수 없다.
+
+### 여러 조건
+
+`where`를 반복해서 넘긴다. AND로 묶인다.
+
+```
+?where=postType:eq:normal&where=boardId:in:1,2
+```
+
+OR나 괄호 그룹은 지원하지 않는다. 필요하면 그 엔드포인트에 이름 붙은 전용 파라미터를
+만든다 — 예: 고래알림의 `excludeBetweenSameExchange=true`.
+
+### 상한
+
+| 항목 | 상한 |
+|---|---|
+| `where` 개수 | 10 |
+| 값 길이 | 200자 |
+| `in`의 값 개수 | 50 |
+| `join` 개수 | 10 |
+| `limit` | 1000 |
+
+## 인코딩
+
+값을 미리 `encodeURI`로 감싸지 **말 것.** HTTP 계층이 한 번만 인코딩한다. 서버는 디코딩을
+추가로 하지 않는다. 예전에는 클라이언트가 `encodeURI`를 걸고 서버가 `decodeURI`로
+되돌렸는데, 값에 공백이 들어가면 `%20`이 리터럴로 남는 구조였다.
+
+## 목록 외 파라미터
+
+프로토콜 밖이지만 함께 정리한 것들이다.
+
+| 엔드포인트 | 파라미터 | 비고 |
+|---|---|---|
+| `GET /posts` | `keyword` | 예전 `query=keyword=값`을 평평하게 폈다 |
+| `GET /price_predictions` | `keyword` | 위와 동일 |
+| `GET /posts/with_llm` | `boardId`, `question` | 예전 `board_id`, `query` |
+| `GET /onchain/whale_alert` | `excludeBetweenSameExchange` | `true`면 한쪽만 알려진 주체인 거래만 |
+
+## 오류
+
+문법이나 화이트리스트를 어기면 `400`과 함께 사유가 돌아온다.
+
+```json
+{ "message": "unknown field: nope" }
+```
+
+---
+
+## 부록 B: 클라이언트 저장소 변경
+
+`?where=`를 쓰는 곳을 실제로 조사한 결과다(`coinsect_frontend`는 삭제된 레거시라 제외).
+이 저장소 밖이므로 별도 작업이지만 **API 배포와 함께 나가야 한다** — 새 서버는 구 문법을
+400으로 거부한다.
+
+두 저장소의 쿼리빌더는 같은 문제를 공유한다.
+
+- `where(exp)`가 SQL 조각을 문자열로 받는다. 주석에도 "일단은 exp 직접사용하도록 구현"이라
+  적혀 있다. 타입 검사가 전혀 안 걸리고 서버 컬럼명을 클라이언트가 손으로 적는다.
+- `encodeURI(exp)`로 미리 인코딩한다. 서버의 `decodeURI`와 짝이었는데 그게 사라진다.
+- `where`가 문자열 하나라 조건을 `' AND '`로 이어 붙인다. 새 프로토콜은 반복 파라미터다.
+- `build()`가 `JSON.parse(JSON.stringify(...))`로 의미 없는 깊은 복사를 한다.
+
+문자열 대신 **타입 있는 조건 객체**를 쌓는 형태로 바꾼다. 두 저장소가 각자 작은 빌더를
+갖되 문법은 부록 A를 따른다(저장소 3개에 공유 패키지를 두는 건 과하다).
+
+### 공통 빌더 형태
+
+```ts
+export type FilterOp = 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'in' | 'isnull'
+
+export type QueryParams = {
+  limit?: number
+  offset?: number
+  sort?: string
+  order?: 'asc' | 'desc'
+  where?: string[]
+  join?: string
+  [key: string]: unknown  // 엔드포인트 전용 파라미터
+}
+
+export const qb = () => {
+  const params: QueryParams = {}
+  const where: string[] = []
+
+  return {
+    limit(v: number) { params.limit = v; return this },
+    offset(v: number) { params.offset = v; return this },
+    sort(v: string) { params.sort = v; return this },
+    order(v: 'asc' | 'desc') { params.order = v; return this },
+    join(v: string) { params.join = v; return this },
+
+    // 값은 인코딩하지 않는다 - HTTP 계층이 한 번만 한다.
+    where(field: string, op: FilterOp, value: string | number | boolean | Array<string | number>) {
+      where.push(`${field}:${op}:${Array.isArray(value) ? value.join(',') : value}`)
+      return this
+    },
+
+    // 이미 조립된 DSL 문자열을 그대로 넣는다. URL 복원 전용이며
+    // 사용자 입력을 여기로 흘리지 않는다.
+    whereRaw(exp: string) { where.push(exp); return this },
+
+    // 엔드포인트 전용 파라미터.
+    param(key: string, value: unknown) { params[key] = value; return this },
+
+    base() { return this.limit(20).sort('id').order('desc') },
+
+    build(): QueryParams {
+      return where.length > 0 ? { ...params, where } : { ...params }
+    },
+  }
+}
+```
+
+### `coinsect_nuxt`
+
+`app/utils/querybuilder.ts`를 위 형태로 교체하고 호출부를 고친다.
+
+| 위치 | 현재 | 바꿀 것 |
+|---|---|---|
+| `queries/useRecentPosts.ts:48` | `board_id=${boardId}` | `.where('boardId', 'eq', boardId)` |
+| `services/community.ts:25` | `.query(\`keyword=${keyword}\`)` | `.param('keyword', keyword)` |
+| `services/community.ts:27-29` | `post_type = "normal" AND board_id = N` | `.where('postType','eq','normal').where('boardId','eq',N)` |
+| `services/community.ts:27-29` | `... AND board_id IN (1,2)` | `.where('postType','eq','normal').where('boardId','in',COINSECT_BOARD_IDS)` |
+| `services/community.ts:38` | `post_type = "notice"` | `.where('postType', 'eq', 'notice')` |
+| `useWhaleAlert.ts:47` | `amount >= N` | `.where('amount', 'gte', N)` |
+| `useWhaleAlert.ts:48` | `amount_usd >= N` | `.where('amountUsd', 'gte', N)` |
+| `useWhaleAlert.ts:50` | `symbol in ("BTC", ...)` | `.where('symbol', 'in', symbols)` |
+| `useWhaleAlert.ts:52` | `(... XOR ...)` | `.param('excludeBetweenSameExchange', true)` |
+
+`queries/useNotifications.ts`는 `where`를 쓰지 않는다 — 빌더 교체 외에 변경 없음.
+
+두 가지를 더 확인한다.
+
+- `$api` 호출이 `where` 배열을 반복 파라미터로 직렬화하는지. `ofetch`는 배열을
+  `where=a&where=b`로 펼친다.
+- `useNotifications.ts`는 `params`로, 나머지는 `query`로 넘기고 있다. 하나로 통일한다.
+
+`tests/utils/querybuilder.spec.ts`도 새 API에 맞춰 다시 쓴다.
+
+### `coinsect_admin`
+
+`src/helpers/querybuilder.js`를 위 형태로 교체한다. 그 외 세 곳이 함께 바뀐다.
+
+**1. `src/components/app/data-table/DataTable.vue:216-225`**
+
+지금은 입력값에 `<`나 `>`가 있으면 **그 입력을 SQL 조각으로 그대로** 쓰고(`views > 100`),
+없으면 `LIKE "%값%"`으로 감싼 뒤 `AND`로 잇는다. 즉 운영자가 검색창에 임의 SQL을 칠 수
+있는 구조다. 입력 문법(`> 100`)은 편하니 유지하되 파싱해서 DSL로 옮긴다.
+
+```js
+const COMPARISONS = { '>=': 'gte', '<=': 'lte', '>': 'gt', '<': 'lt', '=': 'eq' }
+
+props.model.keys
+  .filter(key => key.searchValue)
+  .forEach(key => {
+    const column = helpers.case.toSnake(key.column)
+    const v = String(key.searchValue).trim()
+    const m = v.match(/^(>=|<=|>|<|=)\s*(.+)$/)
+    if (m) props.params.where(column, COMPARISONS[m[1]], m[2])
+    else props.params.where(column, 'like', v)
+  })
+```
+
+225행이 컬럼명 앞에 `Model.`을 붙이던 부분은 뺀다 — 서버가 엔티티 별칭을 붙인다.
+
+**2. `src/hooks/table.js:104` (`initParamsFromQuery`)**
+
+`p.where(q.where)`가 URL의 `where`를 그대로 되먹인다. 배열일 수도 있으므로 정규화하고,
+이미 조립된 문자열이므로 `whereRaw`를 쓴다.
+
+```js
+if (q.where) [].concat(q.where).forEach(exp => p.whereRaw(exp))
+```
+
+**3. `src/hooks/table.js`의 URL 직렬화**
+
+```js
+const q = Object.keys(newVal.queryParams).map(key => `${key}=${newVal.queryParams[key]}`).join('&')
+```
+
+인코딩을 전혀 하지 않는다. 값에 `&`나 `#`이 들어가면 URL이 깨지고, 배열은 `where=a,b`로
+뭉개진다. `URLSearchParams`로 바꾼다.
+
+```js
+const sp = new URLSearchParams()
+Object.entries(newVal.queryParams).forEach(([key, value]) => {
+  if (value === undefined || value === null) return
+  const list = Array.isArray(value) ? value : [value]
+  list.forEach(v => sp.append(key, v))
+})
+const q = sp.toString()
+```
+
+### 확인 순서
+
+1. API를 리허설 DB에 붙여 띄운다(Task 10 Step 5).
+2. 두 클라이언트를 그 API로 향하게 하고 아래를 직접 돌린다.
+   - 커뮤니티 목록 / 공지 / 키워드 검색
+   - 대시보드 최근글
+   - 고래알림 필터 4종 (금액, USD금액, 심볼, 거래소 간 이동 제외)
+   - 어드민 데이터 테이블의 컬럼 검색 — 일반 문자열과 `> 100` 형태 둘 다
+   - 어드민에서 검색 후 새로고침 (URL 복원 경로)
+3. 구 문법이 남아 있으면 400이 뜨므로 네트워크 탭에서 바로 드러난다.
