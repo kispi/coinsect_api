@@ -837,6 +837,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 - Modify: `controllers/price_prediction_controller.ts:74`
 - Modify: `controllers/notification_controller.ts:8`
 - Modify: `chat/controllers.ts:292`
+- Modify: `controllers/wallet_controller.ts:8` (조인 별칭)
 
 - [ ] **Step 1: `auth_controller.ts`의 로그인 조회 수정**
 
@@ -2539,7 +2540,7 @@ export const qb = () => {
 `src/helpers/querybuilder.js`를 위 형태로 교체한다. 그 외 세 곳이 함께 바뀐다.
 
 어드민은 다른 두 클라이언트와 달리 **점 표기 컬럼**과 **`?join=`**을 쓴다. 서버 쪽 대응은
-Task 2(별칭 맵)와 Task 6 Step 6b(`wallet_controller`의 별칭)에서 끝난다.
+Task 2(별칭 맵)와 Task 5 Step 6b(`wallet_controller`의 별칭)에서 끝난다.
 
 | 위치 | 보내는 것 |
 |---|---|
