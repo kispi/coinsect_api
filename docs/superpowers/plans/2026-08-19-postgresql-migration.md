@@ -1040,7 +1040,9 @@ Run: `sed -n '25,40p' services/price_prediction.ts` 로 현재 형태를 먼저 
 
 - [ ] **Step 3: `dashboard_controller.ts`의 `activityQuery` 수정**
 
-테이블명은 현재 코드 내부 상수에서만 오지만, 향후 유입 경로가 생겨도 막히도록 화이트리스트 검증을 명시한다. 날짜는 파라미터로 넘긴다. `pg`는 `$1` 스타일 자리표시자를 쓴다.
+테이블명은 현재 코드 내부 상수에서만 오지만, 향후 유입 경로가 생겨도 막히도록 화이트리스트 검증을 명시한다. 날짜는 파라미터로 넘긴다.
+
+**자리표시자는 지금은 `?`를 쓴다.** `dataSource.query(sql, params)`는 문자열을 드라이버에 그대로 넘기고 자리표시자를 다시 쓰지 않는다. mysql2는 `?`만 치환하므로 `$1`을 넣으면 그대로 MySQL에 도달하고, MySQL은 `$`를 식별자 문자로 취급해 `Unknown column '$1'`로 죽는다. PostgreSQL 문법으로 바꾸는 것은 Task 8이 맡는다 — `LIKE`를 `ILIKE`로 미루는 것과 같은 이유다.
 
 ```ts
 const ACTIVITY_TABLES = ['messages', 'posts', 'replies'] as const
@@ -1070,11 +1072,11 @@ const activityQuery = ({ tablename, start, end }: { tablename: string, start?: s
 
   if (start) {
     params.push(start)
-    base += ` AND ${tablename}.created_at >= $${params.length}`
+    base += ` AND ${tablename}.created_at >= ?`
   }
   if (end) {
     params.push(end)
-    base += ` AND ${tablename}.created_at < $${params.length}`
+    base += ` AND ${tablename}.created_at < ?`
   }
 
   return {
@@ -1733,6 +1735,23 @@ MySQL의 `utf8mb4_0900_ai_ci` 콜레이션에서 `LIKE`는 대소문자를 구�
 ```
 
 `services/price_prediction.ts`도 같은 방식으로 두 줄을 바꾼다.
+
+- [ ] **Step 5b: 대시보드 집계의 자리표시자를 `$n`으로 바꾼다**
+
+`controllers/dashboard_controller.ts`의 `activityQuery`는 Task 6에서 `?`로 두었다. `dataSource.query(sql, params)`는 자리표시자를 다시 쓰지 않고 드라이버에 그대로 넘기는데, `pg`는 `?`를 모른다. 드라이버가 바뀌는 지금 전환한다.
+
+```ts
+  if (start) {
+    params.push(start)
+    base += ` AND ${tablename}.created_at >= $${params.length}`
+  }
+  if (end) {
+    params.push(end)
+    base += ` AND ${tablename}.created_at < $${params.length}`
+  }
+```
+
+이 엔드포인트는 두 엔진 어느 쪽에서도 자동 검증되지 않으므로(원시 SQL이라 TypeORM이 문법을 다시 쓰지 않는다), Task 10 리허설의 smoke test에서 `?start=`를 붙여 반드시 직접 호출해 볼 것.
 
 - [ ] **Step 6: 배포 워크플로우 주석 갱신**
 
