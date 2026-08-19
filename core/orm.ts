@@ -33,7 +33,8 @@ const orm = {
     // 별칭 맵이 있어야 검증이 된다.
     const { joins, aliases } = parseJoins(q['join'], meta, alias)
     joins.forEach(({ target, alias: joinAlias }) => {
-      // 컨트롤러가 이미 같은 관계를 조인해 둔 경우가 있다(wallet_controller). 중복 별칭은 건너뛴다.
+      // ?join= 파라미터 자체에 같은 관계가 중복으로 들어올 수 있다(예: ?join=Wallet.blockchain,Wallet.blockchain).
+      // 그 경우 별칭이 겹치므로 두 번째부터는 건너뛴다.
       if (qb.expressionMap.aliases.some(a => a.name === joinAlias)) return
       qb.leftJoinAndSelect(target, joinAlias)
     })
