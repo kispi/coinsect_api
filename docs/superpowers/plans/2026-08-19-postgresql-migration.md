@@ -937,12 +937,21 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 `controllers/wallet_controller.ts:8`이 `leftJoinAndSelect('Wallet.blockchain', 'tb_0')`으로 별칭을 하드코딩하고 있다. 그런데 `coinsect_admin`의 `ViewWallets.vue`가 같은 관계를 `?join=Wallet.blockchain`으로도 요청하고, 어드민 모델(`src/models/wallet.js`)은 컬럼을 `blockchain.id`, `blockchain.name`으로 가리킨다. 즉 별칭(`tb_0`)과 참조(`blockchain`)가 어긋나 있었다.
 
-Task 3에서 `?join=`의 별칭이 관계명이 되므로 여기도 맞춘다. 그러면 Task 3의 중복 조인 건너뛰기가 걸려 조인이 한 번만 일어난다.
+Task 3에서 `?join=`의 별칭이 관계명이 되므로 여기도 맞춘다.
+
+**주의 — `querySetter` 안의 중복 제거에 기대면 안 된다.** `orm.querySetter(...)`는 자기 `?join=` 루프를 모두 돌리고 나서 빌더를 반환하므로, 그 뒤에 체이닝된 컨트롤러의 조인은 애초에 볼 수가 없다. TypeORM은 별칭 중복을 검사하지 않고 그대로 두 번 붙이므로(`QueryExpressionMap.createAlias`), 어드민이 `?join=Wallet.blockchain`을 보내면 같은 별칭의 `LEFT JOIN`이 두 개가 되어 두 엔진 모두 "not unique alias"로 거절한다. `tb_0`일 때는 별칭이 달라 낭비였을 뿐 동작은 했으므로, 별칭만 바꾸면 오히려 회귀다.
+
+컨트롤러가 직접 확인하고 붙인다. 클라이언트가 `?join=`을 보냈든 안 보냈든 결과가 같아진다.
 
 ```ts
-      const [data, total] = await orm.querySetter(c, Wallet)
-        .leftJoinAndSelect('Wallet.blockchain', 'blockchain')
-        .getManyAndCount()
+      const qb = orm.querySetter(c, Wallet)
+      // ?join=Wallet.blockchain으로 이미 붙었으면 다시 붙이지 않는다. TypeORM은 별칭
+      // 중복을 검사하지 않아 그대로 두 번 조인되고, 그러면 쿼리가 실행에서 죽는다.
+      if (!qb.expressionMap.aliases.some(a => a.name === 'blockchain')) {
+        qb.leftJoinAndSelect('Wallet.blockchain', 'blockchain')
+      }
+
+      const [data, total] = await qb.getManyAndCount()
 ```
 
 - [ ] **Step 7: 남은 보간이 없는지 확인**
