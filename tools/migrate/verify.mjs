@@ -5,6 +5,8 @@ import { TABLES, describeTable } from './schema.mjs'
 const { Client } = pkg
 
 const main = async () => {
+  if (!process.env.MYSQL_URL || !process.env.PG_URL) throw new Error('MYSQL_URL, PG_URL 환경변수가 필요하다')
+
   const my = await mysql.createConnection({ uri: process.env.MYSQL_URL, dateStrings: true })
   const pg = new Client({ connectionString: process.env.PG_URL })
   await pg.connect()
@@ -55,6 +57,22 @@ const main = async () => {
   const amtOk = String(myAmt.s) === String(pgAmt.s)
   if (!amtOk) failed++
   console.log(`${amtOk ? 'OK  ' : 'FAIL'} whale_alerts.amount_usd 합계: mysql=${myAmt.s} pg=${pgAmt.s}`)
+
+  // 비활성 트리거. copy.mjs가 델타 upsert 동안 사용자 트리거를 끄는데, 프로세스가
+  // DISABLE과 ENABLE 사이에서 죽으면(OOM 등) 트리거가 영구히 비활성 상태로 남을 수
+  // 있다 - 조용히 실패하는 종류의 문제라 여기서 반드시 잡아야 몇 달 뒤에야
+  // 발견되는 사고를 막는다.
+  const { rows: disabledTriggers } = await pg.query(`
+    SELECT c.relname, t.tgname FROM pg_trigger t
+      JOIN pg_class c ON c.oid = t.tgrelid
+     WHERE NOT t.tgisinternal AND t.tgenabled = 'D'
+  `)
+  const triggersOk = disabledTriggers.length === 0
+  if (!triggersOk) failed++
+  console.log(`${triggersOk ? 'OK  ' : 'FAIL'} 비활성 트리거: ${triggersOk ? '없음' : ''}`)
+  for (const row of disabledTriggers) {
+    console.log(`  비활성 트리거 발견: ${row.relname}.${row.tgname}`)
+  }
 
   await pg.end()
   await my.end()

@@ -56,3 +56,29 @@ node verify.mjs
 
 **권한:** `PG_URL`의 유저는 대상 테이블에 대해 `ALTER TABLE ... DISABLE/ENABLE
 TRIGGER`를 실행할 수 있어야 한다(테이블 소유자면 충분하다).
+
+## 델타 실행이 중간에 끊겼을 때
+
+`copy.mjs`는 테이블별로 DISABLE TRIGGER → 배치 복사 → ENABLE TRIGGER를 하나의
+트랜잭션으로 묶어서 실행한다. 프로세스가 죽거나(OOM 등) 커넥션이 끊기면
+PostgreSQL이 미완료 트랜잭션을 자동 롤백하므로 트리거는 원래 상태(활성)로
+돌아간다 — 즉 정상적인 경우라면 별도 조치가 필요 없다.
+
+그래도 확인하고 싶다면(또는 트랜잭션 롤백이 걸리기 전에 커넥션이 이례적으로
+끊겼다면), `node verify.mjs`를 돌리면 비활성 상태로 남은 사용자 트리거를
+`FAIL` 항목으로 보고한다. 만약 실제로 비활성 트리거가 남아 있다면:
+
+```sql
+-- 확인
+SELECT c.relname, t.tgname FROM pg_trigger t
+  JOIN pg_class c ON c.oid = t.tgrelid
+ WHERE NOT t.tgisinternal AND t.tgenabled = 'D';
+
+-- 복구 (테이블명을 위 조회 결과로 바꿔서)
+ALTER TABLE "<relname>" ENABLE TRIGGER USER;
+```
+
+복구 후 `node verify.mjs`를 다시 돌려 `OK  비활성 트리거: 없음`을 확인한다.
+그 다음 중단된 지점부터 델타를 다시 돌려도 안전하다 — `--since`는 항상 전체
+이관을 시작한 시각이고 upsert는 멱등이므로, 이미 반영된 행을 다시 넣어도
+결과가 달라지지 않는다.
