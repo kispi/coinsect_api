@@ -53,7 +53,7 @@ graph TD
     end
 
     subgraph "Storage & Infrastructure"
-        DB[(MySQL / TypeORM)]
+        DB[(PostgreSQL / TypeORM)]
         Cache[(Redis Cache)]
         S3[AWS S3 / Rekognition]
         FCM[Firebase Cloud Messaging]
@@ -89,7 +89,7 @@ graph TD
 ## 🛠 Tech Stack
 
 - **Backend**: Node.js, TypeScript, Fastify, Go
-- **Database**: MySQL, TypeORM, Redis
+- **Database**: PostgreSQL, TypeORM, Redis
 - **Cloud**: AWS (S3, Rekognition), Firebase (FCM)
 - **AI**: Google Generative AI (Gemini)
 
@@ -99,7 +99,9 @@ graph TD
 
 1. **Environment**: `.env.sample`을 바탕으로 `.env` 구성
 2. **Dependencies**: `npm install`
-3. **Database**: `npm run typeorm migration:run`
+3. **Database**: `psql -U coinsect -d coinsect -f schema/001_baseline.sql`
+   (스키마의 단일 출처는 `schema/001_baseline.sql`이다. TypeORM 마이그레이션은 폐기했다 -
+   이후 변경은 `schema/002_*.sql`로 붙인다. 자세한 건 `schema/README.md` 참고)
 4. **Run**: `npm run dev`
 5. **Proxy**: `cd proxy_upbit && go run main.go`
 
