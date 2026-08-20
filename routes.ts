@@ -124,7 +124,6 @@ export const useRoutes = (app: FastifyInstance) => ({
     router.get('/contents/countries', ctrls.content.countries)
     router.get('/contents/prices', ctrls.content.prices)
 
-    router.get('/contents/nutrition/paikdabang', ctrls.content.nutrition.paikdabang)
     router.get('/contents/real_time_positions', ctrls.content.realTimePositions.all)
     router.post('/contents/real_time_positions/change_notifications', ctrls.content.realTimePositions.changeNotification.create)
 

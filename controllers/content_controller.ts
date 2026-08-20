@@ -15,15 +15,6 @@ const contentController = {
   bitcoinQuotes: (c: IContext) => c.res.asJSON(bitcoinQuotes),
   countries: (c: IContext) => c.res.asJSON(countries),
   prices: (c: IContext) => c.res.asJSON(prices),
-  nutrition: {
-    paikdabang: async (c: IContext) => {
-      try {
-        c.res.asJSON(await service.content.nutrition.paikdabang.all())
-      } catch (e) {
-        c.res.failed()
-      }
-    },
-  },
   realTimePositions: {
     presets: (c: IContext) => c.res.asJSON(service.content.realTimePosition.presets()),
     autoParse: async (c: IContext) => {
