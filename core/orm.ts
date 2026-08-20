@@ -1,3 +1,4 @@
+import { SelectQueryBuilder } from 'typeorm'
 import { dataSource } from '../database'
 import IContext from './interfaces/context'
 import { applyFilters, parseFilters, parseJoins, parsePositiveInt, parseSort } from './query_filter'
@@ -12,6 +13,17 @@ export interface QueryOverrides {
   sort?: string
   order?: string
   join?: string
+}
+
+// 컨트롤러가 querySetter 뒤에 체이닝하는 조인은 querySetter의 중복 검사 대상이 되지 않는다.
+// TypeORM도 별칭 중복을 검사하지 않아 그대로 두 번 조인되고, 그러면 쿼리가 실행에서 죽는다.
+// 클라이언트가 `?join=User.profile`을 보내야 where/sort가 `profile.nickname`을 쓸 수 있는데,
+// 그 순간 컨트롤러의 체이닝과 겹치므로 이 가드 없이는 조인 컬럼 검색이 불가능하다.
+export const joinIfAbsent = (qb: SelectQueryBuilder<any>, target: string, alias: string) => {
+  if (!qb.expressionMap.aliases.some(a => a.name === alias)) {
+    qb.leftJoinAndSelect(target, alias)
+  }
+  return qb
 }
 
 const orm = {

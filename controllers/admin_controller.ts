@@ -17,7 +17,7 @@ import { useCRUD } from '../core/controller'
 import IContext from '../core/interfaces/context'
 import useService from '../services'
 import store from '../store'
-import orm from '../core/orm'
+import orm, { joinIfAbsent } from '../core/orm'
 import cron from '../core/cron'
 import helpers from '../core/helpers'
 import chatService from '../services/chat'
@@ -120,7 +120,10 @@ routesPost.update = async (c: IContext) => {
 const routesUser = useCRUD({ model: User, useSoftDelete: true, withDeleted: true })
 routesUser.all = async (c: IContext) => {
   try {
-    const [data, total] = await orm.querySetter(c, User).leftJoinAndSelect('User.profile', 'profile').withDeleted().getManyAndCount()
+    // ?join=User.profile을 보내야 where/sort가 profile.nickname을 쓸 수 있고, 그때 이
+    // 체이닝과 별칭이 겹친다. joinIfAbsent가 그 중복을 막는다.
+    const qb = joinIfAbsent(orm.querySetter(c, User), 'User.profile', 'profile')
+    const [data, total] = await qb.withDeleted().getManyAndCount()
     c.res.asJSON({ data, total })
   } catch (e) {
     c.res.failed(e)
