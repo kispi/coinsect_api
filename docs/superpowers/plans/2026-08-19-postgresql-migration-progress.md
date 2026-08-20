@@ -4,7 +4,7 @@
 설계: [../specs/2026-08-19-postgresql-migration-design.md](../specs/2026-08-19-postgresql-migration-design.md)
 브랜치: `feature/postgresql-migration`
 
-**Task 1~10 완료. Task 11(컷오버)부터 남았다.**
+**Task 1~10 완료 + 클라이언트 3개 저장소 작업 완료. Task 11(컷오버)만 남았다.**
 
 리허설 결과는 별도 문서에 있다: [2026-08-20-postgresql-rehearsal-result.md](./2026-08-20-postgresql-rehearsal-result.md)
 
@@ -45,9 +45,10 @@
 접속정보를 채운다(값은 `ormconfig.postgre.md`에 있고 그 파일도 gitignore다).
 컷오버 Step 4에서 `EC2_ORMCONFIG` 시크릿을 이 내용으로 교체한다.
 
-**클라이언트 3개가 먼저 준비돼야 한다.** 새 API가 구 `?where=` 문법을 400으로 막는 것을
-리허설에서 확인했다. API를 먼저 배포하면 커뮤니티 목록·고래알림 필터·어드민 테이블 검색이
-즉시 깨진다. 아래 "아직 안 한 것" 참고.
+**클라이언트 3개는 끝났다.** `coinsect_nuxt`, `coinsect_web`, `coinsect_admin` 모두
+`feature/query-protocol` 브랜치에 커밋돼 있다(푸시 안 함). 컷오버 때 머지해서 API와
+**같은 창에서 함께 배포한다.** API를 먼저 올리면 커뮤니티 목록·고래알림 필터·어드민
+테이블 검색이 즉시 깨진다.
 
 **MySQL은 그대로 살아 있다.** 롤백 경로는 유효하다.
 
@@ -110,12 +111,10 @@
 
 ## 아직 안 한 것 (별도 작업)
 
-**클라이언트 3개 저장소.** 새 API는 구 `?where=` 문법을 400으로 거부하므로 **API와 세
-클라이언트 배포가 함께 나가야 한다**. 계획서 부록 B에 파일과 줄 단위로 정리돼 있다.
-
-- `coinsect_nuxt` — `?where=` 4곳, `encodeURI` 제거, 고래알림 `XOR` → 전용 파라미터
-- `coinsect_web` — `?where=` 1곳, `with_llm`의 `board_id`/`query` → `boardId`/`question`
-- `coinsect_admin` — 데이터 테이블의 임의 SQL 입력, URL 직렬화 인코딩 없음
+**클라이언트 3개 저장소 — 2026-08-20 작업 완료.** 세 저장소 모두
+`feature/query-protocol` 브랜치에 커밋돼 있다(푸시 안 함). 배포는 API와 함께 나가야 한다.
+자세한 내용과 부록 B에 없던 발견 2건은
+[리허설 결과 문서](./2026-08-20-postgresql-rehearsal-result.md)에 있다.
 
 **후속 과제 (블로커 아님)**
 
