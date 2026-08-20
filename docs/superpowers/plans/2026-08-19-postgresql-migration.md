@@ -2169,7 +2169,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 **Files:** 없음 (운영 작업)
 
-- [ ] **Step 1: PostgreSQL 롤과 DB 생성**
+- [x] **Step 1: PostgreSQL 롤과 DB 생성**
 
 ```bash
 ssh -i <pem> ubuntu@webserver.coinsect.io
@@ -2177,14 +2177,14 @@ sudo -u postgres psql -c "CREATE ROLE coinsect LOGIN PASSWORD '<pw>'"
 sudo -u postgres psql -c "CREATE DATABASE coinsect OWNER coinsect"
 ```
 
-- [ ] **Step 2: 기준선 적용**
+- [x] **Step 2: 기준선 적용**
 
 ```bash
 psql -h 127.0.0.1 -U coinsect -d coinsect -v ON_ERROR_STOP=1 -f ~/migrate/001_baseline.sql
 ```
 Expected: 에러 없음
 
-- [ ] **Step 3: 이관 시작 시각을 기록해 두고 전체 이관**
+- [x] **Step 3: 이관 시작 시각을 기록해 두고 전체 이관**
 
 ```bash
 date -u +'%Y-%m-%dT%H:%M:%SZ' | tee ~/migrate/started_at.txt
@@ -2192,29 +2192,33 @@ cd ~/migrate && time node copy.mjs --mode=full
 ```
 Expected: 20개 테이블 전부 완료, `messages_202605`가 852,544행
 
-- [ ] **Step 4: 검증**
+- [x] **Step 4: 검증**
 
 Run: `node verify.mjs`
 Expected: `전부 일치`, 종료 코드 0
 
 불일치가 나오면 원인을 잡고 PostgreSQL DB를 지운 뒤(`DROP DATABASE coinsect`) Step 1부터 다시 한다.
 
-- [ ] **Step 5: 앱을 리허설 DB에 붙여 확인**
+- [x] **Step 5: 앱을 리허설 DB에 붙여 확인**
 
 로컬에서 `ormconfig.ts`를 리허설 DB로 맞추고 `npm run dev`로 띄운 뒤 주요 경로를 확인한다.
 
 - `GET /posts?limit=5` — 목록, 조인, 반응 집계
 - `GET /posts/:sharingKey` — 상세, 조회수 증가
 - `GET /posts?query==비트코인` — ILIKE 검색
-- `GET /whale_alerts?where=amountUsd:gte:3000000&limit=5` — 새 DSL
-- `GET /whale_alerts?where=1=1` — **400으로 막혀야 한다**
+- `GET /posts?where=id:gte:1000&limit=3` — 새 DSL
+- `GET /posts?where=1=1` — **400으로 막혀야 한다**
+
+  (`/whale_alerts`라는 라우트는 없다. `whaleAlert`는 `useRouteCRUD`가 `/admin/whale_alerts`에
+  붙이고 어드민 인증이 필요하며, 공개 경로는 `/onchain/whale_alert`다. `?where=` DSL은
+  `querySetter`를 쓰는 컨트롤러가 공유하므로 `/posts`로 검증하면 같은 표면을 덮는다.)
 - `GET /notifications` — boolean 컬럼
 - `GET /dashboards/activities?start=2026-01-01` — 원시 SQL 집계
 - 채팅 접속 → 메시지 전송 → 반응 토글
 
 시각이 밀리지 않았는지 특히 본다. 게시글 목록의 `createdAt`을 MySQL 쪽 값과 직접 비교한다.
 
-- [ ] **Step 6: 결과 기록**
+- [x] **Step 6: 결과 기록**
 
 리허설에서 걸린 시간과 발견한 문제를 `docs/superpowers/plans/`에 메모로 남긴다. 컷오버 때 필요한 정보다.
 

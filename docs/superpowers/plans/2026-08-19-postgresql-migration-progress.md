@@ -4,7 +4,9 @@
 설계: [../specs/2026-08-19-postgresql-migration-design.md](../specs/2026-08-19-postgresql-migration-design.md)
 브랜치: `feature/postgresql-migration`
 
-**Task 1~9 완료. Task 10(리허설)부터 남았다.**
+**Task 1~10 완료. Task 11(컷오버)부터 남았다.**
+
+리허설 결과는 별도 문서에 있다: [2026-08-20-postgresql-rehearsal-result.md](./2026-08-20-postgresql-rehearsal-result.md)
 
 작업 로그(`.superpowers/sdd/`)는 gitignore라 다른 PC에는 없다. 이어받는 데 필요한 것은
 전부 이 문서에 있다.
@@ -22,29 +24,36 @@
 | 7 | `schema/001_baseline.sql` 작성, `migrations/` 31개 삭제 | 지적 0건 |
 | 8 | 드라이버 `mysql2` → `pg` | Critical 1건 처리 |
 | 9 | `tools/migrate/` 이관 도구 | Important 2건 처리 |
+| 10 | 리허설 (롤/DB 생성, 기준선, 전체 이관, 검증, 스모크) | 블로커 0건 |
 
 현재 상태: 테스트 30개 통과, `npx tsc --noEmit` 깨끗, `npm run build` 성공.
 값 보간이 `core/` 밖에서 전부 사라졌다(`core/` 잔여는 식별자 보간이고 값은 파라미터).
 
-## Task 10 시작 전 확인할 것
+## Task 11 시작 전 확인할 것
 
-**pem 키 경로.** 계획서는 `C:\Users\kispi\Desktop\aws\kispi-seoul.pem`을 쓴다. 다른 PC라면
-경로가 다르므로 Task 10~12의 SSH/SCP 명령을 그에 맞게 바꾼다.
+**리허설이 끝났고 그 DB가 그대로 운영 DB가 된다.** `webserver.coinsect.io:5432`의
+`coinsect` 롤/DB는 생성됐고 기준선과 데이터가 들어가 있다. 컷오버는 여기에 델타만 얹는다.
+
+**`--since`는 `~/migrate/started_at.txt`** = `2026-08-19T23:54:51Z`. 서버에 그대로 있다.
+
+**서버 기본 `node`가 v12.22.9라 이관 도구가 돌지 않는다.** nvm의 v20을 명시한다:
+`export PATH="$HOME/.nvm/versions/node/v20.11.0/bin:$PATH"`
+
+**접속 URL의 비밀번호에 `@`와 `!`가 있다.** `%40`, `%21`로 퍼센트 인코딩해야 한다.
 
 **`ormconfig.ts`.** gitignore라 저장소에 없다. `ormconfig.sample.ts`를 복사해 PostgreSQL
-접속정보를 채운다(값은 `ormconfig.postgre.md`에 있고 그 파일도 gitignore다). Task 8에서
-이 파일을 **의도적으로 건드리지 않았다** — 운영 자격증명이 들어 있고, PostgreSQL의
-`coinsect` DB는 Task 10 Step 1에서야 만들어지기 때문이다.
+접속정보를 채운다(값은 `ormconfig.postgre.md`에 있고 그 파일도 gitignore다).
+컷오버 Step 4에서 `EC2_ORMCONFIG` 시크릿을 이 내용으로 교체한다.
 
-**PostgreSQL 쪽 상태.** `webserver.coinsect.io:5432`에 `coinsect` 롤도 DB도 아직 없다.
-같은 인스턴스에 `gukto`, `calendar`, `everymaple`, `calendar_dev`가 돌고 있으니 건드리지 말 것.
-Task 7 검증 때 만든 `schema_check` DB는 삭제했다.
+**클라이언트 3개가 먼저 준비돼야 한다.** 새 API가 구 `?where=` 문법을 400으로 막는 것을
+리허설에서 확인했다. API를 먼저 배포하면 커뮤니티 목록·고래알림 필터·어드민 테이블 검색이
+즉시 깨진다. 아래 "아직 안 한 것" 참고.
 
-**MySQL은 그대로 살아 있다.** 리허설은 서비스 중단 없이 돌릴 수 있다.
+**MySQL은 그대로 살아 있다.** 롤백 경로는 유효하다.
 
 ## 계획서에서 고친 것들
 
-실행하면서 계획 자체의 오류를 8건 잡았다. 계획서는 이미 수정돼 있으니 **지금 버전을
+실행하면서 계획 자체의 오류를 9건 잡았다. 계획서는 이미 수정돼 있으니 **지금 버전을
 그대로 따르면 된다.** 아래는 왜 그렇게 되어 있는지에 대한 기록이다.
 
 1. **값에 든 SQL을 거부로 검증하던 테스트** — `hash:eq:x' OR '1'='1`은 field와 op가
@@ -69,6 +78,11 @@ Task 7 검증 때 만든 `schema_check` DB는 삭제했다.
    `LIKE`로 만들고 있었다. `querySetter`를 쓰는 컨트롤러 10여 개가 공유하는 최대 표면이고,
    `docs/api/query-protocol.md`는 이미 `ILIKE`로 문서화돼 있었다.
 8. **이관 도구의 `conflictKey`와 트리거 충돌** — 아래 "이관 도구" 절 참고.
+9. **스모크 테스트의 `/whale_alerts` 경로가 존재하지 않음** — Task 10 Step 5와 Task 11
+   Step 6이 `GET /whale_alerts?where=...`를 시키는데 그런 라우트가 없다. `whaleAlert`는
+   `useRouteCRUD`가 `/admin/whale_alerts`에 붙이고 어드민 인증이 필요하며, 공개 경로는
+   `/onchain/whale_alert`다. `?where=` DSL은 `querySetter`를 쓰는 컨트롤러가 공유하므로
+   `/posts`로 검증하도록 계획서를 고쳤다.
 
 ## 이관 도구 (`tools/migrate/`)
 
@@ -84,15 +98,15 @@ Task 7 검증 때 만든 `schema_check` DB는 삭제했다.
   `verify.mjs`의 대조도 항상 실패한다. 델타 upsert 동안 사용자 트리거를 껐다 켠다.
   **`PG_URL` 유저에게 대상 테이블의 소유권이 필요하다**(`ALTER TABLE ... DISABLE TRIGGER`).
 
-## Task 10에서 반드시 확인할 것
+## 리허설에서 확인된 것 (컷오버 예측치)
 
-- **시각이 밀리지 않았는지.** 이 마이그레이션에서 가장 조용히 망가지는 지점이다. 게시글
-  목록의 `createdAt`을 MySQL 쪽 값과 직접 비교한다. `verify.mjs`의 경계값 대조도 이걸 본다.
-- **`/dashboards/activities`** — 원시 SQL이라 자동 테스트가 없다. `?start=`만, `?end=`만,
-  둘 다, 둘 다 없음 — 네 조합을 직접 호출한다.
-- **`?where=` DSL 거부 케이스** — `?where=1=1`이 400으로 막히는지.
-- **이관 소요 시간** — `messages_202605`가 85만 행이다. 컷오버 창을 잡으려면 실측이 필요하다.
-- **`verify.mjs`의 트리거 상태 검사** — 비활성 트리거가 남아 있지 않은지.
+- 전체 이관 **1분 17초**, 델타 **8초**, 검증 약 10초 → 컷오버 정지 구간 **약 20초**.
+- 시각은 밀리지 않았다. `posts.created_at` 1,707행이 마이크로초까지 일치.
+- 시퀀스 20개 전부 정상. 실제 INSERT로 확인(`MAX(id)=1755` → 다음 `1756`).
+- `/dashboards/activities` 네 조합 전부 200.
+- `?where=1=1`은 400으로 막힌다.
+- 델타 후 비활성 트리거 잔여 없음.
+- **계획서 Task 10/11의 `GET /whale_alerts?...` 경로는 존재하지 않는다.** 계획서는 고쳐 뒀다.
 
 ## 아직 안 한 것 (별도 작업)
 
