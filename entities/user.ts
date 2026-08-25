@@ -47,12 +47,16 @@ export class User extends BaseModel {
   @OneToOne(() => Profile, profile => profile.user)
   profile: Profile
 
+  // deactivatedAt이 "비활성화된 시각"이므로, 값이 있으면 비활성이고 없어야 활성이다.
+  // 반대로 적혀 있었다.
   activated() {
-    return this.deactivatedAt ? true : false
+    return !this.deactivatedAt
   }
 
   async activate() {
-    delete this.deactivatedAt
+    // delete로 프로퍼티를 지우면 TypeORM이 그 컬럼을 UPDATE문에서 통째로 빼버려
+    // DB의 값이 그대로 남는다. 실제로 활성화가 되지 않았다. NULL을 명시해야 지워진다.
+    this.deactivatedAt = null
     await dataSource.getRepository(User).save(this)
   }
 
