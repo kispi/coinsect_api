@@ -5,6 +5,7 @@ import content from './content/index'
 import cron from './cron'
 import firebase from './firebase/index'
 import helper from './helper'
+import kakao from './kakao'
 import marketInfo from './market_info'
 import onchain from './onchain/index'
 import profile from './profile'
@@ -18,6 +19,7 @@ const useService = () => ({
   cron,
   firebase,
   helper,
+  kakao,
   marketInfo,
   onchain,
   profile,
