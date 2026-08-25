@@ -70,3 +70,67 @@ test('클라이언트가 뭘 보내든 신원은 카카오 응답에서만 나�
   assert.notEqual(identity.email, 'xss_test@example.com')
   assert.equal(identity.email, 'real@kakao.com')
 })
+
+// --- verifyAccessToken: 카카오 응답이 실제로 도착하는 "형태"를 못 박는다 ---
+//
+// 이 구간이 비어 있어서 프로덕션이 깨졌다. identityOf만 테스트하면 잘 만든 객체를
+// 직접 넣어주므로, axios가 무엇을 돌려주는지 틀려도 전부 통과한다. 실제로는
+// server_modules.ts의 전역 인터셉터가 res => res.data로 이미 본문을 벗겨서 주는데
+// 서비스가 .data를 한 번 더 꺼내 undefined가 됐고, 진짜 토큰일 때만 터졌다
+// (가짜 토큰은 axios가 throw해 catch로 빠지므로 스모크 테스트도 통과했다).
+import kakao from '../services/kakao'
+import store from '../store'
+
+store.state.serverConfig = { ...(store.state.serverConfig || {}), KAKAO_APP_ID: String(APP_ID) }
+
+// 인터셉터를 통과한 뒤의 모습 = 카카오 응답 본문 그 자체.
+const fakeFetcher = (bodies: Record<string, unknown>) =>
+  async (path: string) => bodies[path]
+
+const KAKAO_BODIES = {
+  '/v1/user/access_token_info': { id: 3300112233, expires_in: 21599, app_id: APP_ID },
+  '/v2/user/me': {
+    id: 3300112233,
+    kakao_account: { email: 'real@kakao.com', is_email_valid: true, is_email_verified: true },
+  },
+}
+
+test('verifyAccessToken: 인터셉터가 벗겨준 응답 본문을 그대로 읽는다', async () => {
+  const identity = await kakao.verifyAccessToken('valid-token', fakeFetcher(KAKAO_BODIES))
+  assert.deepEqual(identity, { kakaoId: '3300112233', email: 'real@kakao.com' })
+})
+
+test('verifyAccessToken: 응답이 비면 TypeError가 아니라 우리 에러로 떨어진다', async () => {
+  await assert.rejects(
+    () => kakao.verifyAccessToken('t', fakeFetcher({})),
+    (e: { message: string, status: number }) => {
+      assert.equal(e.message, 'ERR_KAKAO_TOKEN_INVALID')
+      assert.equal(e.status, 401)
+      return true
+    },
+  )
+})
+
+test('verifyAccessToken: 카카오가 토큰을 거절하면 401로 옮긴다', async () => {
+  await assert.rejects(
+    // 인터셉터의 에러 쪽은 err.response를 그대로 throw한다.
+    () => kakao.verifyAccessToken('t', async () => Promise.reject({ status: 401, data: { code: -401 } })),
+    (e: { message: string }) => {
+      assert.equal(e.message, 'ERR_KAKAO_TOKEN_INVALID')
+      return true
+    },
+  )
+})
+
+test('verifyAccessToken: 남의 앱 토큰은 진짜 응답이어도 거절한다', async () => {
+  await assert.rejects(
+    () => kakao.verifyAccessToken('t', fakeFetcher({
+      ...KAKAO_BODIES,
+      '/v1/user/access_token_info': { id: 3300112233, expires_in: 21599, app_id: 999999 },
+    })),
+    (e: { message: string }) => {
+      assert.equal(e.message, 'ERR_KAKAO_TOKEN_INVALID')
+      return true
+    },
+  )
+})

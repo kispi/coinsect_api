@@ -26,6 +26,7 @@ const checkServerConfig = () => {
   const requiredFields = [
     'API_PORT',
     'JWT_SECRET',
+    'KAKAO_APP_ID',
     'AWS_ACCESS_KEY_ID',
     'AWS_SECRET_ACCESS_KEY',
     'AWS_S3_BUCKET',

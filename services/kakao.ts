@@ -36,6 +36,9 @@ export const identityOf = (
   // 앱 ID가 없으면 남의 카카오 앱 토큰을 걸러낼 수단이 없다. 열어두지 않고 막는다.
   if (!appId) throw { message: 'ERR_KAKAO_NOT_CONFIGURED', status: 500 }
 
+  // 응답을 못 받았으면 여기서 끊는다. 없으면 아래에서 TypeError가 나 원인이 가려진다.
+  if (!tokenInfo || !me) throw { message: 'ERR_KAKAO_TOKEN_INVALID', status: 401 }
+
   // 다른 카카오 앱에서 발급받은 토큰은 우리 앱의 사용자 ID 공간과 무관하다. 공격자가
   // 자기 앱을 만들어 받은 정상 토큰으로 우리 계정에 올라타는 걸 막는 핵심 검사다.
   if (tokenInfo.app_id !== appId) throw { message: 'ERR_KAKAO_TOKEN_INVALID', status: 401 }
@@ -53,17 +56,22 @@ export const identityOf = (
   return { kakaoId: String(me.id), email: account.email }
 }
 
-const get = async <T>(path: string, accessToken: string): Promise<T> => {
-  const { data } = await axios.get<T>(`${KAPI}${path}`, {
+// server_modules.ts의 전역 인터셉터가 res => res.data로 이미 벗겨서 준다. 여기서
+// 다시 .data를 꺼내면 undefined가 된다(실제로 그렇게 깨졌다). 응답 본문이 그대로 온다.
+export type KakaoFetcher = (path: string, accessToken: string) => Promise<unknown>
+
+const fetchKakao: KakaoFetcher = async (path, accessToken) =>
+  await axios.get(`${KAPI}${path}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
     timeout: 5000,
   })
-  return data
-}
 
 // 액세스 토큰의 진위와 발급 앱까지 카카오에 확인한 뒤, 카카오가 알려준 사용자 ID와
 // 인증된 이메일만 돌려준다.
-const verifyAccessToken = async (accessToken: string): Promise<KakaoIdentity> => {
+const verifyAccessToken = async (
+  accessToken: string,
+  fetcher: KakaoFetcher = fetchKakao,
+): Promise<KakaoIdentity> => {
   const appId = Number(store.state.serverConfig?.KAKAO_APP_ID)
   if (!appId) {
     log.error('kakao.verifyAccessToken: .env KAKAO_APP_ID is missing')
@@ -73,11 +81,12 @@ const verifyAccessToken = async (accessToken: string): Promise<KakaoIdentity> =>
   let tokenInfo: AccessTokenInfo
   let me: KakaoMe
   try {
-    tokenInfo = await get<AccessTokenInfo>('/v1/user/access_token_info', accessToken)
-    me = await get<KakaoMe>('/v2/user/me', accessToken)
+    tokenInfo = await fetcher('/v1/user/access_token_info', accessToken) as AccessTokenInfo
+    me = await fetcher('/v2/user/me', accessToken) as KakaoMe
   } catch (e) {
-    // 카카오가 -401을 주면 토큰이 위조됐거나 만료된 것이다.
-    log.error('kakao.verifyAccessToken:', e?.response?.data || e?.message || e)
+    // 인터셉터의 에러 쪽은 err.response를 그대로 throw한다. 즉 e가 곧 응답이라 e.data에
+    // 카카오의 에러 본문이 들어 있다(-401이면 토큰이 위조됐거나 만료된 것이다).
+    log.error('kakao.verifyAccessToken:', e?.data || e?.message || e)
     return Promise.reject({ message: 'ERR_KAKAO_TOKEN_INVALID', status: 401 })
   }
 
