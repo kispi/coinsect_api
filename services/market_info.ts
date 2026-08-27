@@ -2,6 +2,7 @@ import axios from 'axios'
 import parse from 'node-html-parser'
 import useCache from '../core/cache'
 import hardCodedSymbols from '../constants/symbols'
+import caseHelpers from '../core/helpers/case'
 import { log } from '../core/logger'
 
 const endpoints = {
@@ -128,10 +129,12 @@ const marketInfoService = {
       return Promise.reject(e)
     }
   },
+  // coinmarketcap은 본문(cryptoCurrencyList, cmcRank...)은 camelCase로 주면서 status 봉투만
+  // credit_count/error_code/error_message로 준다. 중계하는 쪽에서 표기를 통일해 내보낸다.
   crypto: async params => {
     try {
       const data = await axios.get('https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing', { params } )
-      return data
+      return caseHelpers.keysToCamel(data)
     } catch (e) {
       return Promise.reject(e)
     }

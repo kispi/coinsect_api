@@ -22,7 +22,7 @@ const dashboardService = {
       const resp = {
         whaleAlerts: o[0].status === 'fulfilled' ? o[0].value : { data: [] },
         realTimePositions: o[1].status === 'fulfilled' ? { data: o[1].value.data.filter(o => o.editable), lastUpdate: o[1].value.lastUpdate } : { data: [], lastUpdate: null },
-        news: o[2].status === 'fulfilled' ? o[2].value.data.featured_list : [],
+        news: o[2].status === 'fulfilled' ? o[2].value.data.featuredList : [],
       }
       cache.set('dashboards:main', resp, 60)
       return resp

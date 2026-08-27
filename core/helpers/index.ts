@@ -4,6 +4,7 @@ import { parse } from 'node-html-parser'
 import dayjs = require('dayjs')
 import crypto from './crypto'
 import store from '../../store'
+import caseHelpers from './case'
 import sanitize from './sanitize'
 import jwt from './jwt'
 import axios from 'axios'
@@ -23,19 +24,7 @@ const helpers = {
   isImageUrl: (url: string) =>
     ['.png', '.jpeg', '.jpg', '.jfif', '.svg', '.bmp', '.webp', '.gif'].some(ext => (url || '').toLowerCase().endsWith(ext)),
   useCdn: (key: string) => `${store.state.serverConfig.AWS_S3_CDN}/${key}`,
-  case: {
-    pluralize: (str: string) => {
-      if (str.endsWith('day')) return `${str}s`
-      if (str.endsWith('way')) return `${str}s`
-      if (str.endsWith('y')) return `${str.slice(0, -1)}ies`
-      if (str.endsWith('s') || str.endsWith('h')) return `${str}es`
-
-      return `${str}s`
-    },
-    toCapital: (str: string) => str.charAt(0).toUpperCase() + str.slice(1),
-    toSnake: (str: string, delim?: string) => (str || '').replace(/[A-Z]/g, letter => `${delim || '_'}${letter.toLowerCase()}`),
-    toCamel: (str: string) => str.replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', '')),
-  },
+  case: caseHelpers,
   /**
  * trim values listed in fields and check if it's empty.
  * NOTE: This mutates the payload body by trimming. (EX: ' Hello world ' => 'Hello world')
